@@ -1,0 +1,88 @@
+// CI/Infra Jenkinsfile
+
+/*
+1. 변경 사항을 추적해서, 해당 서비스들만 업데이트가 되도록 한다.
+2. MANUAL_MODE가 꺼져있을 때 TARGET_SERVICES가 공백이면 변경 사항이 없는 것으로 간주, CD/Infra를 호출 X
+3. MANUAL_MODE가 켜져있을 때 TARGET_SERVICES가 공백이면 모든 것을 변경하는 것으로 간주
+(CD/Infra에 빈 값으로 주면 모든 게 변경)
+- 로깅/진단 과정에서는 변수 별로 기본값을
+설정해서 파이프라인이 실패하지 않도록 설정.
+*/
+
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+        disableConcurrentBuilds()
+    }
+
+    parameters {
+        string(name: 'TARGET_SERVICES', defaultValue: '', description: '배포할 서비스 (nginx, certbot)')
+        booleanParam(name: 'MANUAL_MODE', defaultValue: false, description: 'true = 변경 감지 스킵')
+    }
+
+    environment {
+        EC2_PROJECT_PATH = "/home/ubuntu/app/infra"
+        CERT_PATH = "/etc/letsencrypt"
+        NGINX_IMAGE = "nginx:1.25-alpine"
+        CD_JOB_NAME = "CD/Total"
+    }
+
+    stages {
+        stage('Detect Changes (Cumulative)') {
+            steps {
+                script {
+                    if (params.MANUAL_MODE) {
+                        env.EFFECTIVE_TARGET_SERVICES = params.TARGET_SERVICES ?: 'nginx certbot'
+                        env.RUN_CD = 'true'
+                    } else {
+                        def lastSuccess = env.GIT_PREVIOUS_SUCCESSFUL_COMMIT ?: "HEAD~1"
+                        sh "git diff --name-only ${lastSuccess} ${env.GIT_COMMIT} > changed_files.txt"
+
+                        def changedFiles = readFile('changed_files.txt').readLines()
+                        def targets = []
+
+                        changedFiles.each { line ->
+                            if (line.startsWith("nginx/")) { targets << 'nginx' }
+                            if (line.startsWith("certbot/")) { targets << 'certbot' }
+                            if (line.contains("docker-compose.yml")) { targets << 'nginx certbot' }
+                        }
+
+                        def finalTargets = targets.unique().join(' ')
+                        if (finalTargets) {
+                            env.EFFECTIVE_TARGET_SERVICES = finalTargets
+                            env.RUN_CD = 'true'
+                            echo "🚀 Detected Changes: ${env.EFFECTIVE_TARGET_SERVICES}"
+                        } else {
+                            env.RUN_CD = 'false'
+                            echo "📢 No changes since last successful build."
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Sync & Prepare Directories') {
+            when { expression { return env.RUN_CD == 'true' } }
+            steps {
+                script {
+                    sh "sudo mkdir -p ${env.CERT_PATH}"
+                    sh "sudo chown -R ubuntu:ubuntu ${env.CERT_PATH}"
+
+                    sh "mkdir -p ${env.EC2_PROJECT_PATH}"
+                    sh "rsync -avz --delete --exclude='.git' ./ ${env.EC2_PROJECT_PATH}/"
+                }
+            }
+        }
+
+        stage('Trigger CD/Total') {
+            when { expression { return env.RUN_CD == 'true' } }
+            steps {
+                build job: env.CD_JOB_NAME,
+                    wait: true,
+                    parameters: [string(name: 'TARGET_SERVICES', value: env.EFFECTIVE_TARGET_SERVICES)]
+            }
+        }
+    }
+}
