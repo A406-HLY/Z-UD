@@ -66,9 +66,10 @@ pipeline {
             when { expression { return env.RUN_CD == 'true' } }
             steps {
                 script {
-                    echo "🚀 Syncing files to ${env.EC2_PROJECT_PATH}..."
+                    echo "🚀 Syncing ONLY 'infra' directory to ${env.EC2_PROJECT_PATH}..."
                     sh "mkdir -p ${env.EC2_PROJECT_PATH}"
-                    sh "rsync -avz --delete --exclude='.git' ./ ${env.EC2_PROJECT_PATH}/"
+                    sh "rsync -avzi --delete --exclude='.git' ./infra/ ${env.EC2_PROJECT_PATH}/"
+                    sh "ls -R ${env.EC2_PROJECT_PATH}"
                 }
             }
         }
