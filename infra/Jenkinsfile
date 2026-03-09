@@ -24,7 +24,6 @@ pipeline {
 
     environment {
         EC2_PROJECT_PATH = "/home/ubuntu/app/infra"
-        CERT_PATH = "/etc/letsencrypt"
         NGINX_IMAGE = "nginx:1.25-alpine"
         CD_JOB_NAME = "CD/Total"
     }
@@ -67,9 +66,7 @@ pipeline {
             when { expression { return env.RUN_CD == 'true' } }
             steps {
                 script {
-                    sh "sudo mkdir -p ${env.CERT_PATH}"
-                    sh "sudo chown -R ubuntu:ubuntu ${env.CERT_PATH}"
-
+                    echo "🚀 Syncing files to ${env.EC2_PROJECT_PATH}..."
                     sh "mkdir -p ${env.EC2_PROJECT_PATH}"
                     sh "rsync -avz --delete --exclude='.git' ./ ${env.EC2_PROJECT_PATH}/"
                 }
