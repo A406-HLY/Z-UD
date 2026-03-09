@@ -68,7 +68,7 @@ pipeline {
                 script {
                     echo "🚀 Syncing ONLY 'infra' directory to ${env.EC2_PROJECT_PATH}..."
                     sh "mkdir -p ${env.EC2_PROJECT_PATH}"
-                    sh "rsync -avzi --delete --exclude='.git' --exclude='certbot/' ./infra/ ${env.EC2_PROJECT_PATH}/"
+                    sh "rsync -avzi --delete --exclude='.git' --exclude='certbot/' --exclude='nginx/log/' ./infra/ ${env.EC2_PROJECT_PATH}/"
                     sh "ls -R ${env.EC2_PROJECT_PATH}"
                 }
             }
