@@ -43,9 +43,9 @@ pipeline {
                         def targets = []
 
                         changedFiles.each { line ->
-                            if (line.startsWith("nginx/")) { targets << 'nginx' }
-                            if (line.startsWith("certbot/")) { targets << 'certbot' }
-                            if (line.contains("docker-compose.yml")) { targets << 'nginx certbot' }
+                            if (line.startsWith("infra/nginx/")) { targets << 'nginx' }
+                            if (line.startsWith("infra/certbot/")) { targets << 'certbot' }
+                            if (line.contains("infra/compose/")) { targets << 'nginx certbot' }
                         }
 
                         def finalTargets = targets.unique().join(' ')
