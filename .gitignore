@@ -1,0 +1,5 @@
+infra/certbot
+infra/nginx/log
+*.log
+.env
+EOF
