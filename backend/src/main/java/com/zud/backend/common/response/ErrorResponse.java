@@ -1,4 +1,4 @@
-package com.backend.zud.common.response;
+package com.zud.backend.common.response;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 
-import com.backend.zud.common.error.ErrorCode;
+import com.zud.backend.common.error.ErrorCode;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Builder;

@@ -1,4 +1,4 @@
-package com.backend.zud.common.response;
+package com.zud.backend.common.response;
 
 import java.util.List;
 

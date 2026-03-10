@@ -1,4 +1,4 @@
-package com.backend.zud.common.error.exception.handler;
+package com.zud.backend.common.error.exception.handler;
 
 import java.nio.file.AccessDeniedException;
 import java.sql.SQLException;
@@ -16,11 +16,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import com.backend.zud.common.error.ErrorCode;
-import com.backend.zud.common.error.exception.BusinessException;
-import com.backend.zud.common.response.BaseResponse;
-import com.backend.zud.common.response.ErrorResponse;
-import com.backend.zud.common.util.LoggingUtils;
+import com.zud.backend.common.error.ErrorCode;
+import com.zud.backend.common.error.exception.BusinessException;
+import com.zud.backend.common.response.BaseResponse;
+import com.zud.backend.common.response.ErrorResponse;
+import com.zud.backend.common.util.LoggingUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;

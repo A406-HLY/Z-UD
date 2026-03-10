@@ -1,4 +1,4 @@
-package com.backend.zud.common.constant;
+package com.zud.backend.common.constant;
 
 import lombok.AccessLevel;
 import lombok.Getter;

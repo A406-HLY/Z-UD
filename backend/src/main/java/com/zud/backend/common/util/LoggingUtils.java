@@ -1,4 +1,4 @@
-package com.backend.zud.common.util;
+package com.zud.backend.common.util;
 
 import java.util.stream.Collectors;
 

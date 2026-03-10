@@ -1,4 +1,4 @@
-package com.backend.zud.common.aop;
+package com.zud.backend.common.aop;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;

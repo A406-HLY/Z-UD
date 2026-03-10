@@ -1,11 +1,11 @@
-package com.backend.zud.common.util;
+package com.zud.backend.common.util;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import com.backend.zud.common.response.BaseResponse;
-import com.backend.zud.common.response.PageResponse;
+import com.zud.backend.common.response.BaseResponse;
+import com.zud.backend.common.response.PageResponse;
 
 import lombok.experimental.UtilityClass;
 

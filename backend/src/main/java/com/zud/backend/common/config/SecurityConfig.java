@@ -1,4 +1,4 @@
-package com.backend.zud.common.config;
+package com.zud.backend.common.config;
 
 import org.springframework.boot.security.autoconfigure.actuate.web.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;

@@ -1,4 +1,4 @@
-package com.backend.zud.common.filter;
+package com.zud.backend.common.filter;
 
 import java.io.IOException;
 import java.security.SecureRandom;

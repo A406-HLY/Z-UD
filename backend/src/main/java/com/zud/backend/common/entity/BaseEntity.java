@@ -1,4 +1,4 @@
-package com.backend.zud.common.entity;
+package com.zud.backend.common.entity;
 
 import java.time.LocalDateTime;
 

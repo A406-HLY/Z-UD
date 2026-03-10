@@ -1,4 +1,4 @@
-package com.backend.zud.common.config;
+package com.zud.backend.common.config;
 
 import java.util.Arrays;
 import java.util.List;
@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
-import com.backend.zud.common.constant.BackDomain;
+import com.zud.backend.common.constant.BackDomain;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;

@@ -1,6 +1,6 @@
-package com.backend.zud.common.error.exception;
+package com.zud.backend.common.error.exception;
 
-import com.backend.zud.common.error.ErrorCode;
+import com.zud.backend.common.error.ErrorCode;
 
 import lombok.Getter;
 

@@ -1,4 +1,4 @@
-package com.backend.zud.common.error;
+package com.zud.backend.common.error;
 
 import org.springframework.http.HttpStatus;
 
