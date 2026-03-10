@@ -25,6 +25,10 @@ public class SecurityConfig {
 		"/"
 	};
 
+	private static void createSessionPolicy(SessionManagementConfigurer<HttpSecurity> session) {
+		session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+	}
+
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) {
 		http
@@ -37,13 +41,8 @@ public class SecurityConfig {
 			.authorizeHttpRequests(authorize -> authorize
 				.requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll()
 				.requestMatchers(WHITELIST).permitAll()
-				.anyRequest().permitAll()
-			);
+				.anyRequest().permitAll());
 
 		return http.build();
-	}
-
-	private static void createSessionPolicy(SessionManagementConfigurer<HttpSecurity> session) {
-		session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 	}
 }
