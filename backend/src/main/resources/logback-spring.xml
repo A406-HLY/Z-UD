@@ -20,7 +20,7 @@
 
         <!-- 로그 파일 경로 설정 (Docker 컨테이너 내부 경로) -->
         <property name="LOG_PATH" value="/app/logs"/>
-        <property name="LOG_FILE_NAME" value="mento"/>
+        <property name="LOG_FILE_NAME" value="zud"/>
 
         <!-- 콘솔 출력 패턴 -->
         <property name="CONSOLE_LOG_PATTERN"
