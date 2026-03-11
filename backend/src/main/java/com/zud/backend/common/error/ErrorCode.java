@@ -23,6 +23,10 @@ public enum ErrorCode {
 	METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "C-008", "지원하지 않는 HTTP 메서드입니다."),
 	UNSUPPORTED_MEDIA_TYPE(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "C-009", "지원하지 않는 미디어 타입입니다."),
 	DATA_INTEGRITY_VIOLATION(HttpStatus.CONFLICT, "C-010", "데이터 무결성 위반입니다."),
+	SERIALIZE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C-011", "직렬화 중 오류가 발생했습니다."),
+	DESERIALIZE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C-012", "역직렬화 중 오류가 발생했습니다."),
+	GZIP_COMPRESS_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C-013", "GZIP 압축 중 오류가 발생했습니다."),
+	GZIP_DECOMPRESS_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C-014", "GZIP 압축 해제 중 오류가 발생했습니다."),
 
 	/**
 	 * User Error (US-xxx)
