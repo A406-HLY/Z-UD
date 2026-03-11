@@ -21,6 +21,7 @@ import com.zud.backend.common.error.exception.BusinessException;
 import com.zud.backend.common.response.BaseResponse;
 import com.zud.backend.common.response.ErrorResponse;
 import com.zud.backend.common.util.LoggingUtils;
+import com.zud.backend.domain.user.exception.UserException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -155,6 +156,16 @@ public class GlobalExceptionHandler {
 		LoggingUtils.logException("SQLException 발생", ex, request);
 		ErrorResponse response = ErrorResponse.of(ErrorCode.INTERNAL_SERVER_ERROR, request);
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BaseResponse.fail(response));
+	}
+
+	@ExceptionHandler(UserException.class)
+	public ResponseEntity<BaseResponse<ErrorResponse>> handleNoUserException(
+		UserException ex,
+		HttpServletRequest request
+	) {
+		LoggingUtils.logException("UserException 발생", ex, request);
+		ErrorResponse response = ErrorResponse.of(ex.getErrorCode(), request);
+		return ResponseEntity.status(ex.getErrorCode().getHttpStatus()).body(BaseResponse.fail(response));
 	}
 
 }
