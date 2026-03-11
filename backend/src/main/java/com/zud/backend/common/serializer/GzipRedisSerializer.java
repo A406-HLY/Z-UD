@@ -18,16 +18,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class GzipRedisSerializer<T> implements RedisSerializer<T> {
 
-	private final ObjectMapper objectMapper;
-	private final TypeReference<T> typeRef;
-
 	private static final byte[] GZIP_MAGIC_BYTES = new byte[] {
 		(byte)(GZIPInputStream.GZIP_MAGIC & 0xFF),
 		(byte)((GZIPInputStream.GZIP_MAGIC >> 8) & 0xFF)
 	};
-
 	private static final int MIN_COMPRESS_SIZE = 2 * 1024; // 2KB 기준
 	private static final int BUFFER_SIZE = 2 * 1024; // 버퍼 크기
+	private final ObjectMapper objectMapper;
+	private final TypeReference<T> typeRef;
 
 	@Override
 	public byte[] serialize(T value) {
