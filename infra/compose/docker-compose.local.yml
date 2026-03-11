@@ -1,0 +1,71 @@
+name: app
+
+services:
+  backend:
+    container_name: backend
+    image: backend:latest
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    ports:
+      - "8080:8080"
+    expose:
+      - "8080"
+
+    volumes:
+      - ./logs:/app/logs
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+    restart: always
+
+  redis:
+    container_name: redis
+    image: redis:7.4-alpine
+
+    ports:
+      - "6379:6379"
+    expose:
+      - "6379"
+
+    volumes:
+      - ./redis/data:/data
+
+    restart: always
+
+  postgres:
+    container_name: postgres_backend
+    image: postgres:16-alpine
+
+    environment:
+      - POSTGRES_USER=mento_user
+      - POSTGRES_PASSWORD=mento_pass
+      - POSTGRES_DB=mento_db
+
+    ports:
+      - "5432:5432"
+    expose:
+      - "5432"
+
+    volumes:
+      - ./postgres/data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U mento_user -d mento_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    restart: always
