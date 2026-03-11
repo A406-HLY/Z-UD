@@ -1,14 +1,3 @@
-// CI/Infra Jenkinsfile
-
-/*
-1. 변경 사항을 추적해서, 해당 서비스들만 업데이트가 되도록 한다.
-2. MANUAL_MODE가 꺼져있을 때 TARGET_SERVICES가 공백이면 변경 사항이 없는 것으로 간주, CD/Infra를 호출 X
-3. MANUAL_MODE가 켜져있을 때 TARGET_SERVICES가 공백이면 모든 것을 변경하는 것으로 간주
-(CD/Infra에 빈 값으로 주면 모든 게 변경)
-- 로깅/진단 과정에서는 변수 별로 기본값을
-설정해서 파이프라인이 실패하지 않도록 설정.
-*/
-
 pipeline {
     agent any
 
@@ -17,69 +6,66 @@ pipeline {
         disableConcurrentBuilds()
     }
 
-    parameters {
-        string(name: 'TARGET_SERVICES', defaultValue: '', description: '배포할 서비스 (nginx, certbot)')
-        booleanParam(name: 'MANUAL_MODE', defaultValue: false, description: 'true = 변경 감지 스킵')
-    }
-
     environment {
-        EC2_PROJECT_PATH = "/home/ubuntu/app/infra"
-        NGINX_IMAGE = "nginx:1.25-alpine"
-        CD_JOB_NAME = "CD/Total"
+        PROJECT_PATH = "/home/ubuntu/app/S14P21A406"
+        CD_JOB_NAME = "CD/develop"
     }
 
     stages {
-        stage('Detect Changes (Cumulative)') {
+        stage('1. Checkout & Hard Reset') {
             steps {
                 script {
-                    if (params.MANUAL_MODE) {
-                        env.EFFECTIVE_TARGET_SERVICES = params.TARGET_SERVICES ?: 'nginx certbot'
-                        env.RUN_CD = 'true'
-                    } else {
-                        def lastSuccess = env.GIT_PREVIOUS_SUCCESSFUL_COMMIT ?: "HEAD~1"
-                        sh "git diff --name-only ${lastSuccess} ${env.GIT_COMMIT} > changed_files.txt"
-
-                        def changedFiles = readFile('changed_files.txt').readLines()
-                        def targets = []
-
-                        changedFiles.each { line ->
-                            if (line.startsWith("infra/nginx/")) { targets << 'nginx' }
-                            if (line.startsWith("infra/certbot/")) { targets << 'certbot' }
-                            if (line.contains("infra/compose/")) { targets << 'nginx certbot' }
-                        }
-
-                        def finalTargets = targets.unique().join(' ')
-                        if (finalTargets) {
-                            env.EFFECTIVE_TARGET_SERVICES = finalTargets
-                            env.RUN_CD = 'true'
-                            echo "🚀 Detected Changes: ${env.EFFECTIVE_TARGET_SERVICES}"
-                        } else {
-                            env.RUN_CD = 'false'
-                            echo "📢 No changes since last successful build."
-                        }
-                    }
+                    echo "🚀 Fetching and Resetting to origin/develop..."
+                    sh """
+                        cd ${env.PROJECT_PATH}
+                        git fetch origin develop
+                        git checkout develop
+                        git reset --hard origin/develop
+                        git clean -fd
+                    """
                 }
             }
         }
 
-        stage('Sync & Prepare Directories') {
-            when { expression { return env.RUN_CD == 'true' } }
+        stage('2. Nginx Configuration Check') {
             steps {
                 script {
-                    echo "🚀 Syncing ONLY 'infra' directory to ${env.EC2_PROJECT_PATH}..."
-                    sh "mkdir -p ${env.EC2_PROJECT_PATH}"
-                    sh "rsync -avzi --delete --exclude='.git' --exclude='certbot/' --exclude='nginx/log/' ./infra/ ${env.EC2_PROJECT_PATH}/"
+                    echo "🔍 Checking Nginx configuration syntax..."
+                    sh "docker run --rm -t -v ${env.PROJECT_PATH}/infra/nginx:/etc/nginx/conf.d nginx:alpine nginx -t"
                 }
             }
         }
 
-        stage('Trigger CD/Total') {
-            when { expression { return env.RUN_CD == 'true' } }
+        stage('3. Build Backend Image (Local)') {
             steps {
-                build job: env.CD_JOB_NAME,
-                    wait: true,
-                    parameters: [string(name: 'TARGET_SERVICES', value: env.EFFECTIVE_TARGET_SERVICES)]
+                script {
+                    echo "🛠️ Building 'backend:latest' image..."
+                    sh """
+                        cd ${env.PROJECT_PATH}/backend
+                        docker build --no-cache -t backend:latest .
+                    """
+                }
             }
+        }
+
+        stage('4. Trigger CD/develop') {
+            steps {
+                script {
+                    echo "📦 Triggering Downstream CD Job: ${env.CD_JOB_NAME}"
+                    build job: env.CD_JOB_NAME, 
+                          wait: false, 
+                          propagate: true
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ CI/Infra Pipeline Success! backend:latest is ready."
+        }
+        failure {
+            echo "❌ Pipeline Failed. Please check the logs."
         }
     }
 }
