@@ -42,6 +42,11 @@ spring:
   jmx:
     enabled: true
 
+server:
+  servlet:
+    session:
+      timeout: 9h
+
 
 springdoc:
   swagger-ui:
