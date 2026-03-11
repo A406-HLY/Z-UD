@@ -23,16 +23,17 @@ public class SecurityConfig {
 	private static final String[] WHITELIST = {
 		"/swagger-ui/**",
 		"/v3/api-docs/**",
+		"/api/v1/auth/login",
 		"/error"
 	};
+
+	private static void createSessionPolicy(SessionManagementConfigurer<HttpSecurity> session) {
+		session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+	}
 
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
-	}
-
-	private static void createSessionPolicy(SessionManagementConfigurer<HttpSecurity> session) {
-		session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 	}
 
 	@Bean
