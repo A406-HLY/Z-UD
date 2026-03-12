@@ -11,6 +11,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.zud.backend.common.filter.SessionAuthFilter;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +29,8 @@ public class SecurityConfig {
 		"/api/v1/auth/login",
 		"/error"
 	};
+
+	private final SessionAuthFilter sessionAuthFilter;
 
 	private static void createSessionPolicy(SessionManagementConfigurer<HttpSecurity> session) {
 		session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
@@ -48,7 +53,8 @@ public class SecurityConfig {
 			.authorizeHttpRequests(authorize -> authorize
 				.requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll()
 				.requestMatchers(WHITELIST).permitAll()
-				.anyRequest().authenticated());
+				.anyRequest().authenticated())
+			.addFilterBefore(sessionAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
 	}
