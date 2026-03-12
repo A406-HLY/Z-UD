@@ -24,6 +24,7 @@ import com.zud.backend.domain.auth.dto.response.LoginSuccessResDto;
 import com.zud.backend.domain.auth.enums.SessionConstants;
 import com.zud.backend.domain.auth.exception.AuthException;
 import com.zud.backend.domain.auth.session.UserSession;
+import com.zud.backend.domain.user.entity.Branch;
 import com.zud.backend.domain.user.entity.User;
 import com.zud.backend.domain.user.service.query.UserQueryService;
 
@@ -48,11 +49,16 @@ class AuthFacadeServiceImplTest {
 	private AuthFacadeServiceImpl authFacadeService;
 
 	private User createDefaultUser() {
+		Branch branch = Branch.builder()
+			.id(1L)
+			.name("세종")
+			.build();
 		return User.builder()
 			.id(1L)
 			.employeeNumber(EMPLOYEE_NUMBER)
 			.name("홍길동")
 			.password(ENCODED_PASSWORD)
+			.branch(branch)
 			.build();
 	}
 
