@@ -46,6 +46,10 @@ server:
     session:
       timeout: 9h
 
+kakao:
+  api:
+    key: ${KAKA0_REST_API_KEY}
+
 
 springdoc:
   swagger-ui:
