@@ -28,11 +28,11 @@ public class User extends BaseEntity {
 
 	//TODO 지점(Branch) 연관관계 설정
 
+	@Column(name = "employee_number", unique = true, length = 100, nullable = false)
+	private String employeeNumber;
+
 	@Column(name = "name", length = 50, nullable = false)
 	private String name;
-
-	@Column(name = "employee_number", length = 100, nullable = false)
-	private String employeeNumber;
 
 	@Column(name = "password", nullable = false)
 	private String password;
