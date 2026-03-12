@@ -1,8 +1,10 @@
-package com.zud.backend.domain.user.entity;
+package com.zud.backend.domain.branch.entity;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.zud.backend.domain.user.entity.User;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -39,10 +41,10 @@ public class Branch {
 	@Column(name = "full_address", nullable = false)
 	private String fullAddress;
 
-	@Column(name = "longitude", nullable = false, precision = 10, scale = 6)
-	private BigDecimal longitude;
+	@Column(name = "longitude", nullable = false)
+	private Double longitude;
 
-	@Column(name = "latitude", nullable = false, precision = 9, scale = 6)
-	private BigDecimal latitude;
+	@Column(name = "latitude", nullable = false)
+	private Double latitude;
 
 }

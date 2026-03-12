@@ -1,6 +1,7 @@
 package com.zud.backend.domain.user.entity;
 
 import com.zud.backend.common.entity.BaseEntity;
+import com.zud.backend.domain.branch.entity.Branch;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
