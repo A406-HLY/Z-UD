@@ -17,7 +17,9 @@ public class UserConverter {
 	}
 
 	public BranchInfoDto toBranchInfoDto(final User user) {
-		//TODO Branch 연관관계 정의 이후 작성
-		return null;
+		return BranchInfoDto.builder()
+			.id(user.getBranch().getId())
+			.name(user.getBranch().getName())
+			.build();
 	}
 }
