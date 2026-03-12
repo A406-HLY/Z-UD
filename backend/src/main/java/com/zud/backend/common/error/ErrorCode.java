@@ -29,6 +29,11 @@ public enum ErrorCode {
 	GZIP_DECOMPRESS_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C-014", "GZIP 압축 해제 중 오류가 발생했습니다."),
 
 	/**
+	 * AUTH Error (AU-xxx)
+	 */
+	SESSION_NOT_FOUND(HttpStatus.UNAUTHORIZED, "AU-001", "세션을 찾을 수 없습니다."),
+
+	/**
 	 * User Error (US-xxx)
 	 */
 	INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "US-001", "사번 또는 비밀번호가 일치하지 않습니다."),
