@@ -21,7 +21,7 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
-@Tag(name = "인증 (Auth)", description = "로그인/로그아웃 등 인증 관련 API")
+@Tag(name = "인증 (Auth)", description = "인증 관련 API")
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
