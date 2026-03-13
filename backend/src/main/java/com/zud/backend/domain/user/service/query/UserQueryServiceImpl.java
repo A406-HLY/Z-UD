@@ -25,4 +25,12 @@ public class UserQueryServiceImpl implements UserQueryService {
 		log.info("[User] 회원 조회 성공 - employeeNumber: {}", employeeNumber);
 		return user;
 	}
+
+	@Override
+	public User findById(final Long userId) {
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+		log.info("[User] 회원 조회 성공 - userId: {}", userId);
+		return user;
+	}
 }

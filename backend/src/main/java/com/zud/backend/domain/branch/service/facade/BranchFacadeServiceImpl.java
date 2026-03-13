@@ -12,7 +12,7 @@ import com.zud.backend.domain.branch.entity.Branch;
 import com.zud.backend.domain.branch.repository.NearestBranchProjection;
 import com.zud.backend.domain.branch.service.query.BranchQueryServiceImpl;
 import com.zud.backend.domain.user.entity.User;
-import com.zud.backend.domain.user.service.query.UserQueryServiceImpl;
+import com.zud.backend.domain.user.service.query.UserQueryService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,15 +21,15 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class BranchFacadeServiceImpl implements BranchFacadeService {
 
-	private final UserQueryServiceImpl userQueryService;
+	private final UserQueryService userQueryService;
 	private final AddressGeocodingClient addressGeocodingClient;
 	private final BranchQueryServiceImpl branchQueryService;
 	private final BranchConverter branchConverter;
 
 	public NearestBranchResDto findNearestBranch(
-		final String employeeNumber, final NearestBranchReqDto reqDto
+		final String userId, final NearestBranchReqDto reqDto
 	) {
-		User user = userQueryService.findByEmployeeNumber(employeeNumber);
+		User user = userQueryService.findById(Long.parseLong(userId));
 		Branch currentBranch = user.getBranch();
 
 		CoordinateResultDto coordinate = addressGeocodingClient.getCoordinates(reqDto.address());
