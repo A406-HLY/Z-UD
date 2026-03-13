@@ -1,8 +1,10 @@
 package com.zud.backend.domain.auth.service.facade;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 
 import java.util.concurrent.TimeUnit;
 
@@ -24,7 +26,7 @@ import com.zud.backend.domain.auth.dto.response.LoginSuccessResDto;
 import com.zud.backend.domain.auth.enums.SessionConstants;
 import com.zud.backend.domain.auth.exception.AuthException;
 import com.zud.backend.domain.auth.session.UserSession;
-import com.zud.backend.domain.user.entity.Branch;
+import com.zud.backend.domain.branch.entity.Branch;
 import com.zud.backend.domain.user.entity.User;
 import com.zud.backend.domain.user.service.query.UserQueryService;
 

@@ -9,6 +9,6 @@ import org.springframework.security.core.annotation.CurrentSecurityContext;
 
 @Target({ElementType.PARAMETER, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@CurrentSecurityContext(expression = "authentication")
+@CurrentSecurityContext(expression = "authentication.principal")
 public @interface Authentication {
 }
