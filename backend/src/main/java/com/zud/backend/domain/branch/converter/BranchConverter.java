@@ -9,6 +9,11 @@ import com.zud.backend.domain.branch.repository.NearestBranchProjection;
 @Component
 public class BranchConverter {
 
+	private static final String CURRENT_BRANCH_IS_NEAREST_MESSAGE =
+		"현재 근무 지점이 해당 건물과 가장 가까운 지점입니다.";
+	private static final String CURRENT_BRANCH_IS_NOT_NEAREST_MESSAGE =
+		"현재 근무 지점은 해당 건물과 가장 가까운 지점이 아닙니다.";
+
 	public NearestBranchResDto toNearestBranchResDto(
 		Branch curBranch,
 		double curBranchDistanceMeter,
@@ -17,8 +22,8 @@ public class BranchConverter {
 		boolean curBranchIsNearest = curBranch.getId().equals(nearestBranch.getId());
 
 		String message = curBranchIsNearest
-			? "현재 근무 지점이 해당 건물과 가장 가까운 지점입니다."
-			: "현재 근무 지점은 해당 건물과 가장 가까운 지점이 아닙니다.";
+			? CURRENT_BRANCH_IS_NEAREST_MESSAGE
+			: CURRENT_BRANCH_IS_NOT_NEAREST_MESSAGE;
 
 		return new NearestBranchResDto(
 			curBranchIsNearest,
