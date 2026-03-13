@@ -28,7 +28,11 @@ public class SessionAuthFilter extends OncePerRequestFilter {
 		"/v3/api-docs/**",
 	};
 
-	RedisTemplate<String, UserSession> sessionRedisTemplate;
+	private final RedisTemplate<String, UserSession> sessionRedisTemplate;
+
+	public SessionAuthFilter(final RedisTemplate<String, UserSession> sessionRedisTemplate) {
+		this.sessionRedisTemplate = sessionRedisTemplate;
+	}
 
 	@Override
 	protected void doFilterInternal(
