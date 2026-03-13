@@ -76,7 +76,7 @@ class BranchFacadeServiceImplTest {
 			// given
 			NearestBranchReqDto reqDto = new NearestBranchReqDto(ADDRESS);
 			User user = createDefaultUser();
-			String userId = String.valueOf(user.getId());
+			Long userId = user.getId();
 			CoordinateResultDto coordinate = new CoordinateResultDto(LATITUDE, LONGITUDE);
 			NearestBranchProjection nearestBranch = Mockito.mock(NearestBranchProjection.class);
 			double currentBranchDistanceMeter = 100.0;
@@ -112,7 +112,7 @@ class BranchFacadeServiceImplTest {
 			// given
 			NearestBranchReqDto reqDto = new NearestBranchReqDto(ADDRESS);
 			User user = createDefaultUser();
-			String userId = String.valueOf(user.getId());
+			Long userId = user.getId();
 			CoordinateResultDto coordinate = new CoordinateResultDto(LATITUDE, LONGITUDE);
 			NearestBranchProjection nearestBranch = Mockito.mock(NearestBranchProjection.class);
 			double currentBranchDistanceMeter = 100.0;
