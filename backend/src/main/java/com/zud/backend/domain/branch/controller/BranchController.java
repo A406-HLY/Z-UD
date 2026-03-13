@@ -26,13 +26,14 @@ public class BranchController {
 	private final BranchFacadeServiceImpl branchFacadeServiceImpl;
 
 	@PostMapping("/nearest")
-	public ResponseEntity<BaseResponse<NearestBranchResDto>> nearest(
+	public ResponseEntity<BaseResponse<NearestBranchResDto>> findNearestBranch(
 		@Authentication Long userId,
 		@Valid @RequestBody NearestBranchReqDto reqDto
 	) {
 		NearestBranchResDto response = branchFacadeServiceImpl.findNearestBranch(
 			userId,
-			reqDto);
+			reqDto
+		);
 		return ResponseUtils.ok(response);
 	}
 }

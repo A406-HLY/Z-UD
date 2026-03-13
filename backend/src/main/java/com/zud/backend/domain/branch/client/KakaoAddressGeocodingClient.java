@@ -1,28 +1,25 @@
 package com.zud.backend.domain.branch.client;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 import com.zud.backend.common.error.ErrorCode;
 import com.zud.backend.domain.branch.client.dto.CoordinateResultDto;
 import com.zud.backend.domain.branch.client.dto.KakaoAddressResDto;
+import com.zud.backend.domain.branch.config.KakaoApiProperties;
 import com.zud.backend.domain.branch.exception.BranchException;
 
 @Component
 public class KakaoAddressGeocodingClient implements AddressGeocodingClient {
 
 	private final RestClient restClient;
-	private final String kakaoApiKey;
+	private final KakaoApiProperties kakaoApiProperties;
 
-	public KakaoAddressGeocodingClient(
-		@Value("${kakao.api.key}")
-		String kakaoApiKey
-	) {
+	public KakaoAddressGeocodingClient(final KakaoApiProperties kakaoApiProperties) {
+		this.kakaoApiProperties = kakaoApiProperties;
 		this.restClient = RestClient.builder()
-			.baseUrl("https://dapi.kakao.com")
+			.baseUrl(kakaoApiProperties.baseUrl())
 			.build();
-		this.kakaoApiKey = kakaoApiKey;
 	}
 
 	@Override
@@ -32,7 +29,7 @@ public class KakaoAddressGeocodingClient implements AddressGeocodingClient {
 				.path("/v2/local/search/address.json")
 				.queryParam("query", address)
 				.build())
-			.header("Authorization", "KakaoAK " + kakaoApiKey)
+			.header("Authorization", "KakaoAK " + kakaoApiProperties.key())
 			.retrieve()
 			.body(KakaoAddressResDto.class);
 

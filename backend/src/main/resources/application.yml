@@ -49,6 +49,7 @@ server:
 kakao:
   api:
     key: ${KAKA0_REST_API_KEY}
+    base-url: ${https://dapi.kakao.com}
 
 
 springdoc:

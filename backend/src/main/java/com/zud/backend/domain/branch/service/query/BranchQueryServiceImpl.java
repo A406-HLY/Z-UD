@@ -22,13 +22,34 @@ public class BranchQueryServiceImpl implements BranchQueryService {
 
 	@Override
 	public NearestBranchProjection findNearestBranch(double longitude, double latitude) {
-		return branchRepository.findNearestBranch(longitude, latitude)
+		NearestBranchProjection nearestBranch =  branchRepository.findNearestBranch(longitude, latitude)
 			.orElseThrow(() -> new BranchException(ErrorCode.BRANCH_NOT_FOUND));
+
+		log.info(
+			"[Branch] 가장 가까운 지점 조회 성공 - longitude: {}, latitude: {}, branchId: {}, branchName: {}, distanceMeter: {}",
+			longitude,
+			latitude,
+			nearestBranch.getId(),
+			nearestBranch.getName(),
+			nearestBranch.getDistanceMeter()
+		);
+
+		return nearestBranch;
 	}
 
 	@Override
 	public double calculateDistanceToBranch(Long branchId, double longitude, double latitude) {
-		return branchRepository.calculateDistanceToBranch(branchId, longitude, latitude)
+		double distance = branchRepository.calculateDistanceToBranch(branchId, longitude, latitude)
 			.orElseThrow(() -> new BranchException(ErrorCode.BRANCH_NOT_FOUND));
+
+		log.info(
+			"[Branch] 지점 거리 계산 성공 - branchId: {}, longitude: {}, latitude: {}, distanceMeter: {}",
+			branchId,
+			longitude,
+			latitude,
+			distance
+		);
+
+		return distance;
 	}
 }
