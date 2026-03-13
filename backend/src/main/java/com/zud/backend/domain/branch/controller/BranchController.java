@@ -27,11 +27,11 @@ public class BranchController {
 
 	@PostMapping("/nearest")
 	public ResponseEntity<BaseResponse<NearestBranchResDto>> nearest(
-		@Authentication org.springframework.security.core.Authentication authentication,
+		@Authentication Long userId,
 		@Valid @RequestBody NearestBranchReqDto reqDto
 	) {
 		NearestBranchResDto response = branchFacadeServiceImpl.findNearestBranch(
-			authentication.getName(),
+			userId,
 			reqDto);
 		return ResponseUtils.ok(response);
 	}
