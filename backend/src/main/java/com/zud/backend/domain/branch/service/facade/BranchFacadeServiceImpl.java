@@ -27,9 +27,9 @@ public class BranchFacadeServiceImpl implements BranchFacadeService {
 	private final BranchConverter branchConverter;
 
 	public NearestBranchResDto findNearestBranch(
-		final String userId, final NearestBranchReqDto reqDto
+		final Long userId, final NearestBranchReqDto reqDto
 	) {
-		User user = userQueryService.findById(Long.parseLong(userId));
+		User user = userQueryService.findById(userId);
 		Branch currentBranch = user.getBranch();
 
 		CoordinateResultDto coordinate = addressGeocodingClient.getCoordinates(reqDto.address());

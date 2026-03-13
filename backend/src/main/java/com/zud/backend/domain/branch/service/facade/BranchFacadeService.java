@@ -4,5 +4,5 @@ import com.zud.backend.domain.branch.dto.request.NearestBranchReqDto;
 import com.zud.backend.domain.branch.dto.response.NearestBranchResDto;
 
 public interface BranchFacadeService {
-	NearestBranchResDto findNearestBranch(final String employeeNumber, final NearestBranchReqDto reqDto);
+	NearestBranchResDto findNearestBranch(final Long userId, final NearestBranchReqDto reqDto);
 }
