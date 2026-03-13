@@ -45,7 +45,20 @@ public enum ErrorCode {
 	 * Branch Error (BR-xxx)
 	 */
 	ADDRESS_COORDINATE_NOT_FOUND(HttpStatus.NOT_FOUND, "BR-001", "주소에 대한 좌표를 찾을 수 없습니다."),
-	BRANCH_NOT_FOUND(HttpStatus.NOT_FOUND, "BR-002", "지점을 찾을 수 없습니다.");
+	BRANCH_NOT_FOUND(HttpStatus.NOT_FOUND, "BR-002", "지점을 찾을 수 없습니다."),
+
+	/**
+	 * File Error (F-xxx)
+	 */
+	FILE_EMPTY(HttpStatus.BAD_REQUEST, "F-001", "업로드할 파일이 비어있습니다."),
+	FILE_NAME_INVALID(HttpStatus.BAD_REQUEST, "F-002", "파일명이 유효하지 않습니다."),
+	FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "F-003", "파일 업로드에 실패했습니다."),
+	FILE_TYPE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "F-004", "허용되지 않는 파일 형식입니다."),
+	FILE_EXTENSION_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "F-005", "허용되지 않는 파일 확장자입니다."),
+	FILE_MIME_TYPE_MISMATCH(HttpStatus.BAD_REQUEST, "F-006", "MIME 타입이 파일 확장자와 일치하지 않습니다."),
+	FILE_SIGNATURE_MISMATCH(HttpStatus.BAD_REQUEST, "F-007", "파일 시그니처가 일치하지 않습니다."),
+	FILE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "F-008", "파일 크기가 제한을 초과했습니다."),
+	FILE_NAME_TOO_LONG(HttpStatus.BAD_REQUEST, "F-009", "파일명이 너무 깁니다.");
 
 	private final HttpStatus httpStatus;
 	private final String code;
