@@ -69,4 +69,37 @@ class UserQueryServiceImplTest {
 				.isInstanceOf(UserException.class);
 		}
 	}
+
+	@Nested
+	@DisplayName("findById()")
+	class FindById {
+
+		@Test
+		@DisplayName("ID_존재시_User_반환")
+		void ID_존재시_User_반환() {
+			// given
+			Long userId = 1L;
+			User user = createUser(userId, "EMP001");
+			given(userRepository.findById(userId)).willReturn(Optional.of(user));
+
+			// when
+			User result = userQueryService.findById(userId);
+
+			// then
+			assertThat(result.getId()).isEqualTo(userId);
+			then(userRepository).should().findById(userId);
+		}
+
+		@Test
+		@DisplayName("ID_미존재시_UserException_발생")
+		void ID_미존재시_UserException_발생() {
+			// given
+			Long userId = 999L;
+			given(userRepository.findById(userId)).willReturn(Optional.empty());
+
+			// when & then
+			assertThatThrownBy(() -> userQueryService.findById(userId))
+				.isInstanceOf(UserException.class);
+		}
+	}
 }
