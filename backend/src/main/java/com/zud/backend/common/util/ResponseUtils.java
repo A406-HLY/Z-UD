@@ -23,6 +23,10 @@ public class ResponseUtils {
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(BaseResponse.noContent());
 	}
 
+	public <T> ResponseEntity<BaseResponse<T>> accepted() {
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(BaseResponse.noContent());
+	}
+
 	public <T> ResponseEntity<PageResponse<T>> page(Page<T> page) {
 		return ResponseEntity.ok(PageResponse.of(page));
 	}
