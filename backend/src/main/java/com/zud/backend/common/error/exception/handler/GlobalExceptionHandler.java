@@ -8,6 +8,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -21,6 +22,7 @@ import com.zud.backend.common.error.exception.BusinessException;
 import com.zud.backend.common.response.BaseResponse;
 import com.zud.backend.common.response.ErrorResponse;
 import com.zud.backend.common.util.LoggingUtils;
+import com.zud.backend.domain.document.exception.DocumentException;
 import com.zud.backend.domain.user.exception.UserException;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -158,12 +160,32 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BaseResponse.fail(response));
 	}
 
+	@ExceptionHandler(AuthorizationDeniedException.class)
+	public ResponseEntity<BaseResponse<ErrorResponse>> handleAuthorizationDeniedException(
+		AuthorizationDeniedException ex,
+		HttpServletRequest request
+	) {
+		LoggingUtils.logException("AuthorizationDeniedException 발생", ex, request);
+		ErrorResponse response = ErrorResponse.of(ErrorCode.ACCESS_DENIED, request);
+		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(BaseResponse.fail(response));
+	}
+
 	@ExceptionHandler(UserException.class)
-	public ResponseEntity<BaseResponse<ErrorResponse>> handleNoUserException(
+	public ResponseEntity<BaseResponse<ErrorResponse>> handleUserException(
 		UserException ex,
 		HttpServletRequest request
 	) {
 		LoggingUtils.logException("UserException 발생", ex, request);
+		ErrorResponse response = ErrorResponse.of(ex.getErrorCode(), request);
+		return ResponseEntity.status(ex.getErrorCode().getHttpStatus()).body(BaseResponse.fail(response));
+	}
+
+	@ExceptionHandler(DocumentException.class)
+	public ResponseEntity<BaseResponse<ErrorResponse>> handleFileStorageException(
+		DocumentException ex,
+		HttpServletRequest request
+	) {
+		LoggingUtils.logException("DocumentException 발생", ex, request);
 		ErrorResponse response = ErrorResponse.of(ex.getErrorCode(), request);
 		return ResponseEntity.status(ex.getErrorCode().getHttpStatus()).body(BaseResponse.fail(response));
 	}

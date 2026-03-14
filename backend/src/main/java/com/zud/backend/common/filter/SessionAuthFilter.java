@@ -18,8 +18,11 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 
 @Component
+@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class SessionAuthFilter extends OncePerRequestFilter {
 
 	private static final String[] EXCLUDE_PATHS = {
@@ -29,10 +32,6 @@ public class SessionAuthFilter extends OncePerRequestFilter {
 	};
 
 	private final RedisTemplate<String, UserSession> sessionRedisTemplate;
-
-	public SessionAuthFilter(final RedisTemplate<String, UserSession> sessionRedisTemplate) {
-		this.sessionRedisTemplate = sessionRedisTemplate;
-	}
 
 	@Override
 	protected void doFilterInternal(

@@ -1,5 +1,6 @@
 package com.zud.backend.domain.branch.client;
 
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -10,6 +11,7 @@ import com.zud.backend.domain.branch.config.KakaoApiProperties;
 import com.zud.backend.domain.branch.exception.BranchException;
 
 @Component
+@EnableConfigurationProperties(KakaoApiProperties.class)
 public class KakaoAddressGeocodingClient implements AddressGeocodingClient {
 
 	private final RestClient restClient;
@@ -33,7 +35,7 @@ public class KakaoAddressGeocodingClient implements AddressGeocodingClient {
 			.retrieve()
 			.body(KakaoAddressResDto.class);
 
-		if(res == null || res.documents() == null || res.documents().isEmpty()) {
+		if (res == null || res.documents() == null || res.documents().isEmpty()) {
 			throw new BranchException(ErrorCode.ADDRESS_COORDINATE_NOT_FOUND);
 		}
 

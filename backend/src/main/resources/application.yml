@@ -49,7 +49,7 @@ server:
 kakao:
   api:
     key: ${KAKA0_REST_API_KEY}
-    base-url: ${https://dapi.kakao.com}
+    base-url: https://dapi.kakao.com
 
 
 springdoc:
@@ -64,3 +64,11 @@ springdoc:
 logging:
   level:
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: ERROR
+
+
+cloudflare:
+  r2:
+    endpoint: ${CLOUDFLARE_ENDPOINT}
+    bucket: ${CLOUDFLARE_BUCKET}
+    access-key: ${CLOUDFLARE_ACCESS_KEY}
+    secret-key: ${CLOUDFLARE_SECRET_KEY}
