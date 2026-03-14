@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AsyncConfig implements AsyncConfigurer {
 
 	@Bean(TaskExecutionAutoConfiguration.APPLICATION_TASK_EXECUTOR_BEAN_NAME)
-	public Executor asyncTaskExecutor() {
+	public Executor defaultAsyncTaskExecutor() {
 		TaskExecutorAdapter executor = new TaskExecutorAdapter(Executors.newVirtualThreadPerTaskExecutor());
 		executor.setTaskDecorator(new MdcPropagatingTaskDecorator());
 		return executor;
