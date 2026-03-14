@@ -10,7 +10,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.zud.backend.common.annotation.Authentication;
 import com.zud.backend.common.response.BaseResponse;
-import com.zud.backend.domain.counsel.service.CounselStatusService;
 import com.zud.backend.domain.notification.service.NotificationFacadeService;
 
 import lombok.RequiredArgsConstructor;
@@ -21,9 +20,8 @@ import lombok.RequiredArgsConstructor;
 public class NotificationController {
 
 	private final NotificationFacadeService notificationFacadeService;
-	private final CounselStatusService counselStatusService;
 
-	@GetMapping(value = "/subscribe}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+	@GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public SseEmitter subscribe(@Authentication Long userId) {
 		return notificationFacadeService.subscribe(userId);
 	}
@@ -34,9 +32,5 @@ public class NotificationController {
 		return ResponseEntity.ok(BaseResponse.noContent());
 	}
 
-	@GetMapping("/status")
-	public ResponseEntity<BaseResponse<CounselStatusResDto>> getStatus(@Authentication Long userId) {
-		CounselStatusResDto status = counselStatusService.getStatus(userId);
-		return ResponseEntity.ok(BaseResponse.ok(status));
-	}
+	// TODO: getStatus 메서드는 CounselStatusResDto 및 dirName 기반으로 재설계 필요
 }
