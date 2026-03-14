@@ -1,5 +1,7 @@
 package com.zud.backend.common.config;
 
+import java.util.List;
+
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,6 +42,12 @@ public class RedisConfig {
 
 	@Bean
 	public RedisTemplate<String, UserSession> sessionRedisTemplate() {
+		return createGzipJsonRedisTemplate(objectMapper, new TypeReference<>() {
+		});
+	}
+
+	@Bean
+	public RedisTemplate<String, List<String>> documentVerificationRedisTemplate() {
 		return createGzipJsonRedisTemplate(objectMapper, new TypeReference<>() {
 		});
 	}
