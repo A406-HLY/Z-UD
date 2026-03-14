@@ -14,6 +14,7 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 @Configuration
 @EnableConfigurationProperties(CloudflareProperties.class)
@@ -24,18 +25,33 @@ public class CloudflareConfig {
 
 	@Bean
 	public S3Client s3Client() {
-		final AwsBasicCredentials credentials = AwsBasicCredentials.create(
-			cloudflareProperties.accessKey(),
-			cloudflareProperties.secretKey()
-		);
-
 		return S3Client.builder()
 			.endpointOverride(URI.create(cloudflareProperties.endpoint()))
-			.credentialsProvider(StaticCredentialsProvider.create(credentials))
+			.credentialsProvider(credentialsProvider())
 			.region(Region.of("auto"))
 			.serviceConfiguration(S3Configuration.builder()
 				.chunkedEncodingEnabled(false)
 				.build())
 			.build();
+	}
+
+	@Bean
+	public S3Presigner s3Presigner() {
+		return S3Presigner.builder()
+			.endpointOverride(URI.create(cloudflareProperties.endpoint()))
+			.credentialsProvider(credentialsProvider())
+			.region(Region.of("auto"))
+			.serviceConfiguration(S3Configuration.builder()
+				.chunkedEncodingEnabled(false)
+				.build())
+			.build();
+	}
+
+	private StaticCredentialsProvider credentialsProvider() {
+		final AwsBasicCredentials credentials = AwsBasicCredentials.create(
+			cloudflareProperties.accessKey(),
+			cloudflareProperties.secretKey()
+		);
+		return StaticCredentialsProvider.create(credentials);
 	}
 }
