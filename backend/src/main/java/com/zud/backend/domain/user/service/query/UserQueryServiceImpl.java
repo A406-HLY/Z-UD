@@ -1,6 +1,7 @@
 package com.zud.backend.domain.user.service.query;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.zud.backend.common.error.ErrorCode;
 import com.zud.backend.domain.user.entity.User;
@@ -13,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserQueryServiceImpl implements UserQueryService {
 
