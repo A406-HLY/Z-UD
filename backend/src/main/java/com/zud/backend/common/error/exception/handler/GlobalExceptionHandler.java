@@ -8,6 +8,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -157,6 +158,16 @@ public class GlobalExceptionHandler {
 		LoggingUtils.logException("SQLException 발생", ex, request);
 		ErrorResponse response = ErrorResponse.of(ErrorCode.INTERNAL_SERVER_ERROR, request);
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BaseResponse.fail(response));
+	}
+
+	@ExceptionHandler(AuthorizationDeniedException.class)
+	public ResponseEntity<BaseResponse<ErrorResponse>> handleAuthorizationDeniedException(
+		AuthorizationDeniedException ex,
+		HttpServletRequest request
+	) {
+		LoggingUtils.logException("AuthorizationDeniedException 발생", ex, request);
+		ErrorResponse response = ErrorResponse.of(ErrorCode.ACCESS_DENIED, request);
+		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(BaseResponse.fail(response));
 	}
 
 	@ExceptionHandler(UserException.class)
