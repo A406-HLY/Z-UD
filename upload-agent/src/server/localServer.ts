@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import cors from 'cors';
 import { logger } from '../utils/logger';
 import { FileQueueStore } from '../state/fileQueueStore';
 import { UploadManager } from '../uploader/uploadManager';
@@ -8,6 +9,7 @@ export class LocalServer {
   private port = 4000; // default local port
 
   constructor() {
+    this.app.use(cors()); // Enable CORS for all routes
     this.app.use(express.json());
     this.setupRoutes();
   }
@@ -24,7 +26,7 @@ export class LocalServer {
       
       // Start upload process asynchronously
       UploadManager.startUploading()
-        .catch(err => logger.error('Upload process failed:', err));
+        .catch((err: Error) => logger.error('Upload process failed:', err.message));
 
       res.json({ message: 'Upload process started' });
     });
