@@ -34,7 +34,7 @@ export class UploadManager {
       try {
         FileQueueStore.updateFileStatus(file.sequenceId, 'UPLOADING');
         
-        await BackendApiClient.uploadFile(file.filePath, file.sequenceId);
+        await BackendApiClient.uploadFile(file.storedPath, file.sequenceId);
         
         FileQueueStore.updateFileStatus(file.sequenceId, 'COMPLETED');
       } catch (error: any) {

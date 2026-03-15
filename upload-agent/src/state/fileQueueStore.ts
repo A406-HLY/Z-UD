@@ -4,7 +4,8 @@ export type FileStatus = 'PENDING' | 'UPLOADING' | 'COMPLETED' | 'FAILED';
 
 export interface QueuedFile {
   sequenceId: number;
-  filePath: string;
+  originalPath: string;
+  storedPath: string;
   fileName: string;
   status: FileStatus;
   detectedAt: Date;
@@ -16,10 +17,11 @@ export class FileQueueStore {
   private static files: QueuedFile[] = [];
   private static currentSequence = 1;
 
-  public static addFile(filePath: string, fileName: string): QueuedFile {
+  public static addFile(originalPath: string, storedPath: string, fileName: string): QueuedFile {
     const newFile: QueuedFile = {
       sequenceId: this.currentSequence++,
-      filePath,
+      originalPath,
+      storedPath,
       fileName,
       status: 'PENDING',
       detectedAt: new Date(),

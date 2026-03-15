@@ -3,6 +3,7 @@ import path from 'path';
 import { logger } from '../utils/logger';
 import { SettingsStore } from '../store/settingsStore';
 import { FileQueueStore } from '../state/fileQueueStore';
+import { FileStager } from '../utils/fileStager';
 
 export class FolderWatcher {
   private watcher?: any; // avoid chokidar type resolution issues
@@ -38,7 +39,16 @@ export class FolderWatcher {
         // Make sure it's valid
         if (ext) {
            const fileName = path.basename(filePath);
-           FileQueueStore.addFile(filePath, fileName);
+           
+           try {
+             // 1. Move file to staging directory
+             const storedPath = await FileStager.stageFile(filePath, fileName);
+             
+             // 2. Add to Queue using the stored path
+             FileQueueStore.addFile(filePath, storedPath, fileName);
+           } catch (stagingError) {
+             logger.error(`Error during file staging/queuing for ${fileName}`, stagingError);
+           }
         }
       })
       .on('error', (error: Error) => logger.error(`Watcher error: ${error}`));

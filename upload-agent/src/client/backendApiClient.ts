@@ -9,8 +9,8 @@ const apiClient = axios.create({
 });
 
 export class BackendApiClient {
-  public static async uploadFile(filePath: string, sequenceId: number): Promise<void> {
-    logger.info(`Sending file to backend: [Seq: ${sequenceId}] ${filePath}`);
+  public static async uploadFile(storedPath: string, sequenceId: number): Promise<void> {
+    logger.info(`Sending STAGED file to backend: [Seq: ${sequenceId}] ${storedPath}`);
     
     // TODO: Implement actual multipart/form-data upload when backend API is ready
     // const formData = new FormData();
