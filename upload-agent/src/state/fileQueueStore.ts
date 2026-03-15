@@ -13,6 +13,15 @@ export interface QueuedFile {
   error?: string;
 }
 
+export interface FileResponseDto {
+  sequenceId: number;
+  fileName: string;
+  status: FileStatus;
+  detectedAt: Date;
+  uploadedAt?: Date | undefined;
+  error?: string | undefined;
+}
+
 export class FileQueueStore {
   private static files: QueuedFile[] = [];
   private static currentSequence = 1;
@@ -32,8 +41,17 @@ export class FileQueueStore {
     return newFile;
   }
 
-  public static getFiles(): QueuedFile[] {
-    return [...this.files];
+  public static getFiles(): FileResponseDto[] {
+    return this.files
+      .map(f => ({
+        sequenceId: f.sequenceId,
+        fileName: f.fileName,
+        status: f.status,
+        detectedAt: f.detectedAt,
+        uploadedAt: f.uploadedAt,
+        error: f.error,
+      }))
+      .sort((a, b) => a.sequenceId - b.sequenceId);
   }
 
   public static getPendingFiles(): QueuedFile[] {
