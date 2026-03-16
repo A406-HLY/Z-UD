@@ -63,13 +63,35 @@ public interface HouseTradePriceRepository extends JpaRepository<HouseTradePrice
 		SELECT h FROM HouseTradePrice h
 		WHERE h.houseType = :houseType
 		AND h.sigungu = :sigungu
-		AND (:roadName IS NULL OR h.roadName = :roadName)
+		AND h.roadName = :roadName
+		AND h.buildingName = :buildingName
+		AND (:buildingDong IS NULL OR h.buildingDong = :buildingDong)
+		AND (:floor IS NULL OR h.floor = :floor)
 		ORDER BY h.dealAmountManwon ASC
 		LIMIT 5
 		""")
-	List<HouseTradePrice> findLowestPricesInDong(
+	List<HouseTradePrice> findLowestPricesByBuildingDetail(
 		@Param("houseType") String houseType,
 		@Param("sigungu") String sigungu,
-		@Param("roadName") String roadName
+		@Param("roadName") String roadName,
+		@Param("buildingName") String buildingName,
+		@Param("buildingDong") String buildingDong,
+		@Param("floor") Integer floor
+	);
+
+	@Query("""
+		SELECT h FROM HouseTradePrice h
+		WHERE h.houseType = :houseType
+		AND h.sigungu = :sigungu
+		AND h.roadName = :roadName
+		AND h.buildingName = :buildingName
+		ORDER BY h.dealAmountManwon ASC
+		LIMIT 5
+		""")
+	List<HouseTradePrice> findLowestPricesByBuilding(
+		@Param("houseType") String houseType,
+		@Param("sigungu") String sigungu,
+		@Param("roadName") String roadName,
+		@Param("buildingName") String buildingName
 	);
 }

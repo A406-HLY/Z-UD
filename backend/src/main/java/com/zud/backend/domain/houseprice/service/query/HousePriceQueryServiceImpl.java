@@ -181,36 +181,67 @@ public class HousePriceQueryServiceImpl implements HousePriceQueryService {
 	private Optional<Long> findEstimatedPriceValue(String dbHouseType, ParsedAddress parsedAddress) {
 		String fullSigungu = buildFullSigungu(parsedAddress);
 
-		List<HouseTradePrice> tradePrices = houseTradePriceRepository.findLowestPricesInDong(
+		// 1단계: 실거래 - 건물명 + 동 + 층 우선
+		List<HouseTradePrice> tradeByDetail = houseTradePriceRepository.findLowestPricesByBuildingDetail(
 			dbHouseType,
 			fullSigungu,
-			parsedAddress.getRoadName()
+			parsedAddress.getRoadName(),
+			parsedAddress.getBuildingName(),
+			parsedAddress.getBuildingDong(),
+			parsedAddress.getFloor()
 		);
-
-		if (!tradePrices.isEmpty()) {
-			double average = tradePrices.stream()
-				.mapToLong(HouseTradePrice::getDealAmountManwon)
-				.average()
-				.orElse(0.0);
-			return Optional.of((long)Math.round(average));
+		if (!tradeByDetail.isEmpty()) {
+			return Optional.of(avgManwon(tradeByDetail));
 		}
 
-		// 공시가에서 근삿값 찾기
-		List<HouseOfficialPrice> officialPrices = houseOfficialPriceRepository.findLowestPricesInDong(
-			parsedAddress.getSido(),
-			parsedAddress.getSigungu(),
-			parsedAddress.getDongRi()
+		// 2단계: 실거래 - 건물명까지만
+		List<HouseTradePrice> tradeByBuilding = houseTradePriceRepository.findLowestPricesByBuilding(
+			dbHouseType,
+			fullSigungu,
+			parsedAddress.getRoadName(),
+			parsedAddress.getBuildingName()
 		);
+		if (!tradeByBuilding.isEmpty()) {
+			return Optional.of(avgManwon(tradeByBuilding));
+		}
 
-		if (!officialPrices.isEmpty()) {
-			double average = officialPrices.stream()
-				.mapToLong(price -> price.getOfficialPrice() / 10000) // 원 단위를 만원 단위로 변환
-				.average()
-				.orElse(0.0);
-			return Optional.of((long)Math.round(average));
+		// 3단계: 공시가 - 단지명 + 동 + 호 우선
+		List<HouseOfficialPrice> officialByDetail = houseOfficialPriceRepository.findLowestPricesByBuildingDetail(
+			parsedAddress.getRoadAddress(),
+			parsedAddress.getBuildingName(),
+			parsedAddress.getBuildingDong(),
+			parsedAddress.getHo()
+		);
+		if (!officialByDetail.isEmpty()) {
+			return Optional.of(avgOfficial(officialByDetail));
+		}
+
+		// 4단계: 공시가 - 단지명까지만
+		List<HouseOfficialPrice> officialByBuilding = houseOfficialPriceRepository.findLowestPricesByBuilding(
+			parsedAddress.getRoadAddress(),
+			parsedAddress.getBuildingName()
+		);
+		if (!officialByBuilding.isEmpty()) {
+			return Optional.of(avgOfficial(officialByBuilding));
 		}
 
 		return Optional.empty();
+	}
+
+	private long avgManwon(List<HouseTradePrice> tradePrices) {
+		double average = tradePrices.stream()
+			.mapToLong(HouseTradePrice::getDealAmountManwon)
+			.average()
+			.orElse(0.0);
+		return Math.round(average);
+	}
+
+	private long avgOfficial(List<HouseOfficialPrice> officialPrices) {
+		double average = officialPrices.stream()
+			.mapToLong(p -> p.getOfficialPrice() / 10000)
+			.average()
+			.orElse(0.0);
+		return Math.round(average);
 	}
 
 	private Optional<HousePriceResDto> findEstimatedPriceResult(
