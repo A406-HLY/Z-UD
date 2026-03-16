@@ -26,7 +26,6 @@ spring:
       ddl-auto: validate
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         show_sql: false
         format_sql: false
         use_sql_comments: false
@@ -42,12 +41,34 @@ spring:
   jmx:
     enabled: true
 
+server:
+  servlet:
+    session:
+      timeout: 9h
+
+kakao:
+  api:
+    key: ${KAKA0_REST_API_KEY}
+    base-url: https://dapi.kakao.com
+
 
 springdoc:
   swagger-ui:
     display-request-duration: true
     operations-sorter: alpha
+    try-it-out-enabled: true
+    tags-sorter: alpha
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
 
 logging:
   level:
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: ERROR
+
+
+cloudflare:
+  r2:
+    endpoint: ${CLOUDFLARE_ENDPOINT}
+    bucket: ${CLOUDFLARE_BUCKET}
+    access-key: ${CLOUDFLARE_ACCESS_KEY}
+    secret-key: ${CLOUDFLARE_SECRET_KEY}

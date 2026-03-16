@@ -8,7 +8,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.zud.backend.common.filter.SessionAuthFilter;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -21,12 +26,19 @@ public class SecurityConfig {
 	private static final String[] WHITELIST = {
 		"/swagger-ui/**",
 		"/v3/api-docs/**",
-		"/error",
-		"/"
+		"/api/v1/auth/login",
+		"/error"
 	};
+
+	private final SessionAuthFilter sessionAuthFilter;
 
 	private static void createSessionPolicy(SessionManagementConfigurer<HttpSecurity> session) {
 		session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+	}
+
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
 	}
 
 	@Bean
@@ -41,7 +53,8 @@ public class SecurityConfig {
 			.authorizeHttpRequests(authorize -> authorize
 				.requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll()
 				.requestMatchers(WHITELIST).permitAll()
-				.anyRequest().permitAll());
+				.anyRequest().authenticated())
+			.addFilterBefore(sessionAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
 	}

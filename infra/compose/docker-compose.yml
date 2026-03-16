@@ -104,7 +104,7 @@ services:
 
   postgres:
     container_name: postgres_backend
-    image: postgres:16-alpine
+    image: postgis/postgis:16-3.4-alpine
     environment:
       - POSTGRES_USER=${DB_USERNAME}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
