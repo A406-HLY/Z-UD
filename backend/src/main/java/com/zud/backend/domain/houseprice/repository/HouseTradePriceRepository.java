@@ -22,11 +22,11 @@ public interface HouseTradePriceRepository extends JpaRepository<HouseTradePrice
 		LIMIT 1
 		""")
 	HouseTradePrice findApartmentExactMatch(
-		@Param("sigungu") String sigungu,
-		@Param("roadName") String roadName,
-		@Param("buildingName") String buildingName,
-		@Param("buildingDong") String buildingDong,
-		@Param("floor") Integer floor
+		@Param("sigungu") final String sigungu,
+		@Param("roadName") final String roadName,
+		@Param("buildingName") final String buildingName,
+		@Param("buildingDong") final String buildingDong,
+		@Param("floor") final Integer floor
 	);
 
 	@Query("""
@@ -38,8 +38,8 @@ public interface HouseTradePriceRepository extends JpaRepository<HouseTradePrice
 		LIMIT 1
 		""")
 	HouseTradePrice findSingleHouseExactMatch(
-		@Param("sigungu") String sigungu,
-		@Param("buildingName") String buildingName
+		@Param("sigungu") final String sigungu,
+		@Param("buildingName") final String buildingName
 	);
 
 	@Query("""
@@ -71,12 +71,12 @@ public interface HouseTradePriceRepository extends JpaRepository<HouseTradePrice
 		LIMIT 5
 		""")
 	List<HouseTradePrice> findLowestPricesByBuildingDetail(
-		@Param("houseType") String houseType,
-		@Param("sigungu") String sigungu,
-		@Param("roadName") String roadName,
-		@Param("buildingName") String buildingName,
-		@Param("buildingDong") String buildingDong,
-		@Param("floor") Integer floor
+		@Param("houseType") final String houseType,
+		@Param("sigungu") final String sigungu,
+		@Param("roadName") final String roadName,
+		@Param("buildingName") final String buildingName,
+		@Param("buildingDong") final String buildingDong,
+		@Param("floor") final Integer floor
 	);
 
 	@Query("""
@@ -89,9 +89,9 @@ public interface HouseTradePriceRepository extends JpaRepository<HouseTradePrice
 		LIMIT 5
 		""")
 	List<HouseTradePrice> findLowestPricesByBuilding(
-		@Param("houseType") String houseType,
-		@Param("sigungu") String sigungu,
-		@Param("roadName") String roadName,
-		@Param("buildingName") String buildingName
+		@Param("houseType") final String houseType,
+		@Param("sigungu") final String sigungu,
+		@Param("roadName") final String roadName,
+		@Param("buildingName") final String buildingName
 	);
 }
