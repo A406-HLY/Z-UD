@@ -58,7 +58,14 @@ public enum ErrorCode {
 	FILE_MIME_TYPE_MISMATCH(HttpStatus.BAD_REQUEST, "F-006", "MIME 타입이 파일 확장자와 일치하지 않습니다."),
 	FILE_SIGNATURE_MISMATCH(HttpStatus.BAD_REQUEST, "F-007", "파일 시그니처가 일치하지 않습니다."),
 	FILE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "F-008", "파일 크기가 제한을 초과했습니다."),
-	FILE_NAME_TOO_LONG(HttpStatus.BAD_REQUEST, "F-009", "파일명이 너무 깁니다.");
+	FILE_NAME_TOO_LONG(HttpStatus.BAD_REQUEST, "F-009", "파일명이 너무 깁니다."),
+
+	/**
+	 * House Price Error (HP-xxx)
+	 */
+	INVALID_HOUSE_TYPE(HttpStatus.BAD_REQUEST, "HP-001", "주택담보대출이 불가능한 주택 유형입니다."),
+	HOUSE_PRICE_NOT_FOUND(HttpStatus.NOT_FOUND, "HP-002", "주택 시세 조회가 불가합니다. 수기로 입력해주세요."),
+	INVALID_ADDRESS_FORMAT(HttpStatus.BAD_REQUEST, "HP-003", "주소 형식이 올바르지 않습니다.");
 
 	private final HttpStatus httpStatus;
 	private final String code;
