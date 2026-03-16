@@ -7,8 +7,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import com.zud.backend.domain.houseprice.util.ParsedAddress;
-
 @DisplayName("AddressParser 단위 테스트")
 class AddressParserTest {
 
@@ -20,7 +18,7 @@ class AddressParserTest {
 		@DisplayName("정상적인_주소_파싱_성공")
 		void 정상적인_주소_파싱_성공() {
 			// given
-			String address = "서울특별시 서초구 반포동 1-1 반포아파트 101동 101호";
+			String address = "서울특별시 서초구 반포동 자하문로36길 16-14 반포아파트 101동 101호";
 
 			// when
 			ParsedAddress result = AddressParser.parse(address);
@@ -29,8 +27,8 @@ class AddressParserTest {
 			assertThat(result.getSido()).isEqualTo("서울특별시");
 			assertThat(result.getSigungu()).isEqualTo("서초구");
 			assertThat(result.getDongRi()).isEqualTo("반포동");
-			assertThat(result.getRoadAddress()).isEqualTo("서울특별시 서초구 반포동 1-1");
-			assertThat(result.getRoadName()).isEqualTo("1-1");
+			assertThat(result.getRoadAddress()).isEqualTo("서울특별시 서초구 반포동 자하문로36길 16-14");
+			assertThat(result.getRoadName()).isEqualTo("자하문로36길 16-14");
 			assertThat(result.getBuildingName()).isEqualTo("반포아파트");
 			assertThat(result.getBuildingDong()).isEqualTo("101");
 			assertThat(result.getHo()).isEqualTo("101");
@@ -40,7 +38,7 @@ class AddressParserTest {
 		@DisplayName("동_없는_주소_파싱_성공")
 		void 동_없는_주소_파싱_성공() {
 			// given
-			String address = "서울특별시 강남구 역삼동 123-45 테헤란아파트 301호";
+			String address = "서울특별시 강남구 역삼동 테헤란로 212 테헤란아파트 301호";
 
 			// when
 			ParsedAddress result = AddressParser.parse(address);
@@ -49,8 +47,8 @@ class AddressParserTest {
 			assertThat(result.getSido()).isEqualTo("서울특별시");
 			assertThat(result.getSigungu()).isEqualTo("강남구");
 			assertThat(result.getDongRi()).isEqualTo("역삼동");
-			assertThat(result.getRoadAddress()).isEqualTo("서울특별시 강남구 역삼동 123-45");
-			assertThat(result.getRoadName()).isEqualTo("123-45");
+			assertThat(result.getRoadAddress()).isEqualTo("서울특별시 강남구 역삼동 테헤란로 212");
+			assertThat(result.getRoadName()).isEqualTo("테헤란로 212");
 			assertThat(result.getBuildingName()).isEqualTo("테헤란아파트");
 			assertThat(result.getBuildingDong()).isNull();
 			assertThat(result.getHo()).isEqualTo("301");
@@ -60,7 +58,7 @@ class AddressParserTest {
 		@DisplayName("호_없는_주소_파싱_성공")
 		void 호_없는_주소_파싱_성공() {
 			// given
-			String address = "서울특별시 서초구 반포동 1-1 반포아파트 101동";
+			String address = "서울특별시 서초구 반포동 자하문로36길 16-14 반포아파트 101동";
 
 			// when
 			ParsedAddress result = AddressParser.parse(address);
@@ -69,8 +67,8 @@ class AddressParserTest {
 			assertThat(result.getSido()).isEqualTo("서울특별시");
 			assertThat(result.getSigungu()).isEqualTo("서초구");
 			assertThat(result.getDongRi()).isEqualTo("반포동");
-			assertThat(result.getRoadAddress()).isEqualTo("서울특별시 서초구 반포동 1-1");
-			assertThat(result.getRoadName()).isEqualTo("1-1");
+			assertThat(result.getRoadAddress()).isEqualTo("서울특별시 서초구 반포동 자하문로36길 16-14");
+			assertThat(result.getRoadName()).isEqualTo("자하문로36길 16-14");
 			assertThat(result.getBuildingName()).isEqualTo("반포아파트");
 			assertThat(result.getBuildingDong()).isEqualTo("101");
 			assertThat(result.getHo()).isNull();
@@ -80,7 +78,7 @@ class AddressParserTest {
 		@DisplayName("동리_없는_주소_파싱_성공")
 		void 동리_없는_주소_파싱_성공() {
 			// given
-			String address = "서울특별시 서초구 1-1 반포아파트 101동 101호";
+			String address = "서울특별시 서초구 자하문로36길 16-14 반포아파트 101동 101호";
 
 			// when
 			ParsedAddress result = AddressParser.parse(address);
@@ -89,8 +87,8 @@ class AddressParserTest {
 			assertThat(result.getSido()).isEqualTo("서울특별시");
 			assertThat(result.getSigungu()).isEqualTo("서초구");
 			assertThat(result.getDongRi()).isNull();
-			assertThat(result.getRoadAddress()).isEqualTo("서울특별시 서초구 1-1");
-			assertThat(result.getRoadName()).isEqualTo("1-1");
+			assertThat(result.getRoadAddress()).isEqualTo("서울특별시 서초구 자하문로36길 16-14");
+			assertThat(result.getRoadName()).isEqualTo("자하문로36길 16-14");
 			assertThat(result.getBuildingName()).isEqualTo("반포아파트");
 			assertThat(result.getBuildingDong()).isEqualTo("101");
 			assertThat(result.getHo()).isEqualTo("101");
@@ -127,7 +125,7 @@ class AddressParserTest {
 		@DisplayName("buildingDong에서_동_제거_확인")
 		void buildingDong에서_동_제거_확인() {
 			// given
-			String address = "서울특별시 서초구 반포동 1-1 반포아파트 101동 101호";
+			String address = "서울특별시 서초구 반포동 자하문로36길 16-14 반포아파트 101동 101호";
 
 			// when
 			ParsedAddress result = AddressParser.parse(address);
@@ -140,7 +138,7 @@ class AddressParserTest {
 		@DisplayName("ho에서_호_제거_확인")
 		void ho에서_호_제거_확인() {
 			// given
-			String address = "서울특별시 서초구 반포동 1-1 반포아파트 101동 101호";
+			String address = "서울특별시 서초구 반포동 자하문로36길 16-14 반포아파트 101동 101호";
 
 			// when
 			ParsedAddress result = AddressParser.parse(address);

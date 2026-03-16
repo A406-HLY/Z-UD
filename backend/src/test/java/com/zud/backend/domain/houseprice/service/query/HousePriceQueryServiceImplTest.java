@@ -37,7 +37,7 @@ class HousePriceQueryServiceImplTest {
 	@InjectMocks
 	private HousePriceQueryServiceImpl housePriceQueryService;
 
-	private static final String VALID_ADDRESS = "서울특별시 서초구 반포동 1-1 반포아파트 101동 101호";
+	private static final String VALID_ADDRESS = "서울특별시 서초구 반포동 자하문로36길 16-14 반포아파트 101동 101호";
 	private static final String VALID_HOUSE_TYPE = "아파트";
 
 	@Nested
@@ -78,7 +78,7 @@ class HousePriceQueryServiceImplTest {
 				// given
 				HouseTradePrice tradePrice = createTradePrice(50000L);
 				given(houseTradePriceRepository.findApartmentExactMatch(
-					"서초구", "1-1", "반포아파트", "101", null
+					"서울특별시 서초구 반포동", "자하문로36길 16-14", "반포아파트", "101", null
 				)).willReturn(tradePrice);
 
 				// when
@@ -93,10 +93,10 @@ class HousePriceQueryServiceImplTest {
 			@DisplayName("주택_유형이_다세대연립이면_성공")
 			void 주택_유형이_다세대연립이면_성공() {
 				// given
-				String address = "서울특별시 강남구 역삼동 123-45 다세대연립 201호";
+				String address = "서울특별시 강남구 역삼동 테헤란로 212 다세대연립 201호";
 				HouseTradePrice tradePrice = createTradePrice(30000L);
 				given(houseTradePriceRepository.findMultiHouseholdExactMatch(
-					"강남구", "123-45", "다세대연립", null
+					"서울특별시 강남구 역삼동", "테헤란로 212", "다세대연립", null
 				)).willReturn(tradePrice);
 
 				// when
@@ -111,10 +111,10 @@ class HousePriceQueryServiceImplTest {
 			@DisplayName("주택_유형이_단독이면_성공")
 			void 주택_유형이_단독이면_성공() {
 				// given
-				String address = "서울특별시 강남구 역삼동 123-45 단독주택";
+				String address = "서울특별시 강남구 역삼동 테헤란로 212 단독주택";
 				HouseTradePrice tradePrice = createTradePrice(80000L);
 				given(houseTradePriceRepository.findSingleHouseExactMatch(
-					"강남구", "단독주택"
+					"서울특별시 강남구 역삼동", "단독주택"
 				)).willReturn(tradePrice);
 
 				// when
@@ -153,7 +153,7 @@ class HousePriceQueryServiceImplTest {
 				// given
 				HouseTradePrice tradePrice = createTradePrice(50000L);
 				given(houseTradePriceRepository.findApartmentExactMatch(
-					"서초구", "1-1", "반포아파트", "101", null
+					"서울특별시 서초구 반포동", "자하문로36길 16-14", "반포아파트", "101", null
 				)).willReturn(tradePrice);
 
 				// when
@@ -164,7 +164,7 @@ class HousePriceQueryServiceImplTest {
 				assertThat(result.priceType()).isEqualTo("실거래가");
 				assertThat(result.message()).isEqualTo("실거래가 기준으로 조회되었습니다.");
 				then(houseTradePriceRepository).should().findApartmentExactMatch(
-					"서초구", "1-1", "반포아파트", "101", null
+					"서울특별시 서초구 반포동", "자하문로36길 16-14", "반포아파트", "101", null
 				);
 				then(houseOfficialPriceRepository).shouldHaveNoInteractions();
 			}
@@ -174,12 +174,12 @@ class HousePriceQueryServiceImplTest {
 			void 공시가_조회_성공_실거래가_없을_때() {
 				// given
 				given(houseTradePriceRepository.findApartmentExactMatch(
-					"서초구", "1-1", "반포아파트", "101", null
+					"서울특별시 서초구 반포동", "자하문로36길 16-14", "반포아파트", "101", null
 				)).willReturn(null);
 
 				HouseOfficialPrice officialPrice = createOfficialPrice(600000000L); // 6억원 = 60000만원
 				given(houseOfficialPriceRepository.findExactMatch(
-					"서울특별시 서초구 반포동 1-1", "반포아파트", "101", "101"
+					"서울특별시 서초구 반포동 자하문로36길 16-14", "반포아파트", "101", "101"
 				)).willReturn(officialPrice);
 
 				// when
@@ -190,10 +190,10 @@ class HousePriceQueryServiceImplTest {
 				assertThat(result.priceType()).isEqualTo("공시가");
 				assertThat(result.message()).isEqualTo("공시가 기준으로 조회되었습니다.");
 				then(houseTradePriceRepository).should().findApartmentExactMatch(
-					"서초구", "1-1", "반포아파트", "101", null
+					"서울특별시 서초구 반포동", "자하문로36길 16-14", "반포아파트", "101", null
 				);
 				then(houseOfficialPriceRepository).should().findExactMatch(
-					"서울특별시 서초구 반포동 1-1", "반포아파트", "101", "101"
+					"서울특별시 서초구 반포동 자하문로36길 16-14", "반포아파트", "101", "101"
 				);
 			}
 
@@ -202,10 +202,10 @@ class HousePriceQueryServiceImplTest {
 			void 근삿값_조회_성공_실거래가_우선() {
 				// given
 				given(houseTradePriceRepository.findApartmentExactMatch(
-					"서초구", "1-1", "반포아파트", "101", null
+					"서울특별시 서초구 반포동", "자하문로36길 16-14", "반포아파트", "101", null
 				)).willReturn(null);
 				given(houseOfficialPriceRepository.findExactMatch(
-					"서울특별시 서초구 반포동 1-1", "반포아파트", "101", "101"
+					"서울특별시 서초구 반포동 자하문로36길 16-14", "반포아파트", "101", "101"
 				)).willReturn(null);
 
 				// 실거래가 근삿값
@@ -213,8 +213,13 @@ class HousePriceQueryServiceImplTest {
 				tradePrices.add(createTradePrice(40000L));
 				tradePrices.add(createTradePrice(45000L));
 				tradePrices.add(createTradePrice(50000L));
-				given(houseTradePriceRepository.findLowestPricesInDong(
-					"APARTMENT", "서초구", "1-1%"
+				given(houseTradePriceRepository.findLowestPricesByBuildingDetail(
+					"APARTMENT",
+					"서울특별시 서초구 반포동",
+					"자하문로36길 16-14",
+					"반포아파트",
+					"101",
+					null
 				)).willReturn(tradePrices);
 
 				// when
@@ -224,12 +229,17 @@ class HousePriceQueryServiceImplTest {
 				assertThat(result.price()).isEqualTo(45000L); // (40000 + 45000 + 50000) / 3 = 45000
 				assertThat(result.priceType()).isEqualTo("근삿값");
 				assertThat(result.message()).isEqualTo("같은 동의 낮은 주택가 평균값으로 조회되었습니다.");
-				then(houseTradePriceRepository).should().findLowestPricesInDong(
-					"APARTMENT", "서초구", "1-1%"
+				then(houseTradePriceRepository).should().findLowestPricesByBuildingDetail(
+					"APARTMENT",
+					"서울특별시 서초구 반포동",
+					"자하문로36길 16-14",
+					"반포아파트",
+					"101",
+					null
 				);
-				// 실거래가에서 근삿값을 찾으면 공시가의 findLowestPricesInDong은 호출되지 않아야 함
+				// 실거래가에서 근삿값을 찾으면 공시가 근삿값 조회는 호출되지 않아야 함
 				then(houseOfficialPriceRepository).should().findExactMatch(
-					"서울특별시 서초구 반포동 1-1", "반포아파트", "101", "101"
+					"서울특별시 서초구 반포동 자하문로36길 16-14", "반포아파트", "101", "101"
 				);
 				then(houseOfficialPriceRepository).shouldHaveNoMoreInteractions();
 			}
@@ -239,13 +249,24 @@ class HousePriceQueryServiceImplTest {
 			void 근삿값_조회_성공_공시가_차순위() {
 				// given
 				given(houseTradePriceRepository.findApartmentExactMatch(
-					"서초구", "1-1", "반포아파트", "101", null
+					"서울특별시 서초구 반포동", "자하문로36길 16-14", "반포아파트", "101", null
 				)).willReturn(null);
 				given(houseOfficialPriceRepository.findExactMatch(
-					"서울특별시 서초구 반포동 1-1", "반포아파트", "101", "101"
+					"서울특별시 서초구 반포동 자하문로36길 16-14", "반포아파트", "101", "101"
 				)).willReturn(null);
-				given(houseTradePriceRepository.findLowestPricesInDong(
-					"APARTMENT", "서초구", "1-1%"
+				given(houseTradePriceRepository.findLowestPricesByBuildingDetail(
+					"APARTMENT",
+					"서울특별시 서초구 반포동",
+					"자하문로36길 16-14",
+					"반포아파트",
+					"101",
+					null
+				)).willReturn(new ArrayList<>());
+				given(houseTradePriceRepository.findLowestPricesByBuilding(
+					"APARTMENT",
+					"서울특별시 서초구 반포동",
+					"자하문로36길 16-14",
+					"반포아파트"
 				)).willReturn(new ArrayList<>());
 
 				// 공시가 근삿값
@@ -253,8 +274,11 @@ class HousePriceQueryServiceImplTest {
 				officialPrices.add(createOfficialPrice(500000000L)); // 5억원 = 50000만원
 				officialPrices.add(createOfficialPrice(550000000L)); // 5.5억원 = 55000만원
 				officialPrices.add(createOfficialPrice(600000000L)); // 6억원 = 60000만원
-				given(houseOfficialPriceRepository.findLowestPricesInDong(
-					"서울특별시", "서초구", "반포동"
+				given(houseOfficialPriceRepository.findLowestPricesByBuildingDetail(
+					"서울특별시 서초구 반포동 자하문로36길 16-14",
+					"반포아파트",
+					"101",
+					"101"
 				)).willReturn(officialPrices);
 
 				// when
@@ -271,16 +295,34 @@ class HousePriceQueryServiceImplTest {
 			void 모든_조회_실패시_HousePriceException_발생() {
 				// given
 				given(houseTradePriceRepository.findApartmentExactMatch(
-					"서초구", "1-1", "반포아파트", "101", null
+					"서울특별시 서초구 반포동", "자하문로36길 16-14", "반포아파트", "101", null
 				)).willReturn(null);
 				given(houseOfficialPriceRepository.findExactMatch(
-					"서울특별시 서초구 반포동 1-1", "반포아파트", "101", "101"
+					"서울특별시 서초구 반포동 자하문로36길 16-14", "반포아파트", "101", "101"
 				)).willReturn(null);
-				given(houseTradePriceRepository.findLowestPricesInDong(
-					"APARTMENT", "서초구", "1-1%"
+				given(houseTradePriceRepository.findLowestPricesByBuildingDetail(
+					"APARTMENT",
+					"서울특별시 서초구 반포동",
+					"자하문로36길 16-14",
+					"반포아파트",
+					"101",
+					null
 				)).willReturn(new ArrayList<>());
-				given(houseOfficialPriceRepository.findLowestPricesInDong(
-					"서울특별시", "서초구", "반포동"
+				given(houseTradePriceRepository.findLowestPricesByBuilding(
+					"APARTMENT",
+					"서울특별시 서초구 반포동",
+					"자하문로36길 16-14",
+					"반포아파트"
+				)).willReturn(new ArrayList<>());
+				given(houseOfficialPriceRepository.findLowestPricesByBuildingDetail(
+					"서울특별시 서초구 반포동 자하문로36길 16-14",
+					"반포아파트",
+					"101",
+					"101"
+				)).willReturn(new ArrayList<>());
+				given(houseOfficialPriceRepository.findLowestPricesByBuilding(
+					"서울특별시 서초구 반포동 자하문로36길 16-14",
+					"반포아파트"
 				)).willReturn(new ArrayList<>());
 
 				// when & then
@@ -302,17 +344,22 @@ class HousePriceQueryServiceImplTest {
 			void 근삿값_5개_미만일때_평균_계산() {
 				// given
 				given(houseTradePriceRepository.findApartmentExactMatch(
-					"서초구", "1-1", "반포아파트", "101", null
+					"서울특별시 서초구 반포동", "자하문로36길 16-14", "반포아파트", "101", null
 				)).willReturn(null);
 				given(houseOfficialPriceRepository.findExactMatch(
-					"서울특별시 서초구 반포동 1-1", "반포아파트", "101", "101"
+					"서울특별시 서초구 반포동 자하문로36길 16-14", "반포아파트", "101", "101"
 				)).willReturn(null);
 
 				List<HouseTradePrice> tradePrices = new ArrayList<>();
 				tradePrices.add(createTradePrice(30000L));
 				tradePrices.add(createTradePrice(40000L));
-				given(houseTradePriceRepository.findLowestPricesInDong(
-					"APARTMENT", "서초구", "1-1%"
+				given(houseTradePriceRepository.findLowestPricesByBuildingDetail(
+					"APARTMENT",
+					"서울특별시 서초구 반포동",
+					"자하문로36길 16-14",
+					"반포아파트",
+					"101",
+					null
 				)).willReturn(tradePrices);
 
 				// when
@@ -328,10 +375,10 @@ class HousePriceQueryServiceImplTest {
 			void 근삿값_5개일때_평균_계산() {
 				// given
 				given(houseTradePriceRepository.findApartmentExactMatch(
-					"서초구", "1-1", "반포아파트", "101", null
+					"서울특별시 서초구 반포동", "자하문로36길 16-14", "반포아파트", "101", null
 				)).willReturn(null);
 				given(houseOfficialPriceRepository.findExactMatch(
-					"서울특별시 서초구 반포동 1-1", "반포아파트", "101", "101"
+					"서울특별시 서초구 반포동 자하문로36길 16-14", "반포아파트", "101", "101"
 				)).willReturn(null);
 
 				List<HouseTradePrice> tradePrices = new ArrayList<>();
@@ -340,8 +387,13 @@ class HousePriceQueryServiceImplTest {
 				tradePrices.add(createTradePrice(40000L));
 				tradePrices.add(createTradePrice(45000L));
 				tradePrices.add(createTradePrice(50000L));
-				given(houseTradePriceRepository.findLowestPricesInDong(
-					"APARTMENT", "서초구", "1-1%"
+				given(houseTradePriceRepository.findLowestPricesByBuildingDetail(
+					"APARTMENT",
+					"서울특별시 서초구 반포동",
+					"자하문로36길 16-14",
+					"반포아파트",
+					"101",
+					null
 				)).willReturn(tradePrices);
 
 				// when
@@ -357,8 +409,8 @@ class HousePriceQueryServiceImplTest {
 	private HouseTradePrice createTradePrice(Long dealAmountManwon) {
 		return HouseTradePrice.builder()
 			.houseType("APARTMENT")
-			.sigungu("서초구")
-			.jibun("1-1")
+			.sigungu("서울특별시 서초구 반포동")
+			.roadName("자하문로36길 16-14")
 			.buildingName("반포아파트")
 			.buildingDong("101")
 			.dealAmountManwon(dealAmountManwon)
@@ -379,7 +431,7 @@ class HousePriceQueryServiceImplTest {
 			.stdYear(2024)
 			.stdMonth((short)1)
 			.legalDongCode("1165010100")
-			.roadAddress("서울특별시 서초구 반포동")
+			.roadAddress("서울특별시 서초구 반포동 자하문로36길 16-14")
 			.build();
 	}
 }
