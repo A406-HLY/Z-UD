@@ -16,13 +16,24 @@ pipeline {
             steps {
                 dir("${env.PROJECT_PATH}") {
                     script {
-                        echo "🚀 Updating Host Directory at: ${env.PROJECT_PATH}"
-                        sh """
-                            git fetch origin develop
-                            git checkout develop
-                            git reset --hard origin/develop
-                            git clean -fd
-                        """
+                        withCredentials([usernamePassword(credentialsId: 'Gitlab_PAT_Username_with_Password',
+                                                         passwordVariable: 'GIT_PASSWORD',
+                                                         usernameVariable: 'GIT_USERNAME')]) {
+                            sh """
+                                # 1. Git이 인증 정보를 환경변수에서 가져오도록 임시 설정
+                                git config credential.helper '!f() { echo username=\$GIT_USERNAME; echo password=\$GIT_PASSWORD; }; f'
+
+                                # 2. 이미 등록된 origin을 사용하여 fetch (주소 복잡하게 적을 필요 없음)
+                                git fetch origin develop
+
+                                # 3. 브랜치 전환 및 리셋
+                                git checkout develop
+                                git reset --hard origin/develop
+
+                                # 4. 설정 해제 (보안을 위해)
+                                git config --unset credential.helper
+                            """
+                        }
                     }
                 }
             }
@@ -43,8 +54,8 @@ pipeline {
             steps {
                 script {
                     echo "📦 Triggering Downstream CD Job: ${env.CD_JOB_NAME}"
-                    build job: env.CD_JOB_NAME, 
-                          wait: false, 
+                    build job: env.CD_JOB_NAME,
+                          wait: true,
                           propagate: true
                 }
             }
