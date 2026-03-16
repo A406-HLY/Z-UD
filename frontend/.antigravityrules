@@ -47,3 +47,120 @@
 🚨 [CRITICAL REQUIREMENT] 🚨
 프론트엔드 작업 시 위 핵심 규칙을 무조건 최우선으로 준수하라.
 자세한 코딩 컨벤션, 아키텍처 배경, 상세한 API 연동 방식, 상태 관리 예시 등은 프로젝트 내 `frontend/docs/frontend-guidelines.md` 파일을 반드시 읽고 참조하여 작업할 것.
+
+
+
+# 커밋 컨벤션
+<aside>
+
+</aside>
+
+### 1. Gitmoji Plugin
+
+---
+
+![](attachment:a9e374b1-d16a-462a-88da-03cf8d57195c:image.png)
+
+[Gitmoji Plus: Commit Button - IntelliJ IDEs Plugin | Marketplace](https://plugins.jetbrains.com/plugin/12383-gitmoji-plus-commit-button/)
+
+![2번째 줄 Use unicode emoji instead of test version 활성화](attachment:d10c3f7f-8542-48c0-8f25-f02400ad5ed0:image.png)
+
+2번째 줄 Use unicode emoji instead of test version 활성화
+
+### 2. 사용법
+
+---
+
+| **아이콘** | **설명** | **원문** |
+| --- | --- | --- |
+| ✨ | 새 기능 | Introduce new features. |
+| ♻️ | 코드 리팩토링 | Refactor code. |
+| 🔥 | 코드/파일 삭제 | Remove code or files. |
+| 🐛 | 버그 수정 | Fix a bug. |
+| ✅ | 테스트 추가/수정 | Add or update tests. |
+| 📝 | 문서 추가/수정 | Add or update documentation. |
+| ➕ | 의존성 추가 | Add a dependency. |
+| ➖ | 의존성 제거 | Remove a dependency. |
+| 🔧 | 구성 파일 추가/삭제 | Add or update configuration files. |
+| ⏪ | 변경 내용 되돌리기 | Revert changes. |
+| 🚚 | 리소스 이동, 이름 변경 | Move or rename resources (e.g.: files paths routes). |
+| 💡 | 주석 추가/수정 | Add or update comments in source code. |
+
+![커밋 메세지 작성시 gitmoji 아이콘 클릭](attachment:1ed27d77-89bb-469d-8ddc-2dda4414c7c8:image.png)
+
+커밋 메세지 작성시 gitmoji 아이콘 클릭
+
+![커밋 컨벤션에 맞는 Gitmoji 선택](attachment:eadc60f8-bcdd-419e-ae6e-1d301962779b:image.png)
+
+커밋 컨벤션에 맞는 Gitmoji 선택
+
+### 3. 형식
+
+---
+
+```c
+<gitmoji> <type>: <subject> 
+<body>
+
+Ref. #<jira-ticket>
+```
+
+### 4. 예시 (BE)
+
+---
+
+```
+♻️ refactor: Spring AI 호환성 업데이트
+
+- Spring AI 1.0.0 GA 버전 대응 의존성 업데이트
+- 불필요한 로그 제거 및 메시지 포맷 개선
+
+Ref. #S14P11A704-32
+```
+
+### 5. 규칙
+
+---
+
+<aside>
+
+### **제목 (Subject) 작성 규칙**
+
+```bash
+✅ ♻️ refactor: Spring AI 호환성 업데이트
+❌ ♻️ refactor: Spring AI 호환성 업데이트한다
+❌ ♻️ refactor: Spring AI 호환성 업데이트.
+```
+
+1. 50자 이내 제한 (한글 기준 약 25자) 설정.
+2. 명령형 현재시제 사용 ("추가한다" ❌, "추가" ✅) 설정.
+3. Type 첫 글자 대문자 금지 (소문자 시작) 설정.
+4. 마침표 사용 금지 설정.
+
+### **본문 (Body) 작성 규칙**
+
+```bash
+- Spring AI 1.0.0 GA 버전 대응 의존성 업데이트
+- 불필요한 로그 제거 및 메시지 포맷 개선
+```
+
+1. (-) 로 내용을 구분 설정.
+2. **왜(Why) 변경했는지** 중심으로 설명 설정.
+3. **무엇을(What) 변경했는지** 구체적으로 나열 설정.
+
+### **JIRA Ticket 작성 규칙**
+
+```bash
+✅ Ref. #S14P11A704-32, #S14P11A704-321
+❌ Ref. S14P11A704-32, S14P11A704-321
+❌ #S14P11A704-32, #S14P11A704-321
+```
+
+1. `Ref. #` 접두어 필수 설정.
+2. JIRA 이슈 번호 정확히 기재 설정.
+3. 본문과 한 줄 띄우고 작성 설정.
+</aside>
+
+### 6. Copilot Commit Convention
+
+---
