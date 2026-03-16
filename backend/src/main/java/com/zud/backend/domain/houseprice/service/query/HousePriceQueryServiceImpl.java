@@ -52,23 +52,28 @@ public class HousePriceQueryServiceImpl implements HousePriceQueryService {
 		String address,
 		ParsedAddress parsedAddress
 	) {
-		Optional<HousePriceResDto> tradePriceResult = findTradePriceResult(houseType, dbHouseType, address, parsedAddress);
+		Optional<HousePriceResDto> tradePriceResult =
+			findTradePriceResult(houseType, dbHouseType, address, parsedAddress);
 		if (tradePriceResult.isPresent()) {
 			return tradePriceResult.get();
 		}
 
-		Optional<HousePriceResDto> officialPriceResult = findOfficialPriceResult(houseType, address, parsedAddress);
+		Optional<HousePriceResDto> officialPriceResult =
+			findOfficialPriceResult(houseType, address, parsedAddress);
 		if (officialPriceResult.isPresent()) {
 			return officialPriceResult.get();
 		}
 
-		Optional<HousePriceResDto> estimatedPriceResult = findEstimatedPriceResult(houseType, dbHouseType, address, parsedAddress);
+		Optional<HousePriceResDto> estimatedPriceResult =
+			findEstimatedPriceResult(houseType, dbHouseType, address, parsedAddress);
 		return estimatedPriceResult.orElseThrow(() -> new HousePriceException(ErrorCode.HOUSE_PRICE_NOT_FOUND));
 	}
 
 	private void validateHouseType(String houseType) {
-		if (houseType == null || 
-			(!houseType.equals("아파트") && !houseType.equals("다세대연립") && !houseType.equals("단독"))) {
+		if (houseType == null
+			|| (!houseType.equals("아파트")
+			&& !houseType.equals("다세대연립")
+			&& !houseType.equals("단독"))) {
 			throw new HousePriceException(ErrorCode.INVALID_HOUSE_TYPE);
 		}
 	}
