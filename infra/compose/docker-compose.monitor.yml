@@ -1,0 +1,85 @@
+name: monitoring
+
+services:
+  # 1. Grafana
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    expose:
+      - "3000"
+    environment:
+      - GF_SERVER_DOMAIN=j14a406.p.ssafy.io
+      - GF_SERVER_ROOT_URL=https://j14a406.p.ssafy.io/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    volumes:
+      - ../data/grafana:/var/lib/grafana
+      - ../monitoring/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - monitoring-network
+    deploy:
+      resources:
+        limits:
+          memory: 400M
+
+  # 2. Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    expose:
+      - "9090"
+    volumes:
+      - ../monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ../data/prometheus:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.external-url=https://j14a406.p.ssafy.io/prometheus/'
+      - '--web.route-prefix=/prometheus'
+    networks:
+      - monitoring-network
+      - app-network
+    deploy:
+      resources:
+        limits:
+          memory: 800M
+
+  # 3. Node-Exporter
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+    networks:
+      - monitoring-network
+
+  # 4. cAdvisor
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    restart: unless-stopped
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+      - /proc:/host/proc:ro
+    networks:
+      - monitoring-network
+      - app-network
+
+networks:
+  monitoring-network:
+    external: true
+  app-network:
+    external: true
