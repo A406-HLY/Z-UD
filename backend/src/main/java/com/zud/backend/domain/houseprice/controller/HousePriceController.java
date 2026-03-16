@@ -35,10 +35,10 @@ public class HousePriceController {
 	@ApiErrorResponse
 	@PostMapping("/search")
 	public ResponseEntity<BaseResponse<HousePriceResDto>> findHousePrice(
-		@Authentication Long userId,
-		@Valid @RequestBody HousePriceReqDto reqDto
+		@Authentication final Long userId,
+		@Valid @RequestBody final HousePriceReqDto reqDto
 	) {
-		HousePriceResDto response = housePriceFacadeService.findHousePrice(reqDto);
+		final HousePriceResDto response = housePriceFacadeService.findHousePrice(reqDto);
 		return ResponseUtils.ok(response);
 	}
 }

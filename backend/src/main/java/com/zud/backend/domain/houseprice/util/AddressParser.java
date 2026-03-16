@@ -6,18 +6,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AddressParser {
 
-	public static ParsedAddress parse(String address) {
+	public static ParsedAddress parse(final String address) {
 		if (address == null || address.isBlank()) {
 			throw new IllegalArgumentException("주소가 비어있습니다.");
 		}
 
-		String[] tokens = address.trim().split("\\s+");
+		final String[] tokens = address.trim().split("\\s+");
 		if (tokens.length < 4) {
 			throw new IllegalArgumentException("주소 형식이 올바르지 않습니다: " + address);
 		}
 
-		String sido = tokens[0];
-		String sigungu = tokens[1];
+		final String sido = tokens[0];
+		final String sigungu = tokens[1];
 
 		int idx = 2;
 		String dongRi = null;
@@ -34,12 +34,12 @@ public class AddressParser {
 		if (!tokens[idx].contains("로") && !tokens[idx].contains("길")) {
 			throw new IllegalArgumentException("주소 형식이 올바르지 않습니다: " + address);
 		}
-		String roadNameToken = tokens[idx++];
+		final String roadNameToken = tokens[idx++];
 		if (idx >= tokens.length) {
 			throw new IllegalArgumentException("주소 형식이 올바르지 않습니다: " + address);
 		}
-		String roadNumberToken = tokens[idx++];
-		String roadName = roadNameToken + " " + roadNumberToken;
+		final String roadNumberToken = tokens[idx++];
+		final String roadName = roadNameToken + " " + roadNumberToken;
 
 		// 나머지: 건물이름 + [동] + [층] + [호]
 		String buildingName = null;
@@ -73,7 +73,7 @@ public class AddressParser {
 			throw new IllegalArgumentException("건물명 정보를 찾을 수 없습니다: " + address);
 		}
 
-		StringBuilder buildingNameBuilder = new StringBuilder();
+		final StringBuilder buildingNameBuilder = new StringBuilder();
 		for (int i = idx; i <= end; i++) {
 			if (i > idx) {
 				buildingNameBuilder.append(' ');
@@ -82,7 +82,7 @@ public class AddressParser {
 		}
 		buildingName = buildingNameBuilder.toString();
 
-		String fullRoadAddress;
+		final String fullRoadAddress;
 		if (dongRi != null) {
 			fullRoadAddress = String.join(" ", sido, sigungu, dongRi, roadName);
 		} else {

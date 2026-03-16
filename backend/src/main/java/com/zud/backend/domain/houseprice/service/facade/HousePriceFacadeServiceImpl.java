@@ -18,7 +18,7 @@ public class HousePriceFacadeServiceImpl implements HousePriceFacadeService {
 	private final HousePriceQueryService housePriceQueryService;
 
 	@Override
-	public HousePriceResDto findHousePrice(HousePriceReqDto reqDto) {
+	public HousePriceResDto findHousePrice(final HousePriceReqDto reqDto) {
 		return housePriceQueryService.findHousePrice(reqDto.houseType(), reqDto.address());
 	}
 }

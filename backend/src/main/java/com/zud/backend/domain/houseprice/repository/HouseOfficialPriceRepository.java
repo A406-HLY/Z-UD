@@ -20,10 +20,10 @@ public interface HouseOfficialPriceRepository extends JpaRepository<HouseOfficia
 		LIMIT 1
 		""")
 	HouseOfficialPrice findExactMatch(
-		@Param("roadAddress") String roadAddress,
-		@Param("complexName") String complexName,
-		@Param("dongName") String dongName,
-		@Param("hoName") String hoName
+		@Param("roadAddress") final String roadAddress,
+		@Param("complexName") final String complexName,
+		@Param("dongName") final String dongName,
+		@Param("hoName") final String hoName
 	);
 
 	@Query("""
@@ -36,10 +36,10 @@ public interface HouseOfficialPriceRepository extends JpaRepository<HouseOfficia
 		LIMIT 5
 		""")
 	List<HouseOfficialPrice> findLowestPricesByBuildingDetail(
-		@Param("roadAddress") String roadAddress,
-		@Param("complexName") String complexName,
-		@Param("dongName") String dongName,
-		@Param("hoName") String hoName
+		@Param("roadAddress") final String roadAddress,
+		@Param("complexName") final String complexName,
+		@Param("dongName") final String dongName,
+		@Param("hoName") final String hoName
 	);
 
 	@Query("""
@@ -50,7 +50,7 @@ public interface HouseOfficialPriceRepository extends JpaRepository<HouseOfficia
 		LIMIT 5
 		""")
 	List<HouseOfficialPrice> findLowestPricesByBuilding(
-		@Param("roadAddress") String roadAddress,
-		@Param("complexName") String complexName
+		@Param("roadAddress") final String roadAddress,
+		@Param("complexName") final String complexName
 	);
 }

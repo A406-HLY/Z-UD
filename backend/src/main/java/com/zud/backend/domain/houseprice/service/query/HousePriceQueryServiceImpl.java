@@ -30,7 +30,7 @@ public class HousePriceQueryServiceImpl implements HousePriceQueryService {
 	private final HouseOfficialPriceRepository houseOfficialPriceRepository;
 
 	@Override
-	public HousePriceResDto findHousePrice(String houseType, String address) {
+	public HousePriceResDto findHousePrice(final String houseType, final String address) {
 		validateHouseType(houseType);
 		ParsedAddress parsedAddress = parseAddress(address);
 		String dbHouseType = convertHouseTypeToDbFormat(houseType);
@@ -38,38 +38,38 @@ public class HousePriceQueryServiceImpl implements HousePriceQueryService {
 		return findByPriority(houseType, dbHouseType, address, parsedAddress);
 	}
 
-	private ParsedAddress parseAddress(String address) {
+	private ParsedAddress parseAddress(final String address) {
 		try {
 			return AddressParser.parse(address);
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			throw new HousePriceException(ErrorCode.INVALID_ADDRESS_FORMAT);
 		}
 	}
 
 	private HousePriceResDto findByPriority(
-		String houseType,
-		String dbHouseType,
-		String address,
-		ParsedAddress parsedAddress
+		final String houseType,
+		final String dbHouseType,
+		final String address,
+		final ParsedAddress parsedAddress
 	) {
-		Optional<HousePriceResDto> tradePriceResult =
+		final Optional<HousePriceResDto> tradePriceResult =
 			findTradePriceResult(houseType, dbHouseType, address, parsedAddress);
 		if (tradePriceResult.isPresent()) {
 			return tradePriceResult.get();
 		}
 
-		Optional<HousePriceResDto> officialPriceResult =
+		final Optional<HousePriceResDto> officialPriceResult =
 			findOfficialPriceResult(houseType, address, parsedAddress);
 		if (officialPriceResult.isPresent()) {
 			return officialPriceResult.get();
 		}
 
-		Optional<HousePriceResDto> estimatedPriceResult =
+		final Optional<HousePriceResDto> estimatedPriceResult =
 			findEstimatedPriceResult(houseType, dbHouseType, address, parsedAddress);
 		return estimatedPriceResult.orElseThrow(() -> new HousePriceException(ErrorCode.HOUSE_PRICE_NOT_FOUND));
 	}
 
-	private void validateHouseType(String houseType) {
+	private void validateHouseType(final String houseType) {
 		if (houseType == null
 			|| (!houseType.equals("아파트")
 			&& !houseType.equals("다세대연립")
@@ -78,7 +78,7 @@ public class HousePriceQueryServiceImpl implements HousePriceQueryService {
 		}
 	}
 
-	private String convertHouseTypeToDbFormat(String houseType) {
+	private String convertHouseTypeToDbFormat(final String houseType) {
 		return switch (houseType) {
 			case "아파트" -> "APARTMENT";
 			case "다세대연립" -> "MULTI_HOUSEHOLD";
@@ -87,8 +87,8 @@ public class HousePriceQueryServiceImpl implements HousePriceQueryService {
 		};
 	}
 
-	private Optional<HouseTradePrice> findExactTradePrice(String dbHouseType, ParsedAddress parsedAddress) {
-		String fullSigungu = buildFullSigungu(parsedAddress);
+	private Optional<HouseTradePrice> findExactTradePrice(final String dbHouseType, final ParsedAddress parsedAddress) {
+		final String fullSigungu = buildFullSigungu(parsedAddress);
 
 		return switch (dbHouseType) {
 			case "APARTMENT" -> Optional.ofNullable(
@@ -118,7 +118,7 @@ public class HousePriceQueryServiceImpl implements HousePriceQueryService {
 		};
 	}
 
-	private String buildFullSigungu(ParsedAddress parsedAddress) {
+	private String buildFullSigungu(final ParsedAddress parsedAddress) {
 		if (parsedAddress.getDongRi() != null && !parsedAddress.getDongRi().isBlank()) {
 			return parsedAddress.getSido() + " " + parsedAddress.getSigungu() + " " + parsedAddress.getDongRi();
 		}
@@ -126,17 +126,17 @@ public class HousePriceQueryServiceImpl implements HousePriceQueryService {
 	}
 
 	private Optional<HousePriceResDto> findTradePriceResult(
-		String houseType,
-		String dbHouseType,
-		String address,
-		ParsedAddress parsedAddress
+		final String houseType,
+		final String dbHouseType,
+		final String address,
+		final ParsedAddress parsedAddress
 	) {
-		Optional<HouseTradePrice> tradePrice = findExactTradePrice(dbHouseType, parsedAddress);
+		final Optional<HouseTradePrice> tradePrice = findExactTradePrice(dbHouseType, parsedAddress);
 		if (tradePrice.isEmpty()) {
 			return Optional.empty();
 		}
 
-		Long price = tradePrice.get().getDealAmountManwon();
+		final Long price = tradePrice.get().getDealAmountManwon();
 		log.info("[HousePrice] 실거래가 조회 성공 - houseType: {}, address: {}, price: {}",
 			houseType, address, price);
 
@@ -149,7 +149,7 @@ public class HousePriceQueryServiceImpl implements HousePriceQueryService {
 		);
 	}
 
-	private Optional<HouseOfficialPrice> findExactOfficialPrice(ParsedAddress parsedAddress) {
+	private Optional<HouseOfficialPrice> findExactOfficialPrice(final ParsedAddress parsedAddress) {
 		return Optional.ofNullable(
 			houseOfficialPriceRepository.findExactMatch(
 				parsedAddress.getRoadAddress(),
@@ -161,16 +161,16 @@ public class HousePriceQueryServiceImpl implements HousePriceQueryService {
 	}
 
 	private Optional<HousePriceResDto> findOfficialPriceResult(
-		String houseType,
-		String address,
-		ParsedAddress parsedAddress
+		final String houseType,
+		final String address,
+		final ParsedAddress parsedAddress
 	) {
-		Optional<HouseOfficialPrice> officialPrice = findExactOfficialPrice(parsedAddress);
+		final Optional<HouseOfficialPrice> officialPrice = findExactOfficialPrice(parsedAddress);
 		if (officialPrice.isEmpty()) {
 			return Optional.empty();
 		}
 
-		Long price = officialPrice.get().getOfficialPrice() / 10000;
+		final Long price = officialPrice.get().getOfficialPrice() / 10000;
 		log.info("[HousePrice] 공시가 조회 성공 - houseType: {}, address: {}, price: {}",
 			houseType, address, price);
 
@@ -183,11 +183,11 @@ public class HousePriceQueryServiceImpl implements HousePriceQueryService {
 		);
 	}
 
-	private Optional<Long> findEstimatedPriceValue(String dbHouseType, ParsedAddress parsedAddress) {
-		String fullSigungu = buildFullSigungu(parsedAddress);
+	private Optional<Long> findEstimatedPriceValue(final String dbHouseType, final ParsedAddress parsedAddress) {
+		final String fullSigungu = buildFullSigungu(parsedAddress);
 
 		// 1단계: 실거래 - 건물명 + 동 + 층 우선
-		List<HouseTradePrice> tradeByDetail = houseTradePriceRepository.findLowestPricesByBuildingDetail(
+		final List<HouseTradePrice> tradeByDetail = houseTradePriceRepository.findLowestPricesByBuildingDetail(
 			dbHouseType,
 			fullSigungu,
 			parsedAddress.getRoadName(),
@@ -200,7 +200,7 @@ public class HousePriceQueryServiceImpl implements HousePriceQueryService {
 		}
 
 		// 2단계: 실거래 - 건물명까지만
-		List<HouseTradePrice> tradeByBuilding = houseTradePriceRepository.findLowestPricesByBuilding(
+		final List<HouseTradePrice> tradeByBuilding = houseTradePriceRepository.findLowestPricesByBuilding(
 			dbHouseType,
 			fullSigungu,
 			parsedAddress.getRoadName(),
@@ -211,7 +211,8 @@ public class HousePriceQueryServiceImpl implements HousePriceQueryService {
 		}
 
 		// 3단계: 공시가 - 단지명 + 동 + 호 우선
-		List<HouseOfficialPrice> officialByDetail = houseOfficialPriceRepository.findLowestPricesByBuildingDetail(
+		final List<HouseOfficialPrice> officialByDetail =
+			houseOfficialPriceRepository.findLowestPricesByBuildingDetail(
 			parsedAddress.getRoadAddress(),
 			parsedAddress.getBuildingName(),
 			parsedAddress.getBuildingDong(),
@@ -222,7 +223,8 @@ public class HousePriceQueryServiceImpl implements HousePriceQueryService {
 		}
 
 		// 4단계: 공시가 - 단지명까지만
-		List<HouseOfficialPrice> officialByBuilding = houseOfficialPriceRepository.findLowestPricesByBuilding(
+		final List<HouseOfficialPrice> officialByBuilding =
+			houseOfficialPriceRepository.findLowestPricesByBuilding(
 			parsedAddress.getRoadAddress(),
 			parsedAddress.getBuildingName()
 		);
@@ -233,16 +235,16 @@ public class HousePriceQueryServiceImpl implements HousePriceQueryService {
 		return Optional.empty();
 	}
 
-	private long avgManwon(List<HouseTradePrice> tradePrices) {
-		double average = tradePrices.stream()
+	private long avgManwon(final List<HouseTradePrice> tradePrices) {
+		final double average = tradePrices.stream()
 			.mapToLong(HouseTradePrice::getDealAmountManwon)
 			.average()
 			.orElse(0.0);
 		return Math.round(average);
 	}
 
-	private long avgOfficial(List<HouseOfficialPrice> officialPrices) {
-		double average = officialPrices.stream()
+	private long avgOfficial(final List<HouseOfficialPrice> officialPrices) {
+		final double average = officialPrices.stream()
 			.mapToLong(p -> p.getOfficialPrice() / 10000)
 			.average()
 			.orElse(0.0);
@@ -250,17 +252,17 @@ public class HousePriceQueryServiceImpl implements HousePriceQueryService {
 	}
 
 	private Optional<HousePriceResDto> findEstimatedPriceResult(
-		String houseType,
-		String dbHouseType,
-		String address,
-		ParsedAddress parsedAddress
+		final String houseType,
+		final String dbHouseType,
+		final String address,
+		final ParsedAddress parsedAddress
 	) {
-		Optional<Long> estimatedPrice = findEstimatedPriceValue(dbHouseType, parsedAddress);
+		final Optional<Long> estimatedPrice = findEstimatedPriceValue(dbHouseType, parsedAddress);
 		if (estimatedPrice.isEmpty()) {
 			return Optional.empty();
 		}
 
-		Long price = estimatedPrice.get();
+		final Long price = estimatedPrice.get();
 		log.info("[HousePrice] 근삿값 조회 성공 - houseType: {}, address: {}, price: {}",
 			houseType, address, price);
 
