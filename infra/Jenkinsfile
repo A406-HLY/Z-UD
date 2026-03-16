@@ -1,0 +1,71 @@
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+        disableConcurrentBuilds()
+    }
+
+    environment {
+        PROJECT_PATH = "/home/ubuntu/app/S14P21A406"
+        CD_JOB_NAME = "CD/develop"
+    }
+
+    stages {
+        stage('1. Checkout & Hard Reset') {
+            steps {
+                script {
+                    echo "🚀 Fetching and Resetting to origin/develop..."
+                    sh """
+                        cd ${env.PROJECT_PATH}
+                        git fetch origin develop
+                        git checkout develop
+                        git reset --hard origin/develop
+                        git clean -fd
+                    """
+                }
+            }
+        }
+
+        stage('2. Nginx Configuration Check') {
+            steps {
+                script {
+                    echo "🔍 Checking Nginx configuration syntax..."
+                    sh "docker run --rm -t -v ${env.PROJECT_PATH}/infra/nginx:/etc/nginx/conf.d nginx:alpine nginx -t"
+                }
+            }
+        }
+
+        stage('3. Build Backend Image (Local)') {
+            steps {
+                script {
+                    echo "🛠️ Building 'backend:latest' image..."
+                    sh """
+                        cd ${env.PROJECT_PATH}/backend
+                        docker build --no-cache -t backend:latest .
+                    """
+                }
+            }
+        }
+
+        stage('4. Trigger CD/develop') {
+            steps {
+                script {
+                    echo "📦 Triggering Downstream CD Job: ${env.CD_JOB_NAME}"
+                    build job: env.CD_JOB_NAME, 
+                          wait: false, 
+                          propagate: true
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ CI/Infra Pipeline Success! backend:latest is ready."
+        }
+        failure {
+            echo "❌ Pipeline Failed. Please check the logs."
+        }
+    }
+}
