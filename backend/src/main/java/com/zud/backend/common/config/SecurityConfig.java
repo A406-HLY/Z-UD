@@ -27,7 +27,14 @@ public class SecurityConfig {
 		"/swagger-ui/**",
 		"/v3/api-docs/**",
 		"/api/v1/auth/login",
-		"/error"
+		"/api/v1/documents/extraction-results",
+		"/error",
+		"/grafana",
+		"/grafana/**",
+		"/api/v1/documents",
+		"/actuator/health",
+		"/actuator/health/**",
+		"/actuator/prometheus"
 	};
 
 	private final SessionAuthFilter sessionAuthFilter;
