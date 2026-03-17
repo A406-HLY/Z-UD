@@ -48,7 +48,7 @@ server:
 
 kakao:
   api:
-    key: ${KAKA0_REST_API_KEY}
+    key: ${KAKAO_REST_API_KEY}
     base-url: https://dapi.kakao.com
 
 
@@ -72,3 +72,11 @@ cloudflare:
     bucket: ${CLOUDFLARE_BUCKET}
     access-key: ${CLOUDFLARE_ACCESS_KEY}
     secret-key: ${CLOUDFLARE_SECRET_KEY}
+
+management:
+  endpoints:
+    prometheus:
+      enabled: true
+    web:
+      exposure:
+        include: prometheus
