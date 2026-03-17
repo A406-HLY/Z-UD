@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class ControllerLoggingAspect {
 
-	@Around("execution( * com.backend..controller..*(..) )")
+	@Around("execution( * com.zud.backend..controller..*(..) )")
 	public Object logControllerExecution(ProceedingJoinPoint joinPoint) throws Throwable {
 		long start = System.currentTimeMillis();
 
