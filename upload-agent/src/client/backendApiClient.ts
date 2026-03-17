@@ -1,26 +1,63 @@
 import axios from 'axios';
+import FormData from 'form-data';
+import fs from 'fs';
+import path from 'path'; // 파일명 추출을 위해 추가
 import { config } from '../config/env';
 import { logger } from '../utils/logger';
-import fs from 'fs';
 
 const apiClient = axios.create({
   baseURL: config.backendApiUrl,
-  timeout: 30000,
+  timeout: 60000,
 });
 
 export class BackendApiClient {
-  public static async uploadFile(storedPath: string, sequenceId: number): Promise<void> {
-    logger.info(`Sending STAGED file to backend: [Seq: ${sequenceId}] ${storedPath}`);
+  public static async uploadFile(storedPath: string, sequenceId: number, counselId: number): Promise<void> {
+    logger.info(`Starting ACTUAL upload to backend: [Seq: ${sequenceId}] for Counsel: ${counselId}`);
     
-    // TODO: Implement actual multipart/form-data upload when backend API is ready
-    // const formData = new FormData();
-    // formData.append('file', fs.createReadStream(filePath));
-    // formData.append('sequenceId', sequenceId.toString());
-    // await apiClient.post('/upload', formData, { ... });
+    try {
+      // 전송 전 파일 상태 최종 확인
+      const stats = fs.statSync(storedPath);
+      logger.info(`Staged file check: ${path.basename(storedPath)} (${stats.size} bytes)`);
 
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    logger.info(`Backend successfully received: [Seq: ${sequenceId}]`);
+      const formData = new FormData();
+      /**
+       * 스프링 백엔드에서 파일을 정확히 인식하도록 
+       * filename과 contentType을 명시적으로 지정합니다.
+       */
+      formData.append('multipartFile', fs.createReadStream(storedPath), {
+        filename: path.basename(storedPath),
+        contentType: 'application/pdf', // 명세서상 PDF 권장이므로 명시
+      });
+
+      /**
+       * 명세서에 따라 counselId를 Query Parameter로 전달합니다.
+       * POST /api/v1/documents?counselId=1001
+       */
+      const url = '/documents';
+      await apiClient.post(url, formData, {
+        params: { counselId },
+        headers: {
+          ...formData.getHeaders(),
+        },
+      });
+
+      logger.info(`Backend successfully received and accepted file: [Seq: ${sequenceId}]`);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status;
+        const responseData = error.response?.data;
+        const errorMessage = error.message;
+        const errorCode = error.code;
+        
+        logger.error(`Backend upload failed [Status: ${status}] [Code: ${errorCode}]:`, errorMessage);
+        if (responseData) {
+          logger.error('Response Data:', JSON.stringify(responseData));
+        }
+        
+        throw new Error(`Backend Error (${status || errorCode}): ${errorMessage}`);
+      }
+      logger.error('Unexpected error during upload:', error);
+      throw error;
+    }
   }
 }

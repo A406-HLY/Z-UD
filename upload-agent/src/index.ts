@@ -2,6 +2,7 @@ import { logger } from './utils/logger';
 import { SettingsStore } from './store/settingsStore';
 import { FolderWatcher } from './watcher/folderWatcher';
 import { LocalServer } from './server/localServer';
+import { config } from './config/env'; // URL 확인을 위해 추가
 import fs from 'fs';
 import path from 'path';
 
@@ -12,6 +13,9 @@ async function bootstrap() {
     // 1. Load configuration and settings
     SettingsStore.load();
     const settings = SettingsStore.get();
+    
+    // 환경 변수가 제대로 로드되었는지 확인하기 위해 URL 로그 추가
+    logger.info(`Backend API URL configured as: ${config.backendApiUrl}`);
 
     // Ensure the watch directory exists before starting watcher
     const watchDir = path.resolve(__dirname, '../', settings.watchPath);
