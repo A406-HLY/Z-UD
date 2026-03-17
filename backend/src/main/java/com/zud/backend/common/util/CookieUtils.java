@@ -3,10 +3,9 @@ package com.zud.backend.common.util;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.Optional;
 
-import com.zud.backend.common.error.ErrorCode;
 import com.zud.backend.domain.auth.enums.SessionConstants;
-import com.zud.backend.domain.auth.exception.AuthException;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,11 +36,14 @@ public class CookieUtils {
 		return cookie;
 	}
 
-	public static String extractSessionId(final HttpServletRequest request) {
-		return Arrays.stream(request.getCookies())
+	public static Optional<String> extractSessionId(final HttpServletRequest request) {
+		Cookie[] cookies = request.getCookies();
+		if (cookies == null) {
+			return Optional.empty();
+		}
+		return Arrays.stream(cookies)
 			.filter(cookie -> SessionConstants.PREFIX.equals(cookie.getName()))
 			.findFirst()
-			.orElseThrow(() -> new AuthException(ErrorCode.SESSION_NOT_FOUND))
-			.getValue();
+			.map(Cookie::getValue);
 	}
 }
