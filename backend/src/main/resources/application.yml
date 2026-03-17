@@ -26,6 +26,7 @@ spring:
       ddl-auto: validate
     properties:
       hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         show_sql: false
         format_sql: false
         use_sql_comments: false
@@ -48,7 +49,7 @@ server:
 
 kakao:
   api:
-    key: ${KAKA0_REST_API_KEY}
+    key: ${KAKAO_REST_API_KEY}
     base-url: https://dapi.kakao.com
 
 
@@ -72,3 +73,11 @@ cloudflare:
     bucket: ${CLOUDFLARE_BUCKET}
     access-key: ${CLOUDFLARE_ACCESS_KEY}
     secret-key: ${CLOUDFLARE_SECRET_KEY}
+
+management:
+  endpoints:
+    prometheus:
+      enabled: true
+    web:
+      exposure:
+        include: prometheus

@@ -1,7 +1,0 @@
-infra/certbot
-infra/nginx/log
-*.log
-*/logs
-*/data
-.env
-EOF
