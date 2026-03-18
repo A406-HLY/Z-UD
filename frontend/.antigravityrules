@@ -1,169 +1,72 @@
-# 프로젝트 핵심 스택 (버전 준수)
-- React 19.2.x, React DOM 19.2.x
-- TypeScript 5.9.x
-- Vite 7.3.x
-- React Router 7.x
-- TanStack Query v5 (서버 상태 관리)
-- Redux Toolkit 2.x (전역 클라이언트 상태 관리)
-- Tailwind CSS 4.x (스타일링)
-- Node.js 24 LTS 기반
+# 🎨 프론트엔드 마스터 가이드라인 (S14P21A406)
 
-# 1. 아키텍처 및 디렉토리 구조 (FSD 변형)
-항상 아래의 도메인/기능 중심 구조를 준수하고, 페이지 단위로 로직을 몰아넣지 않는다.
-- `app/`: 앱 전역 설정, 라우터, 전역 프로바이더, 스토어 초기화 등
-- `pages/`: 라우트 단위 컴포넌트. 조합과 레이아웃만 담당하며 직접적인 API 호출 금지
-- `widgets/`: 페이지 내 의미 있는 UI 구역 (여러 feature/entity의 조합)
-- `features/`: 사용자 행동 및 상호작용 중심의 기능 로직
-- `entities/`: 도메인 객체 단위 데이터, 타입, 매퍼, 도메인 전용 UI
-- `shared/`: 범용 UI, 공통 유틸, 공통 API 클라이언트 등 (무분별한 공통화 금지)
-
-# 2. 파일 및 네이밍 컨벤션
-- **파일/폴더명**: 컴포넌트는 `PascalCase.tsx`, 훅은 `kebab-case.ts`, API/타입/매퍼는 `도메인명.역할.ts`
-- **변수/함수명**: `camelCase`. boolean은 `is/has/can/should` 접두어, 이벤트는 `handle~`, 조회는 `fetch/get/load~`
-
-# 3. TypeScript 규칙
-- **`any` 사용 절대 금지**: 불가피할 경우 `unknown` 사용
-- **API UI 타입 분리 (필수)**: 백엔드 응답(snake_case)을 그대로 UI에서 사용 금지. 반드시 mapper를 통해 변환(camelCase) 후 사용.
-
-# 4. 컴포넌트 작성 규칙
-- **단일 책임**: 한 파일은 하나의 화면 조각만 담당. JSX가 너무 길거나 분기가 많으면 즉시 분리.
-- **조건부 렌더링**: 중첩 삼항 연산자 절대 금지. `early return` 적극 활용.
-
-# 5. 상태 관리 정책 (핵심)
-동일한 데이터를 여러 곳에 중복 저장하지 않는다.
-- **서버 상태 (TanStack Query)**: 데이터 조회, 캐싱, 로딩/에러 상태. 컴포넌트는 직접 `axios/fetch`를 호출하지 않고 반드시 Query/Mutation Hook만 호출.
-- **전역 클라이언트 상태 (Redux Toolkit)**: 진행 단계, 모달/탭 전역 제어, 임시 편집 상태 등 (서버 원본 데이터를 Redux에 저장 금지).
-- **로컬 UI 상태 (`useState`)**: 특정 컴포넌트 내에서만 쓰이는 토글, 입력값 등.
-- **파생 상태**: 기존 state로 계산 가능한 값은 절대 새로운 state로 만들지 않고 메모이제이션(`useMemo`, selector)하여 사용.
-
-# 6. API 및 환경변수 처리
-- **환경변수**: `VITE_` 접두사 사용. `import.meta.env`를 개별 컴포넌트에서 직접 호출하지 않고 공통 config 모듈에서 사용할 것.
-- **공통 Client**: `shared/api/client.ts`에 `axios` 인스턴스를 하나만 생성하고, 모든 API 함수는 이를 사용.
-
-# 7. 주석 및 기타 금지 패턴
-- **주석**: "무엇을" 하는지가 아니라 "왜(Why)" 그렇게 했는지, 제약사항/배경/우회이유만 작성. `TODO`, `FIXME`, `NOTE` 목적에 맞게 사용.
-- **매직 넘버 금지**: 의미 있는 숫자/문자열은 상수로 추출하여 `UPPER_SNAKE_CASE`로 관리.
-
-🚨 [CRITICAL REQUIREMENT] 🚨
-프론트엔드 작업 시 위 핵심 규칙을 무조건 최우선으로 준수하라.
-자세한 코딩 컨벤션, 아키텍처 배경, 상세한 API 연동 방식, 상태 관리 예시 등은 프로젝트 내 `frontend/docs/frontend-guidelines.md` 파일을 반드시 읽고 참조하여 작업할 것.
-
-
-
-# 커밋 컨벤션
-<aside>
-
-</aside>
-
-### 1. Gitmoji Plugin
+이 파일은 프로젝트의 기술 스택, 코딩 컨벤션, 아키텍처 규칙을 정의한 **단일 진실 공급원(Single Source of Truth)**입니다. 모든 팀원과 AI 에이전트는 이 규칙을 최우선으로 준수해야 합니다.
 
 ---
 
-![](attachment:a9e374b1-d16a-462a-88da-03cf8d57195c:image.png)
-
-[Gitmoji Plus: Commit Button - IntelliJ IDEs Plugin | Marketplace](https://plugins.jetbrains.com/plugin/12383-gitmoji-plus-commit-button/)
-
-![2번째 줄 Use unicode emoji instead of test version 활성화](attachment:d10c3f7f-8542-48c0-8f25-f02400ad5ed0:image.png)
-
-2번째 줄 Use unicode emoji instead of test version 활성화
-
-### 2. 사용법
-
----
-
-| **아이콘** | **설명** | **원문** |
-| --- | --- | --- |
-| ✨ | 새 기능 | Introduce new features. |
-| ♻️ | 코드 리팩토링 | Refactor code. |
-| 🔥 | 코드/파일 삭제 | Remove code or files. |
-| 🐛 | 버그 수정 | Fix a bug. |
-| ✅ | 테스트 추가/수정 | Add or update tests. |
-| 📝 | 문서 추가/수정 | Add or update documentation. |
-| ➕ | 의존성 추가 | Add a dependency. |
-| ➖ | 의존성 제거 | Remove a dependency. |
-| 🔧 | 구성 파일 추가/삭제 | Add or update configuration files. |
-| ⏪ | 변경 내용 되돌리기 | Revert changes. |
-| 🚚 | 리소스 이동, 이름 변경 | Move or rename resources (e.g.: files paths routes). |
-| 💡 | 주석 추가/수정 | Add or update comments in source code. |
-
-![커밋 메세지 작성시 gitmoji 아이콘 클릭](attachment:1ed27d77-89bb-469d-8ddc-2dda4414c7c8:image.png)
-
-커밋 메세지 작성시 gitmoji 아이콘 클릭
-
-![커밋 컨벤션에 맞는 Gitmoji 선택](attachment:eadc60f8-bcdd-419e-ae6e-1d301962779b:image.png)
-
-커밋 컨벤션에 맞는 Gitmoji 선택
-
-### 3. 형식
+## 1. 프로젝트 핵심 스택 (버전 준수)
+- **Framework**: React 19.2.x, React DOM 19.2.x
+- **Build Tool**: Vite 7.3.x (TypeScript 5.9.x)
+- **Routing**: React Router 7.x
+- **State Management**:
+  - **Server**: TanStack Query v5 (객체 인자 방식 필용)
+  - **Global Client**: Redux Toolkit 2.x
+  - **Local UI**: `useState`, `useReducer`
+- **Styling**: Tailwind CSS 4.x (CSS-first approach)
+- **Quality Control**: Node.js 24 LTS, ESLint 9+, Prettier 3.x
 
 ---
 
-```c
-<gitmoji> <type>: <subject> 
-<body>
+## 2. 아키텍처 및 디렉토리 구조 (FSD)
+항상 기능/도메인 중심 구조를 준수하며, 특정 파일에 로직을 몰아넣지 않는다.
 
-Ref. #<jira-ticket>
-```
+### 📂 Layer별 역할
+- `app/`: 앱 전역 설정, 라우터, 전역 프로바이더, 스토어 초기화.
+- `pages/`: 라우트 단위 화면 조립. 조합과 레이아웃만 담당하며 직접적인 API 호출 금지.
+- `widgets/`: 페이지 내 독립적이고 의미 있는 UI 구역 (Header, Sidebar 등).
+- `features/`: 사용자 행동 및 상호작용 중심 기능 로직 (로그인, 파일 업로드 등).
+- `entities/`: 도메인 객체 단위 데이터, 타입, 매퍼, 도메인 전용 UI.
+- `shared/`: 범용 UI(버튼, 입력 등), 공통 유틸, 공통 API 클라이언트(`apiClient`).
 
-### 4. 예시 (BE)
-
----
-
-```
-♻️ refactor: Spring AI 호환성 업데이트
-
-- Spring AI 1.0.0 GA 버전 대응 의존성 업데이트
-- 불필요한 로그 제거 및 메시지 포맷 개선
-
-Ref. #S14P11A704-32
-```
-
-### 5. 규칙
+### 📂 Slice 내부 구조
+각 feature/entity 내부에서는 아래 구조를 기본으로 사용한다.
+- `api/`: HTTP 요청 함수, Query/Mutation Hook.
+- `model/`: 데이터 타입 정의, 매퍼(snake to camel), 도메인 가공 로직.
+- `ui/`: 렌더링 중심 컴포넌트 (JSX).
 
 ---
 
-<aside>
+## 3. 핵심 개발 규칙
 
-### **제목 (Subject) 작성 규칙**
+### 🧩 TypeScript & API 연동
+- **`any` 사용 절대 금지**: 불가피할 경우 `unknown`을 사용한다.
+- **데이터 매핑 (필수)**: 백엔드 응답(snake_case)을 그대로 UI에서 사용하지 않는다. 반드시 **Mapper**를 통해 camelCase 모델로 변환하여 사용한다.
+- **공통 Client**: 모든 API 호출은 `shared/api/client.ts`의 `apiClient` 인스턴스를 사용한다.
 
-```bash
-✅ ♻️ refactor: Spring AI 호환성 업데이트
-❌ ♻️ refactor: Spring AI 호환성 업데이트한다
-❌ ♻️ refactor: Spring AI 호환성 업데이트.
-```
+### 💾 상태 관리 정책
+- **서버 상태**: 반드시 TanStack Query로 관리하며, Redux에 서버 데이터를 저장하지 않는다.
+- **전역 클라이언트 상태**: 진행 단계, 모달 전역 제어 등 서버 데이터가 아닌 UI 전역 상태만 관리한다.
+- **파생 상태**: 기존 state로 계산 가능한 값은 절대 새로운 state로 만들지 않고 `useMemo`나 selector로 처리한다.
 
-1. 50자 이내 제한 (한글 기준 약 25자) 설정.
-2. 명령형 현재시제 사용 ("추가한다" ❌, "추가" ✅) 설정.
-3. Type 첫 글자 대문자 금지 (소문자 시작) 설정.
-4. 마침표 사용 금지 설정.
+### 💬 주석 작성 규칙 (JSDoc + Why)
+- **기본 원칙**: "무엇을"이 아니라 **"왜(Why)"**를 설명한다.
+- **JSDoc (상단)**: 파일/컴포넌트/함수 상단에는 `/** ... */`를 사용하여 IDE 툴팁을 지원한다.
+  - `@feature`, `@entity` 등 FSD 태그로 책임을 명시한다.
+- **로직 내부**: 비즈니스 배경이나 제약사항은 `// (Why)` 접두어를 사용해 설명한다.
 
-### **본문 (Body) 작성 규칙**
-
-```bash
-- Spring AI 1.0.0 GA 버전 대응 의존성 업데이트
-- 불필요한 로그 제거 및 메시지 포맷 개선
-```
-
-1. (-) 로 내용을 구분 설정.
-2. **왜(Why) 변경했는지** 중심으로 설명 설정.
-3. **무엇을(What) 변경했는지** 구체적으로 나열 설정.
-
-### **JIRA Ticket 작성 규칙**
-
-```bash
-✅ Ref. #S14P11A704-32, #S14P11A704-321
-❌ Ref. S14P11A704-32, S14P11A704-321
-❌ #S14P11A704-32, #S14P11A704-321
-```
-
-1. `Ref. #` 접두어 필수 설정.
-2. JIRA 이슈 번호 정확히 기재 설정.
-3. 본문과 한 줄 띄우고 작성 설정.
-</aside>
-
-### 6. Copilot Commit Convention
+### ⚙️ 환경 변수 처리
+- **VITE_** 접두사를 사용하며, 컴포넌트에서 직접 호출하지 않고 `shared/config/env.ts`를 통해 접근한다.
 
 ---
+
+## 4. 컴포넌트 및 네이밍 컨벤션
+- **네이밍**:
+  - 컴포넌트: `PascalCase.tsx`, 훅: `kebab-case.ts`, API/타입/매퍼: `도메인명.역할.ts`
+  - 이벤트 핸들러: `handle~` 접두어 사용.
+- **컴포넌트**: 단일 책임을 가지며, JSX가 너무 길거나 분기가 많으면 즉시 분리한다. (중첩 삼항 연산자 절대 금지)
+
+🚨 [CRITICAL] 🚨
+모든 프론트엔드 작업은 위 규칙을 무조건 최우선으로 준수하며, 작업 완료 후 스스로 위 규칙에 어긋남이 없는지 검증한다.
 
 
 ## PR 템플릿
