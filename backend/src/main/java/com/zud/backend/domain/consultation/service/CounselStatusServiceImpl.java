@@ -1,4 +1,4 @@
-package com.zud.backend.domain.counsel.service;
+package com.zud.backend.domain.consultation.service;
 
 import java.time.Duration;
 import java.util.List;
@@ -7,7 +7,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import com.zud.backend.domain.counsel.enums.CounselStatus;
+import com.zud.backend.domain.consultation.enums.CounselStatus;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
