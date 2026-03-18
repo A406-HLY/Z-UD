@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 import com.zud.backend.common.filter.SessionAuthFilter;
 
@@ -38,6 +39,7 @@ public class SecurityConfig {
 	};
 
 	private final SessionAuthFilter sessionAuthFilter;
+	private final CorsConfigurationSource corsConfigurationSource;
 
 	private static void createSessionPolicy(SessionManagementConfigurer<HttpSecurity> session) {
 		session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
@@ -51,6 +53,7 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) {
 		http
+			.cors(cors -> cors.configurationSource(corsConfigurationSource))
 			.csrf(AbstractHttpConfigurer::disable)
 			.httpBasic(AbstractHttpConfigurer::disable)
 			.formLogin(AbstractHttpConfigurer::disable)
