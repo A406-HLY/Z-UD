@@ -6,6 +6,8 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 
+import com.zud.backend.common.util.LoggingUtils;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -34,9 +36,10 @@ public class ControllerLoggingAspect {
 		} catch (Exception e) {
 			long end = System.currentTimeMillis();
 			long executionTime = end - start;
+			String maskedMessage = LoggingUtils.maskSensitive(e.getMessage());
 
 			log.error("[Controller Exception] {}.{} time = {}ms, message = {}",
-				className, methodName, executionTime, e.getMessage(), e);
+				className, methodName, executionTime, maskedMessage, e);
 
 			throw e;
 		}
