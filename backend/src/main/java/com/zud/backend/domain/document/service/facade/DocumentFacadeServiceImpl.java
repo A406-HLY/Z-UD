@@ -5,7 +5,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,17 +29,15 @@ public class DocumentFacadeServiceImpl implements DocumentFacadeService {
 	private final FileValidator fileValidator;
 	private final Executor applicationTaskExecutor;
 
-	@Async
 	@Override
-	public void uploadFiles(final List<MultipartFile> files, final Long userId, final Long counselId) {
-		String dirName = generateDirName(userId, counselId);
+	public void uploadFiles(final List<MultipartFile> files, final String counselId) {
 		try {
-			counselStatusService.updateDocumentVerificationStatus(dirName, CounselStatus.UPLOADING, null);
+			counselStatusService.updateDocumentVerificationStatus(counselId, CounselStatus.UPLOADING, null);
 
 			files.forEach(fileValidator::validateFile);
 
 			List<CompletableFuture<String>> futures = files.stream()
-				.map(file -> uploadSingleFile(file, dirName))
+				.map(file -> uploadSingleFile(file, counselId))
 				.toList();
 
 			List<String> uploadedUrls = CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new))
@@ -51,20 +48,16 @@ public class DocumentFacadeServiceImpl implements DocumentFacadeService {
 				.orTimeout(UPLOAD_TIMEOUT_SECONDS, TimeUnit.SECONDS)
 				.join();
 
-			counselStatusService.updateDocumentVerificationStatus(dirName, CounselStatus.OCR_QUEUED, uploadedUrls);
-			log.info("[Document] 다중 파일 업로드 완료: dirName={}, count={}", dirName, uploadedUrls.size());
+			counselStatusService.updateDocumentVerificationStatus(counselId, CounselStatus.OCR_QUEUED, uploadedUrls);
+			log.info("[Document] 다중 파일 업로드 완료: counselId={}, count={}", counselId, uploadedUrls.size());
 		} catch (Exception e) {
-			log.error("[Document] 파일 업로드 실패: dirName={}", dirName, e);
-			counselStatusService.updateDocumentVerificationStatus(dirName, CounselStatus.FAILED, List.of());
+			log.error("[Document] 파일 업로드 실패: counselId={}", counselId, e);
+			counselStatusService.updateDocumentVerificationStatus(counselId, CounselStatus.FAILED, List.of());
 		}
 	}
 
 	private CompletableFuture<String> uploadSingleFile(final MultipartFile file, final String dirName) {
 		return CompletableFuture.supplyAsync(
 			() -> cloudflareService.uploadFile(file, dirName), applicationTaskExecutor);
-	}
-
-	private String generateDirName(final Long userId, final Long counselId) {
-		return userId + "/" + counselId;
 	}
 }
