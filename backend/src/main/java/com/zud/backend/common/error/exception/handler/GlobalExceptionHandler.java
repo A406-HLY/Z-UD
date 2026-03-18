@@ -11,6 +11,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -22,6 +23,7 @@ import com.zud.backend.common.error.exception.BusinessException;
 import com.zud.backend.common.response.BaseResponse;
 import com.zud.backend.common.response.ErrorResponse;
 import com.zud.backend.common.util.LoggingUtils;
+import com.zud.backend.domain.consultation.exception.ConsultationException;
 import com.zud.backend.domain.document.exception.DocumentException;
 import com.zud.backend.domain.user.exception.UserException;
 
@@ -56,6 +58,16 @@ public class GlobalExceptionHandler {
 		HttpServletRequest request
 	) {
 		LoggingUtils.logException("ConstraintViolationException 발생", ex, request);
+		ErrorResponse response = ErrorResponse.of(ErrorCode.INVALID_INPUT, request);
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BaseResponse.fail(response));
+	}
+
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<BaseResponse<ErrorResponse>> handleMethodArgumentNotValid(
+		MethodArgumentNotValidException ex,
+		HttpServletRequest request
+	) {
+		LoggingUtils.logValidationException(ex, request);
 		ErrorResponse response = ErrorResponse.of(ErrorCode.INVALID_INPUT, request);
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BaseResponse.fail(response));
 	}
@@ -186,6 +198,16 @@ public class GlobalExceptionHandler {
 		HttpServletRequest request
 	) {
 		LoggingUtils.logException("DocumentException 발생", ex, request);
+		ErrorResponse response = ErrorResponse.of(ex.getErrorCode(), request);
+		return ResponseEntity.status(ex.getErrorCode().getHttpStatus()).body(BaseResponse.fail(response));
+	}
+
+	@ExceptionHandler(ConsultationException.class)
+	public ResponseEntity<BaseResponse<ErrorResponse>> handleConsultationException(
+		ConsultationException ex,
+		HttpServletRequest request
+	) {
+		LoggingUtils.logException("ConsultationException 발생", ex, request);
 		ErrorResponse response = ErrorResponse.of(ex.getErrorCode(), request);
 		return ResponseEntity.status(ex.getErrorCode().getHttpStatus()).body(BaseResponse.fail(response));
 	}

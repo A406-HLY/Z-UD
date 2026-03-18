@@ -64,8 +64,21 @@ public enum ErrorCode {
 	 * House Price Error (HP-xxx)
 	 */
 	INVALID_HOUSE_TYPE(HttpStatus.BAD_REQUEST, "HP-001", "주택담보대출이 불가능한 주택 유형입니다."),
+	HOUSE_PRICE_NOT_FOUND(HttpStatus.NOT_FOUND, "HP-002", "주택 시세 조회가 불가합니다. 수기로 입력해주세요."),
 	INVALID_ADDRESS_FORMAT(HttpStatus.BAD_REQUEST, "HP-003", "주소 형식이 올바르지 않습니다."),
-	ILLEGAL_BUILDING(HttpStatus.BAD_REQUEST, "HP-004", "위반건축물은 주택담보대출 대상 건물이 될 수 없습니다.");
+	ILLEGAL_BUILDING(HttpStatus.BAD_REQUEST, "HP-004", "위반건축물은 주택담보대출 대상 건물이 될 수 없습니다."),
+
+	/**
+	 * Consultation Error (CO-xxx)
+	 */
+	CONSULTATION_NOT_FOUND(HttpStatus.NOT_FOUND, "CO-001", "상담 정보를 찾을 수 없습니다."),
+
+	/**
+	 * Encryption Error (EN-xxx)
+	 */
+	ENCRYPTION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "EN-001", "주민등록번호 암호화 처리에 실패했습니다."),
+	DECRYPTION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "EN-002", "주민등록번호 복호화 처리에 실패했습니다."),
+	ENCRYPTED_DATA_INVALID(HttpStatus.INTERNAL_SERVER_ERROR, "EN-003", "암호화된 데이터 형식이 올바르지 않습니다.");
 
 	private final HttpStatus httpStatus;
 	private final String code;
