@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.zud.backend.common.annotation.Authentication;
 import com.zud.backend.common.response.BaseResponse;
 import com.zud.backend.common.util.ResponseUtils;
 import com.zud.backend.domain.document.service.facade.DocumentFacadeService;
@@ -36,12 +35,10 @@ public class DocumentController {
 	public ResponseEntity<BaseResponse<Void>> uploadMultipleImage(
 		@Schema(description = "업로드할 파일 목록")
 		@RequestPart("multipartFile") List<MultipartFile> files,
-		@Authentication Long userId,
 		@Parameter(description = "상담 ID")
-		@RequestParam("counselId") Long counselId
+		@RequestParam("counselId") String counselId
 	) {
-		facadeService.uploadFiles(files, userId, counselId);
+		facadeService.uploadFiles(files, counselId);
 		return ResponseUtils.accepted();
 	}
-
 }

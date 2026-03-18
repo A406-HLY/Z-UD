@@ -5,5 +5,5 @@ import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface DocumentFacadeService {
-	void uploadFiles(final List<MultipartFile> files, final Long userId, final Long counselId);
+	void uploadFiles(final List<MultipartFile> files, final String counselId);
 }
