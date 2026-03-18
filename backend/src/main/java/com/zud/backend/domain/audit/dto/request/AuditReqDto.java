@@ -1,19 +1,29 @@
 package com.zud.backend.domain.audit.dto.request;
 
-import com.zud.backend.domain.branch.dto.request.NearestBranchReqDto;
-
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
-@Schema(description = "심사 요청 DTO")
+@Schema(description = "주택 심사 요청 DTO")
 @Builder
 public record AuditReqDto(
-	@Schema(description = "가장 가까운 은행 지점 검사 요청")
-	@NotNull(message = "nearestBranch는 필수입니다.")
-	@Valid
-	NearestBranchReqDto nearestBranch
+
+	@Schema(
+		description = "주택 유형",
+		example = "아파트",
+		allowableValues = {"아파트", "다세대연립", "단독"}
+	)
+	@NotNull(message = "주택 유형은 필수입니다.")
+	String houseType,
+
+	@Schema(description = "심사 대상 주택 주소", example = "서울특별시 강남구 테헤란로 212")
+	@NotBlank(message = "주택 주소는 필수입니다.")
+	String propertyAddress,
+
+	@Schema(description = "위반건축물 여부", example = "false")
+	@NotNull(message = "위반건축물 여부는 필수입니다.")
+	Boolean illegalBuilding
 ) {
 }
 
