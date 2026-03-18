@@ -1,4 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
+import authReducer from './slices/auth.slice';
 
 /**
  * 전역 Redux 스토어
@@ -6,9 +7,7 @@ import { configureStore } from '@reduxjs/toolkit';
  */
 export const store = configureStore({
   reducer: {
-    // 예:
-    // reviewFlow: reviewFlowReducer,
-    // documentUi: documentUiReducer,
+    auth: authReducer,
   },
   devTools: process.env.NODE_ENV !== 'production', // 개발 환경에서만 DevTools 활성화
 });
