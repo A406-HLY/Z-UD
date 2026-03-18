@@ -325,13 +325,11 @@ class HousePriceQueryServiceImplTest {
 					"반포아파트"
 				)).willReturn(new ArrayList<>());
 
-				// when & then
-				assertThatThrownBy(() -> housePriceQueryService.findHousePrice(VALID_HOUSE_TYPE, VALID_ADDRESS))
-					.isInstanceOf(HousePriceException.class)
-					.satisfies(exception -> {
-						HousePriceException housePriceException = (HousePriceException)exception;
-						assertThat(housePriceException.getErrorCode()).isEqualTo(ErrorCode.HOUSE_PRICE_NOT_FOUND);
-					});
+				// when
+				HousePriceResDto result = housePriceQueryService.findHousePrice(VALID_HOUSE_TYPE, VALID_ADDRESS);
+
+				// then
+				assertThat(result).isNull();
 			}
 		}
 
