@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.zud.backend.common.error.ErrorCode;
 import com.zud.backend.domain.houseprice.dto.response.HousePriceResDto;
 import com.zud.backend.domain.houseprice.entity.HouseOfficialPrice;
+import com.zud.backend.domain.houseprice.entity.HouseType;
 import com.zud.backend.domain.houseprice.entity.HouseTradePrice;
 import com.zud.backend.domain.houseprice.exception.HousePriceException;
 import com.zud.backend.domain.houseprice.repository.HouseOfficialPriceRepository;
@@ -25,6 +26,14 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 @Transactional(readOnly = true)
 public class HousePriceQueryServiceImpl implements HousePriceQueryService {
+
+	private static final String PRICE_TYPE_TRADE = "실거래가";
+	private static final String PRICE_TYPE_OFFICIAL = "공시가";
+	private static final String PRICE_TYPE_ESTIMATED = "근삿값";
+
+	private static final String MESSAGE_TRADE = "실거래가 기준으로 조회되었습니다.";
+	private static final String MESSAGE_OFFICIAL = "공시가 기준으로 조회되었습니다.";
+	private static final String MESSAGE_ESTIMATED = "같은 동의 낮은 주택가 평균값으로 조회되었습니다.";
 
 	private final HouseTradePriceRepository houseTradePriceRepository;
 	private final HouseOfficialPriceRepository houseOfficialPriceRepository;
@@ -66,25 +75,18 @@ public class HousePriceQueryServiceImpl implements HousePriceQueryService {
 
 		final Optional<HousePriceResDto> estimatedPriceResult =
 			findEstimatedPriceResult(houseType, dbHouseType, address, parsedAddress);
-		return estimatedPriceResult.orElseThrow(() -> new HousePriceException(ErrorCode.HOUSE_PRICE_NOT_FOUND));
+		return estimatedPriceResult.orElse(null);
 	}
 
 	private void validateHouseType(final String houseType) {
-		if (houseType == null
-			|| (!houseType.equals("아파트")
-			&& !houseType.equals("다세대연립")
-			&& !houseType.equals("단독"))) {
+		if (houseType == null) {
 			throw new HousePriceException(ErrorCode.INVALID_HOUSE_TYPE);
 		}
+		HouseType.fromDisplayName(houseType);
 	}
 
 	private String convertHouseTypeToDbFormat(final String houseType) {
-		return switch (houseType) {
-			case "아파트" -> "APARTMENT";
-			case "다세대연립" -> "MULTI_HOUSEHOLD";
-			case "단독" -> "SINGLE";
-			default -> throw new HousePriceException(ErrorCode.INVALID_HOUSE_TYPE);
-		};
+		return HouseType.fromDisplayName(houseType).getDbCode();
 	}
 
 	private Optional<HouseTradePrice> findExactTradePrice(final String dbHouseType, final ParsedAddress parsedAddress) {
@@ -143,8 +145,8 @@ public class HousePriceQueryServiceImpl implements HousePriceQueryService {
 		return Optional.of(
 			HousePriceResDto.builder()
 				.price(price)
-				.priceType("실거래가")
-				.message("실거래가 기준으로 조회되었습니다.")
+				.priceType(PRICE_TYPE_TRADE)
+				.message(MESSAGE_TRADE)
 				.build()
 		);
 	}
@@ -177,8 +179,8 @@ public class HousePriceQueryServiceImpl implements HousePriceQueryService {
 		return Optional.of(
 			HousePriceResDto.builder()
 				.price(price)
-				.priceType("공시가")
-				.message("공시가 기준으로 조회되었습니다.")
+				.priceType(PRICE_TYPE_OFFICIAL)
+				.message(MESSAGE_OFFICIAL)
 				.build()
 		);
 	}
@@ -269,8 +271,8 @@ public class HousePriceQueryServiceImpl implements HousePriceQueryService {
 		return Optional.of(
 			HousePriceResDto.builder()
 				.price(price)
-				.priceType("근삿값")
-				.message("같은 동의 낮은 주택가 평균값으로 조회되었습니다.")
+				.priceType(PRICE_TYPE_ESTIMATED)
+				.message(MESSAGE_ESTIMATED)
 				.build()
 		);
 	}
