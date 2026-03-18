@@ -2,18 +2,22 @@ package com.zud.backend.domain.houseprice.util;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AddressParser {
 
+	private static final String INVALID_ADDRESS_MESSAGE = "주소 형식이 올바르지 않습니다: ";
+
 	public static ParsedAddress parse(final String address) {
 		if (address == null || address.isBlank()) {
-			throw new IllegalArgumentException("주소가 비어있습니다.");
+			throw new IllegalArgumentException(INVALID_ADDRESS_MESSAGE + address);
 		}
 
 		final String[] tokens = address.trim().split("\\s+");
 		if (tokens.length < 4) {
-			throw new IllegalArgumentException("주소 형식이 올바르지 않습니다: " + address);
+			throw new IllegalArgumentException(INVALID_ADDRESS_MESSAGE + address);
 		}
 
 		final String sido = tokens[0];
@@ -26,20 +30,46 @@ public class AddressParser {
 			idx++;
 		}
 
-		if (idx >= tokens.length) {
-			throw new IllegalArgumentException("주소 형식이 올바르지 않습니다: " + address);
-		}
-
-		// 도로명 + 번호 (예: "자하문로36길" "16-14", "천사로" "130")
+		// 도로명 + [번호] (예: "자하문로36길" "16-14", "천사로" "130")
 		if (!tokens[idx].contains("로") && !tokens[idx].contains("길")) {
-			throw new IllegalArgumentException("주소 형식이 올바르지 않습니다: " + address);
+			throw new IllegalArgumentException(INVALID_ADDRESS_MESSAGE + address);
 		}
 		final String roadNameToken = tokens[idx++];
-		if (idx >= tokens.length) {
-			throw new IllegalArgumentException("주소 형식이 올바르지 않습니다: " + address);
+
+		// 번호 토큰이 없는 경우도 허용 (예: "월드컵4강로68번길")
+		String roadNumberToken = null;
+		if (idx < tokens.length) {
+			// 숫자가 포함된 토큰을 도로번호로 간주 (예: "130", "16-14")
+			if (tokens[idx].matches(".*\\d.*")) {
+				roadNumberToken = tokens[idx++];
+			}
 		}
-		final String roadNumberToken = tokens[idx++];
-		final String roadName = roadNameToken + " " + roadNumberToken;
+
+		final String roadName = (roadNumberToken != null)
+			? roadNameToken + " " + roadNumberToken
+			: roadNameToken;
+
+		// 도로명까지만 있고 건물 정보가 없는 경우도 허용
+		if (idx >= tokens.length) {
+			final String fullRoadAddress;
+			if (dongRi != null) {
+				fullRoadAddress = String.join(" ", sido, sigungu, dongRi, roadName);
+			} else {
+				fullRoadAddress = String.join(" ", sido, sigungu, roadName);
+			}
+
+			return ParsedAddress.builder()
+				.sido(sido)
+				.sigungu(sigungu)
+				.dongRi(dongRi)
+				.roadAddress(fullRoadAddress)
+				.roadName(roadName)
+				.buildingName(null)
+				.buildingDong(null)
+				.ho(null)
+				.floor(null)
+				.build();
+		}
 
 		// 나머지: 건물이름 + [동] + [층] + [호]
 		String buildingName = null;
@@ -59,7 +89,6 @@ public class AddressParser {
 				try {
 					floor = Integer.parseInt(digitsOnly);
 				} catch (NumberFormatException ignored) {
-					floor = null;
 				}
 			}
 			end--;
@@ -89,7 +118,7 @@ public class AddressParser {
 			fullRoadAddress = String.join(" ", sido, sigungu, roadName);
 		}
 
-		return ParsedAddress.builder()
+		ParsedAddress result = ParsedAddress.builder()
 			.sido(sido)
 			.sigungu(sigungu)
 			.dongRi(dongRi)
@@ -100,5 +129,19 @@ public class AddressParser {
 			.ho(ho)
 			.floor(floor)
 			.build();
+
+		log.debug("[AddressParser] Parsed address - raw: {}, sido: {}, sigungu: {}, dongRi: {}, roadName: {}, buildingName: {}, buildingDong: {}, floor: {}, ho: {}, roadAddress: {}",
+			address,
+			result.getSido(),
+			result.getSigungu(),
+			result.getDongRi(),
+			result.getRoadName(),
+			result.getBuildingName(),
+			result.getBuildingDong(),
+			result.getFloor(),
+			result.getHo(),
+			result.getRoadAddress());
+
+		return result;
 	}
 }

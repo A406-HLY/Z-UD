@@ -105,6 +105,7 @@ public class HousePriceQueryServiceImpl implements HousePriceQueryService {
 			case "SINGLE" -> Optional.ofNullable(
 				houseTradePriceRepository.findSingleHouseExactMatch(
 					fullSigungu,
+					parsedAddress.getRoadName(),
 					parsedAddress.getBuildingName()
 				)
 			);
