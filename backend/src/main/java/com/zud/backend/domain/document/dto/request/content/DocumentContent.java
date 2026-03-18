@@ -5,6 +5,6 @@ import com.zud.backend.domain.document.enums.DocumentTag;
 
 public interface DocumentContent {
 
-    @JsonIgnore
-    DocumentTag getDocumentTag();
+	@JsonIgnore
+	DocumentTag getDocumentTag();
 }

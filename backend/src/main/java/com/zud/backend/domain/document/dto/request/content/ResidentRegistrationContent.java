@@ -11,27 +11,28 @@ import lombok.Builder;
 @Schema(description = "주민등록등본 (FILE_001)")
 @Builder
 public record ResidentRegistrationContent(
-    @Schema(description = "발급일자")
-    DataField<String> issueDate,
-    @Schema(description = "발급번호")
-    DataField<String> issueNumber,
-    @Schema(description = "세대주성명")
-    DataField<String> headOfHouseholdName,
-    @Schema(description = "세대원 목록")
-    List<HouseholdMember> householdMembers
+	@Schema(description = "발급일자")
+	DataField<String> issueDate,
+	@Schema(description = "발급번호")
+	DataField<String> issueNumber,
+	@Schema(description = "세대주성명")
+	DataField<String> headOfHouseholdName,
+	@Schema(description = "세대원 목록")
+	List<HouseholdMember> householdMembers
 ) implements DocumentContent {
 
-    @Schema(description = "세대원 정보")
-    @Builder
-    public record HouseholdMember(
-        @Schema(description = "성명")
-        DataField<String> name,
-        @Schema(description = "주민등록번호")
-        DataField<String> residentRegistrationNumber
-    ) {}
+	@Override
+	public DocumentTag getDocumentTag() {
+		return DocumentTag.FILE_001_RESIDENT_REGISTRATION;
+	}
 
-    @Override
-    public DocumentTag getDocumentTag() {
-        return DocumentTag.FILE_001_RESIDENT_REGISTRATION;
-    }
+	@Schema(description = "세대원 정보")
+	@Builder
+	public record HouseholdMember(
+		@Schema(description = "성명")
+		DataField<String> name,
+		@Schema(description = "주민등록번호")
+		DataField<String> residentRegistrationNumber
+	) {
+	}
 }
