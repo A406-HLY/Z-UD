@@ -40,6 +40,10 @@ spring:
       enabled: on
   jmx:
     enabled: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
 
 server:
   servlet:
