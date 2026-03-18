@@ -9,27 +9,28 @@ import lombok.Builder;
 @Schema(description = "매매/임대차계약서 (FILE_016)")
 @Builder
 public record SaleOrLeaseContractContent(
-    @Schema(description = "소재지")
-    DataField<String> propertyAddress,
-    @Schema(description = "매매대금/보증금")
-    DataField<Long> salePrice,
-    @Schema(description = "특약사항")
-    DataField<String> specialTerms,
-    @Schema(description = "매도인/임대인")
-    Party seller,
-    @Schema(description = "매수인/임차인")
-    Party buyer
+	@Schema(description = "소재지")
+	DataField<String> propertyAddress,
+	@Schema(description = "매매대금/보증금")
+	DataField<Long> salePrice,
+	@Schema(description = "특약사항")
+	DataField<String> specialTerms,
+	@Schema(description = "매도인/임대인")
+	Party seller,
+	@Schema(description = "매수인/임차인")
+	Party buyer
 ) implements DocumentContent {
 
-    @Schema(description = "계약 당사자")
-    @Builder
-    public record Party(
-        @Schema(description = "성명")
-        DataField<String> name
-    ) {}
+	@Override
+	public DocumentTag getDocumentTag() {
+		return DocumentTag.FILE_016_SALE_OR_LEASE_CONTRACT;
+	}
 
-    @Override
-    public DocumentTag getDocumentTag() {
-        return DocumentTag.FILE_016_SALE_OR_LEASE_CONTRACT;
-    }
+	@Schema(description = "계약 당사자")
+	@Builder
+	public record Party(
+		@Schema(description = "성명")
+		DataField<String> name
+	) {
+	}
 }

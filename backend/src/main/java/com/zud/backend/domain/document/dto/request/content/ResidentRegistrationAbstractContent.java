@@ -9,16 +9,16 @@ import lombok.Builder;
 @Schema(description = "주민등록초본 (FILE_002)")
 @Builder
 public record ResidentRegistrationAbstractContent(
-    @Schema(description = "발급일자")
-    DataField<String> issueDate,
-    @Schema(description = "발급번호")
-    DataField<String> issueNumber,
-    @Schema(description = "현주소지")
-    DataField<String> currentAddress
+	@Schema(description = "발급일자")
+	DataField<String> issueDate,
+	@Schema(description = "발급번호")
+	DataField<String> issueNumber,
+	@Schema(description = "현주소지")
+	DataField<String> currentAddress
 ) implements DocumentContent {
 
-    @Override
-    public DocumentTag getDocumentTag() {
-        return DocumentTag.FILE_002_RESIDENT_REGISTRATION_ABSTRACT;
-    }
+	@Override
+	public DocumentTag getDocumentTag() {
+		return DocumentTag.FILE_002_RESIDENT_REGISTRATION_ABSTRACT;
+	}
 }
