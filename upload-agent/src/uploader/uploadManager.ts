@@ -5,7 +5,11 @@ import { logger } from '../utils/logger';
 export class UploadManager {
   private static isUploading = false;
 
-  public static async startUploading(mode: 'all' | 'selected' = 'all', sequenceIds?: number[]): Promise<void> {
+  public static async startUploading(mode: 'all' | 'selected' = 'all', sequenceIds?: number[], counselId?: number): Promise<void> {
+    if (!counselId) {
+      throw new Error('counselId is required for backend upload.');
+    }
+
     if (this.isUploading) {
       logger.info('Upload process is already running.');
       return;
@@ -13,14 +17,14 @@ export class UploadManager {
 
     this.isUploading = true;
     try {
-      await this.processQueue(mode, sequenceIds);
+      await this.processQueue(mode, sequenceIds, counselId);
     } finally {
       this.isUploading = false;
       logger.info('Upload process finished or paused.');
     }
   }
 
-  private static async processQueue(mode: 'all' | 'selected', sequenceIds?: number[]): Promise<void> {
+  private static async processQueue(mode: 'all' | 'selected', sequenceIds: number[] | undefined, counselId: number): Promise<void> {
     let filesToUpload: QueuedFile[] = [];
 
     if (mode === 'all') {
@@ -56,7 +60,7 @@ export class UploadManager {
       try {
         FileQueueStore.updateFileStatus(file.sequenceId, 'UPLOADING');
         
-        await BackendApiClient.uploadFile(file.storedPath, file.sequenceId);
+        await BackendApiClient.uploadFile(file.storedPath, file.sequenceId, counselId);
         
         FileQueueStore.updateFileStatus(file.sequenceId, 'COMPLETED');
       } catch (error: unknown) {

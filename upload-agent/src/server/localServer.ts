@@ -46,9 +46,15 @@ export class LocalServer {
 
     /**
      * 특정 파일을 선택하여 전송 프로세스를 시작하기 위한 트리거 엔드포인트.
+     * 백엔드 API 명세에 따른 필수 파라미터(counselId)를 함께 요구함.
      */
     this.app.post('/api/upload/start', async (req: Request, res: Response): Promise<any> => {
-      const { mode = 'all', sequenceIds } = req.body;
+      const { mode = 'all', sequenceIds, counselId } = req.body;
+
+      // 백엔드 영속성을 위해 상담 ID는 필수이므로 사전에 차단함
+      if (!counselId || typeof counselId !== 'number') {
+        return res.status(400).json(ApiResponseWrapper.error('MISSING_COUNSEL_ID', null, 'counselId is required and must be a number.'));
+      }
 
       if (mode !== 'all' && mode !== 'selected') {
         return res.status(400).json(ApiResponseWrapper.error('INVALID_MODE', null, 'Invalid mode. Use "all" or "selected".'));
@@ -63,14 +69,14 @@ export class LocalServer {
         }
       }
 
-      logger.info(`Frontend requested to start upload process (mode: ${mode}).`);
+      logger.info(`Frontend requested to start upload process (mode: ${mode}, counselId: ${counselId}).`);
       
       try {
         /**
          * 업로드 유효성 검사를 시작 단계에서 수행하여 프론트에 즉각적인 피드백을 제공함.
          * 실제 업로드 프로세스는 내부적으로 비동기 순차 처리를 수행함.
          */
-        await UploadManager.startUploading(mode, sequenceIds);
+        await UploadManager.startUploading(mode, sequenceIds, counselId);
         res.json(ApiResponseWrapper.success(null, 'Upload process completed or started successfully'));
       } catch (err: unknown) {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error during upload start';
