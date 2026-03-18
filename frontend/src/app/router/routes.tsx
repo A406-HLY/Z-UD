@@ -1,4 +1,5 @@
 import { createBrowserRouter } from 'react-router-dom';
+import LoginPage from '../../pages/login/ui/LoginPage';
 
 /**
  * 프로젝트 전체 라우팅 설정
@@ -9,15 +10,19 @@ import { createBrowserRouter } from 'react-router-dom';
 export const router = createBrowserRouter([
   {
     path: '/',
-    // element: <AppLayout />, // widgets/layout/... 나중에 추가
     children: [
       {
         index: true,
-        element: <div>홈 화면 (리다이렉트 혹은 대시보드)</div>,
+        // TODO: 로그인 여부에 따라 /login 또는 /basic-info로 리다이렉트하는 Guard 컴포넌트 추가 필요
+        element: <LoginPage />, 
       },
       {
-        path: 'basic-info', // 기초정보 입력
-        element: <div>기초 정보 입력 화면</div>,
+        path: 'login', // 로그인 페이지
+        element: <LoginPage />,
+      },
+      {
+        path: 'basic-info', // 기초 정보 입력 화면 (로그인 후 접근 가능)
+        element: <div>기초 정보 입력 화면 (로그인 후 접근 가능)</div>,
       },
       {
         path: 'upload', // 서류 업로드
