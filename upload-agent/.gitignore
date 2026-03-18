@@ -124,3 +124,4 @@ dist
 # upload-agent specific
 upload-test-dir/
 data/settings.json
+temp/
