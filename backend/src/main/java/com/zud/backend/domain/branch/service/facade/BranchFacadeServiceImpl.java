@@ -32,7 +32,7 @@ public class BranchFacadeServiceImpl implements BranchFacadeService {
 		User user = userQueryService.findById(userId);
 		Branch currentBranch = user.getBranch();
 
-		CoordinateResultDto coordinate = addressGeocodingClient.getCoordinates(reqDto.address());
+		CoordinateResultDto coordinate = addressGeocodingClient.getCoordinates(reqDto.propertyAddress());
 
 		NearestBranchProjection nearestBranch = branchQueryService.findNearestBranch(
 			coordinate.longitude(),
