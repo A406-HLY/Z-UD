@@ -8,10 +8,15 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.zud.backend.common.constant.BackDomain;
+import com.zud.backend.common.constant.FrontDomain;
+
 @Configuration
 public class CorsConfig {
 	private static final List<String> ALLOWED_ORIGINS = List.of(
-		"http://localhost:3000"
+		BackDomain.LOCAL.getUrl(),
+		BackDomain.PROD.getUrl(),
+		FrontDomain.LOCAL.getUrl()
 	);
 
 	private static final List<String> ALLOWED_HEADERS = List.of(
