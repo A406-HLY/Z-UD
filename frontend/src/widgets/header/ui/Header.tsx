@@ -1,9 +1,10 @@
 import { useAppSelector } from '@/app/store/hooks';
+import { CURRENT_WORK_NAME } from '@/shared/config/app-constants';
 
 /**
- * 대역 상단 헤더 위젯
- * - 지점 정보, 업무 정보, 사용자 접속 정보를 포함함
- * - 사용자 요청에 따라 로그아웃 버튼은 제외됨
+ * @widget Header
+ * 대역 상단 헤더 위젯입니다.
+ * (Why) 지점 정보, 업무 정보, 사용자 접속 정보를 시각화하며, 업무 명칭은 전역 설정을 따릅니다.
  */
 export const Header = () => {
   const user = useAppSelector((state) => state.auth.user);
@@ -14,9 +15,9 @@ export const Header = () => {
         <h1 className="text-lg font-bold text-gray-900">
           {user?.branchName || '지점 정보 없음'}
         </h1>
-        <div className="h-4 w-[1px] bg-gray-300" />
+        <div className="h-4 w-px bg-gray-300" />
         <span className="text-sm font-medium text-gray-600">
-          업무 : 주택담보대출 가심사
+          업무 : {CURRENT_WORK_NAME}
         </span>
       </div>
 

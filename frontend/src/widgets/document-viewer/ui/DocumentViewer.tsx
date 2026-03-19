@@ -1,12 +1,10 @@
 import { useState } from 'react';
 import { Button } from '@/shared/ui';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { StatusBadge } from '@/entities/loan-document/ui/StatusBadge';
 
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
-
+/**
+ * 서류 정보 타입 정의
+ */
 interface Document {
   id: string;
   no: number;
@@ -15,19 +13,17 @@ interface Document {
   status: 'VERIFIED' | 'PENDING' | 'PROCESSING';
 }
 
-// ... (중략: Document 인터페이스 정의 유지)
-
 const EMPTY_DOCS: Document[] = [];
 
 /**
- * 중앙 분할형 서류 뷰어 위젯
- * - BATCH SEGMENT A/B 두 영역으로 분리
- * - 체크박스 선택 기능 포함
- * - 우측 상단 '다음 단계' 버튼 추가
+ * @widget DocumentViewer
+ * 중앙 분할형 서류 뷰어 위젯입니다.
+ * (Why) BATCH A/B 영역을 동시에 확인하고 체크박스로 선택할 수 있는 기능을 제공하며, 서류 상태 표시에는 Entities 레이어의 공용 컴포넌트를 사용합니다.
  */
 export const DocumentViewer = () => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
+  /** 체크박스 선택 토글 핸들러 */
   const toggleSelect = (id: string) => {
     const newSelected = new Set(selectedIds);
     if (newSelected.has(id)) newSelected.delete(id);
@@ -35,6 +31,10 @@ export const DocumentViewer = () => {
     setSelectedIds(newSelected);
   };
 
+  /** 
+   * 테이블 섹션 렌더링 함수
+   * (Note) BATCH A와 B 영역에 대해 동일한 테이블 구조를 사용합니다.
+   */
   const renderTable = (title: string, docs: Document[]) => (
     <div className="flex-1 flex flex-col min-w-0">
       <div className="px-4 py-2 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
@@ -73,6 +73,13 @@ export const DocumentViewer = () => {
               </td>
             </tr>
           ))}
+          {docs.length === 0 && (
+            <tr>
+              <td colSpan={5} className="px-3 py-10 text-center text-gray-400 text-xs">
+                제출된 서류가 없습니다.
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
     </div>
@@ -95,32 +102,5 @@ export const DocumentViewer = () => {
         {renderTable('BATCH SEGMENT B', EMPTY_DOCS)}
       </div>
     </div>
-  );
-};
-
-const StatusBadge = ({ status }: { status: Document['status'] }) => {
-  const styles = {
-    VERIFIED: 'text-green-600 flex items-center gap-1',
-    PENDING: 'text-orange-500 flex items-center gap-1',
-    PROCESSING: 'text-blue-500 flex items-center gap-1',
-  };
-
-  const labels = {
-    VERIFIED: 'VERIFIED',
-    PENDING: 'PENDING',
-    PROCESSING: 'PROCESSING',
-  };
-
-  const icons = {
-    VERIFIED: '✓',
-    PENDING: '◎',
-    PROCESSING: '◎',
-  };
-
-  return (
-    <span className={cn('text-[10px] font-bold', styles[status])}>
-      <span>{icons[status]}</span>
-      {labels[status]}
-    </span>
   );
 };
