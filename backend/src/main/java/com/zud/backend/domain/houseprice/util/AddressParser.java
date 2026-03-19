@@ -46,9 +46,7 @@ public class AddressParser {
 			}
 		}
 
-		final String roadName = (roadNumberToken != null)
-			? roadNameToken + " " + roadNumberToken
-			: roadNameToken;
+		final String roadName = (roadNumberToken != null) ? roadNameToken + " " + roadNumberToken : roadNameToken;
 
 		// 도로명까지만 있고 건물 정보가 없는 경우도 허용
 		if (idx >= tokens.length) {
@@ -89,7 +87,7 @@ public class AddressParser {
 			if (!digitsOnly.isEmpty()) {
 				try {
 					floor = Integer.parseInt(digitsOnly);
-				} catch (NumberFormatException ignored) {
+				} catch (NumberFormatException _) {
 				}
 			}
 			end--;
@@ -131,16 +129,12 @@ public class AddressParser {
 			.floor(floor)
 			.build();
 
-		log.debug("[AddressParser] Parsed address - raw: {}, sido: {}, sigungu: {}, dongRi: {}, roadName: {}, buildingName: {}, buildingDong: {}, floor: {}, ho: {}, roadAddress: {}",
-			address,
-			result.getSido(),
-			result.getSigungu(),
-			result.getDongRi(),
-			result.getRoadName(),
-			result.getBuildingName(),
-			result.getBuildingDong(),
-			result.getFloor(),
-			result.getHo(),
+		log.debug(
+			"[AddressParser] Parsed address - raw: {}, sido: {}, sigungu: {}, dongRi: {}, roadName: {}, "
+				+ "buildingName: {}, buildingDong: {}, floor: {}, ho: {}, "
+				+ "roadAddress: {}",
+			address, result.getSido(), result.getSigungu(), result.getDongRi(), result.getRoadName(),
+			result.getBuildingName(), result.getBuildingDong(), result.getFloor(), result.getHo(),
 			result.getRoadAddress());
 
 		return result;
