@@ -4,9 +4,10 @@ import { Customer, INITIAL_CUSTOMER_STATE } from '@/entities/customer/model/type
 import { 
   formatPersonalId, 
   formatPhoneNumber, 
-  formatCurrency 
+  formatCurrency,
+  formatName
 } from '@/shared/lib/utils/format-utils';
-import { EMPLOYMENT_TYPES } from '@/entities/customer/model/customer.constants';
+import { EMPLOYMENT_TYPES, LOAN_PURPOSE_OPTIONS } from '@/entities/customer/model/customer.constants';
 
 interface CustomerInfoFormProps {
   isPollingActive: boolean;
@@ -16,20 +17,24 @@ interface CustomerInfoFormProps {
 /**
  * @widget CustomerInfoForm
  * 고객의 기초 정보를 입력받는 폼 위젯입니다.
- * (Why) 사용자의 입력 편의성을 위해 실시간 포맷팅 기능을 제공하며, 에이전트 연동을 위한 트리거 버튼을 포함합니다.
+ * (Why) 사용자의 입력 편의성과 데이터 정확성을 위해 실시간 포맷팅 및 유효성 검사 로직을 포함합니다.
  */
 export const CustomerInfoForm = ({ isPollingActive, onTogglePolling }: CustomerInfoFormProps) => {
   const [form, setForm] = useState<Customer>(INITIAL_CUSTOMER_STATE);
 
   /** 
    * 입력 필드 변경 핸들러
-   * (Why) 각 필드에 적절한 포맷터를 적용하여 데이터 일관성을 유지하고, 위젯 내 복잡도를 낮추기 위해 Shared 유틸리티를 호출합니다.
+   * (Why) 각 필드에 적절한 포맷터 및 유효성 검사(숫자 방지, 음수 방지 등)를 적용하여 데이터 무결성을 확보합니다.
    */
   const handleChange = (field: keyof Customer, value: string) => {
     let finalValue = value;
 
-    // (Why) 필드별로 특화된 포맷팅 로직을 분기 처리합니다.
+    // (Why) 필드별 특화된 포맷팅 및 검증 로직을 분기 처리합니다.
     switch (field) {
+      case 'name':
+        // (Why) 공통 포맷터(formatName)를 호출하여 한글/영문 외의 입력을 필터링합니다.
+        finalValue = formatName(value);
+        break;
       case 'personalId':
         finalValue = formatPersonalId(value);
         break;
@@ -39,8 +44,12 @@ export const CustomerInfoForm = ({ isPollingActive, onTogglePolling }: CustomerI
       case 'desiredAmount':
         finalValue = formatCurrency(value);
         break;
+      case 'houseCount':
+        // (Why) 보유 주택 개수는 음수가 될 수 없으므로 0 미만일 경우 0으로 보정합니다.
+        const numericValue = parseInt(value, 10);
+        finalValue = isNaN(numericValue) ? '' : Math.max(0, numericValue).toString();
+        break;
       default:
-        // 일반 입력 필드는 별도 포매팅 없이 처리
         break;
     }
 
@@ -90,12 +99,18 @@ export const CustomerInfoForm = ({ isPollingActive, onTogglePolling }: CustomerI
         {/* 2행 */}
         <div className="col-span-2 space-y-1.5">
           <Label htmlFor="loanPurpose">대출 목적</Label>
-          <Input 
-            id="loanPurpose" 
-            value={form.loanPurpose} 
-            onChange={(e) => handleChange('loanPurpose', e.target.value)}
-            placeholder="주택구매목적"
-          />
+          <Select
+            id="loanPurpose"
+            value={form.loanPurpose}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleChange('loanPurpose', e.target.value)}
+          >
+            <option value="" disabled>대출 목적 선택</option>
+            {LOAN_PURPOSE_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </Select>
         </div>
 
         <div className="col-span-3 space-y-1.5">
@@ -136,6 +151,7 @@ export const CustomerInfoForm = ({ isPollingActive, onTogglePolling }: CustomerI
                 id="houseCount" 
                 className="pr-6 text-right"
                 type="number"
+                min="0"
                 value={form.houseCount} 
                 onChange={(e) => handleChange('houseCount', e.target.value)}
                 placeholder="0"
