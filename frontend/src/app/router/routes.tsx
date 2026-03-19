@@ -30,6 +30,22 @@ export const router = createBrowserRouter([
         element: <div>서류 업로드 화면</div>,
       },
       {
+        path: 'verification-result', // 서류 검증 결과 (다른 팀원 작업 영역)
+        element: (
+          <div className="p-10 text-center">
+            <h1 className="text-2xl font-bold mb-4">서류 검증 결과</h1>
+            <p className="text-gray-600">서류 전송이 완료되었습니다. 결과 분석 중입니다...</p>
+            <button 
+              onClick={() => window.history.back()}
+              className="mt-6 px-4 py-2 bg-blue-600 text-white rounded"
+            >
+              상신 완료 (임시)
+            </button>
+          </div>
+        ),
+      },
+
+      {
         path: 'review-report', // 심사 레포트
         element: <div>심사 레포트 상세 화면</div>,
       },

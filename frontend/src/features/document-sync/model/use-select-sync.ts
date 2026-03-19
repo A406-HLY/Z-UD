@@ -40,8 +40,27 @@ export const useSelectSync = (docs: Document[]) => {
     });
   };
 
+  /** 전체 선택/해제 토글 */
+
+  const toggleAll = (force?: boolean) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      const allSelected = docs.length > 0 && Array.from(docs).every(d => next.has(d.id));
+      const shouldSelect = force !== undefined ? force : !allSelected;
+
+      if (shouldSelect) {
+        docs.forEach(d => next.add(d.id));
+      } else {
+        next.clear();
+      }
+      return next;
+    });
+  };
+
   return {
     selectedIds,
     toggleSelect,
+    toggleAll,
   };
 };
+

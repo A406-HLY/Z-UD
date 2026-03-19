@@ -8,8 +8,9 @@ import { env } from '@/shared/config/env';
  */
 const agentClient = axios.create({
   baseURL: env.agentApiUrl,
-  timeout: 5000,
+  timeout: 60000,
 });
+
 
 /** 에이전트 파일 응답 규격 */
 export interface AgentFile {
@@ -27,4 +28,19 @@ export const fetchAgentFiles = async (): Promise<AgentFile[]> => {
   const response = await agentClient.get<{ data: { items: AgentFile[] } }>('/api/files');
   return response.data.data.items;
 };
+
+/**
+ * 에이전트에게 백엔드 전송 프로세스 시작을 요청합니다.
+ * @param counselId 상담 ID
+ * @param mode 'all' | 'selected'
+ * @param sequenceIds 선택된 파일의 sequenceId 목록 (mode가 'selected'일 때 필드 필수)
+ */
+export const startAgentUpload = async (counselId: string, mode: 'all' | 'selected' = 'all', sequenceIds?: number[]): Promise<void> => {
+  await agentClient.post('/api/upload/start', {
+    mode,
+    sequenceIds,
+    counselId,
+  });
+};
+
 
