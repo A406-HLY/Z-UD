@@ -15,23 +15,9 @@ interface Document {
   status: 'VERIFIED' | 'PENDING' | 'PROCESSING';
 }
 
-const MOCK_DOCS_A: Document[] = [
-  { id: '1', no: 1, fileName: '2026-03-16-12:44-1.pdf', size: '1,234 KB', status: 'VERIFIED' },
-  { id: '2', no: 2, fileName: 'STOCK_STATEMENT_001.pdf', size: '2,542 KB', status: 'PENDING' },
-  { id: '3', no: 3, fileName: 'ID_CARD_COPY_FRONT.jpg', size: '542 KB', status: 'VERIFIED' },
-  { id: '4', no: 4, fileName: 'ID_CARD_COPY_BACK.jpg', size: '511 KB', status: 'VERIFIED' },
-  { id: '5', no: 5, fileName: 'TAX_CERT_2025.pdf', size: '4,102 KB', status: 'PROCESSING' },
-  { id: '6', no: 6, fileName: 'EMPLOYMENT_PROOF.pdf', size: '892 KB', status: 'VERIFIED' },
-];
+// ... (중략: Document 인터페이스 정의 유지)
 
-const MOCK_DOCS_B: Document[] = [
-  { id: '7', no: 7, fileName: 'COLLATERAL_AGREEMENT.pdf', size: '1,234 KB', status: 'VERIFIED' },
-  { id: '8', no: 8, fileName: 'BANK_BOOK_SCAN.png', size: '782 KB', status: 'PENDING' },
-  { id: '9', no: 9, fileName: 'LOAN_APPLICATION_V1.pdf', size: '2,102 KB', status: 'VERIFIED' },
-  { id: '10', no: 10, fileName: 'CREDIT_CONSENT_FORM.pdf', size: '342 KB', status: 'VERIFIED' },
-  { id: '11', no: 11, fileName: 'HOUSEHOLD_CERT.pdf', size: '1,292 KB', status: 'PROCESSING' },
-  { id: '12', no: 12, fileName: 'ANNUAL_INCOME_2025.pdf', size: '920 KB', status: 'VERIFIED' },
-];
+const EMPTY_DOCS: Document[] = [];
 
 /**
  * 중앙 분할형 서류 뷰어 위젯
@@ -104,9 +90,9 @@ export const DocumentViewer = () => {
         </Button>
       </div>
       <div className="flex h-[500px]">
-        {renderTable('BATCH SEGMENT A', MOCK_DOCS_A)}
+        {renderTable('BATCH SEGMENT A', EMPTY_DOCS)}
         <div className="w-px bg-gray-200" />
-        {renderTable('BATCH SEGMENT B', MOCK_DOCS_B)}
+        {renderTable('BATCH SEGMENT B', EMPTY_DOCS)}
       </div>
     </div>
   );
