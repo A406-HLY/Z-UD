@@ -46,14 +46,15 @@ export class LocalServer {
 
     /**
      * 특정 파일을 선택하여 전송 프로세스를 시작하기 위한 트리거 엔드포인트.
-     * 백엔드 API 명세에 따른 필수 파라미터(counselId)를 함께 요구함.
+     * 백엔드 API 명세에 따른 필수 파라미터(counselId)를 요구함.
+     * (Why) 백엔드 규격 변경에 따라 counselId를 string(UUID)으로 수용하도록 수정되었습니다.
      */
     this.app.post('/api/upload/start', async (req: Request, res: Response): Promise<any> => {
       const { mode = 'all', sequenceIds, counselId } = req.body;
 
-      // 백엔드 영속성을 위해 상담 ID는 필수이므로 사전에 차단함
-      if (!counselId || typeof counselId !== 'number') {
-        return res.status(400).json(ApiResponseWrapper.error('MISSING_COUNSEL_ID', null, 'counselId is required and must be a number.'));
+      // (Why) 백엔드 영속성을 위해 상담 ID는 필수입니다. 타입 체크를 string으로 변경합니다.
+      if (!counselId || typeof counselId !== 'string') {
+        return res.status(400).json(ApiResponseWrapper.error('MISSING_COUNSEL_ID', null, 'counselId is required and must be a string (UUID).'));
       }
 
       if (mode !== 'all' && mode !== 'selected') {
