@@ -17,6 +17,9 @@ export const env = {
    */
   appEnv: import.meta.env.VITE_APP_ENV || 'development',
   
+  /** 로컬 업로드 에이전트 API 주소 */
+  agentApiUrl: import.meta.env.VITE_AGENT_API_URL || 'http://127.0.0.1:4000',
+
   /**
    * MSW 등 모킹 허용 여부
    * - 'true' 문자열인 경우에만 활성화
