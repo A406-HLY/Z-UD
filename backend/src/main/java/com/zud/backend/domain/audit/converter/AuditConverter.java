@@ -1,12 +1,12 @@
 package com.zud.backend.domain.audit.converter;
 
-import org.springframework.stereotype.Component;
-
 import com.zud.backend.domain.audit.dto.response.AuditResDto;
 import com.zud.backend.domain.branch.dto.response.NearestBranchResDto;
 import com.zud.backend.domain.houseprice.dto.response.HousePriceResDto;
 
-@Component
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class AuditConverter {
 
 	public AuditResDto toAuditResDto(

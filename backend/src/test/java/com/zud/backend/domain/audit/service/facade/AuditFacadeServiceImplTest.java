@@ -12,7 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.zud.backend.domain.audit.converter.AuditConverter;
 import com.zud.backend.domain.audit.dto.request.AuditReqDto;
 import com.zud.backend.domain.audit.dto.response.AuditResDto;
 import com.zud.backend.domain.branch.dto.response.NearestBranchResDto;
@@ -34,9 +33,6 @@ class AuditFacadeServiceImplTest {
 
 	@Mock
 	private HousePriceFacadeService housePriceFacadeService;
-
-	@Mock
-	private AuditConverter auditConverter;
 
 	@InjectMocks
 	private AuditFacadeServiceImpl auditFacadeService;
@@ -69,20 +65,16 @@ class AuditFacadeServiceImplTest {
 				.willReturn(nearestBranchResDto);
 			given(housePriceFacadeService.findHousePrice(HOUSE_TYPE, ADDRESS))
 				.willReturn(housePriceResDto);
-			given(auditConverter.toAuditResDto(false, nearestBranchResDto, true, housePriceResDto))
-				.willReturn(expected);
 
 			// when
 			AuditResDto result = auditFacadeService.auditHouse(USER_ID, reqDto);
 
 			// then
 			assertThat(result).isNotNull();
-			assertThat(result).isSameAs(expected);
+			assertThat(result).isEqualTo(expected);
 			then(branchFacadeService).should().findNearestBranch(USER_ID, ADDRESS);
 			then(housePriceFacadeService).should()
 				.findHousePrice(HOUSE_TYPE, ADDRESS);
-			then(auditConverter).should()
-				.toAuditResDto(false, nearestBranchResDto, true, housePriceResDto);
 		}
 
 		@Test
@@ -112,20 +104,16 @@ class AuditFacadeServiceImplTest {
 				.willReturn(nearestBranchResDto);
 			given(housePriceFacadeService.findHousePrice(HOUSE_TYPE, ADDRESS))
 				.willReturn(null);
-			given(auditConverter.toAuditResDto(false, nearestBranchResDto, true, nullHousePrice))
-				.willReturn(expected);
 
 			// when
 			AuditResDto result = auditFacadeService.auditHouse(USER_ID, reqDto);
 
 			// then
 			assertThat(result).isNotNull();
-			assertThat(result).isSameAs(expected);
+			assertThat(result).isEqualTo(expected);
 			then(branchFacadeService).should().findNearestBranch(USER_ID, ADDRESS);
 			then(housePriceFacadeService).should()
 				.findHousePrice(HOUSE_TYPE, ADDRESS);
-			then(auditConverter).should()
-				.toAuditResDto(false, nearestBranchResDto, true, nullHousePrice);
 		}
 	}
 }
