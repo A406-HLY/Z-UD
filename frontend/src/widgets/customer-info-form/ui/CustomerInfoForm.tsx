@@ -9,13 +9,14 @@ import { generateUUID } from '@/shared/lib/utils/id-utils';
 import { EMPLOYMENT_TYPES, LOAN_PURPOSE_OPTIONS } from '@/entities/customer/model/customer.constants';
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { setCounselId, setIsPollingActive, updateCustomerData } from '@/entities/customer/model/slice';
+import { validateCustomer } from '@/entities/customer/model/validation';
 import { Customer } from '@/entities/customer/model/types';
 import { Card, Input, Label, Select, Button } from '@/shared/ui';
 
 /**
  * @widget CustomerInfoForm
  * 고객의 기초 정보를 입력받는 폼 위젯입니다.
- * (Why) 사용자의 입력 편의성과 데이터 정확성을 위해 실시간 포맷팅 및 전역 상담 ID 관리 로직을 구현합니다.
+ * (Why) 사용자의 입력 편의성과 데이터 정확성을 위해 실시간 포맷팅 및 시각적 유효성 검사 로직을 구현합니다.
  */
 export const CustomerInfoForm = () => {
   const dispatch = useAppDispatch();
@@ -23,6 +24,9 @@ export const CustomerInfoForm = () => {
   // (Why) 전역 상태(Redux)에서 고객 정보와 폴링 상태를 직접 구독합니다.
   const form = useAppSelector((state) => state.customer.data);
   const isPollingActive = useAppSelector((state) => state.customer.isPollingActive);
+
+  // (Why) 각 필드별 에러 상태를 로컬로 관리하여 실시간 시각적 피드백(빨간 테두리)을 제공합니다.
+  const [errors, setErrors] = useState<Partial<Record<keyof Customer, boolean>>>({});
 
   /** 
    * 입력 필드 변경 핸들러
@@ -45,7 +49,6 @@ export const CustomerInfoForm = () => {
         finalValue = formatCurrency(value);
         break;
       case 'houseCount':
-        // (Why) 보유 주택 개수는 음수가 될 수 없으므로 0 미만일 경우 0으로 자동 보정합니다.
         const numericValue = parseInt(value, 10);
         finalValue = isNaN(numericValue) ? '' : Math.max(0, numericValue).toString();
         break;
@@ -53,32 +56,44 @@ export const CustomerInfoForm = () => {
         break;
     }
 
-    // (Why) 입력 데이터를 전역 상태로 관리하여 다른 위젯과의 데이터 정합성을 유지합니다.
+    // (Why) 사용자가 값을 수정하기 시작하면 해당 필드의 에러 표시를 실시간으로 제거합니다.
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: false }));
+    }
+
     dispatch(updateCustomerData({ [field]: finalValue }));
   };
 
   /**
    * 저장 버튼 클릭 핸들러
-   * (Why) 정보를 저장함과 동시에 전역 폴링 상태를 제어하며, 최초 저장 시 상담용 고유 UUID를 생성하여 전역 스토어에 저장합니다.
+   * (Why) 필수 정보 누락 시 시각적 경고를 표시하고 상담 ID 생성을 차단하여 데이터 정합성을 유지합니다.
    */
   const handleSave = () => {
-    // (Why) 이미 생성된 상담 ID가 없을 경우에만 신규 UUID를 발급하여 상담의 고유성을 확보합니다.
+    // (Why) 분리된 유효성 검증 로직을 사용하여 모든 필수 필드가 채워졌는지 확인합니다.
+    const validationErrors = validateCustomer(form);
+    
+    if (Object.keys(validationErrors).length > 0) {
+      // (Why) 에러 맵을 상태에 업데이트하여 UI(Input/Select)의 테두리 색상을 변경합니다.
+      setErrors(validationErrors);
+      console.warn('[System] Validation Failed. Please check red-bordered fields.');
+      return;
+    }
+
+    // (Why) 유효성 검사 통과 시에만 신규 UUID를 발급하여 상담 세션을 시작합니다.
     if (!form.counselId) {
       const newId = generateUUID();
       dispatch(setCounselId(newId));
-      console.log(`[System] New Counsel ID Generated and Dispatched: ${newId}`);
     }
     
-    // (Why) 폴링 활성화 상태를 전역으로 토글하여 서류 감지 기능을 시작/중지합니다.
     dispatch(setIsPollingActive(!isPollingActive));
   };
 
   return (
     <Card className="p-4 bg-[#f8f9fa]">
       <div className="grid grid-cols-12 gap-4 items-end">
-        {/* 상담 ID 표시 (읽기 전용 시스템 배너) */}
+        {/* 상담 ID 표시 */}
         {form.counselId && (
-          <div className="col-span-12 mb-2 p-2 bg-blue-50 border border-blue-100 rounded flex justify-between items-center transition-all animate-in fade-in slide-in-from-top-1">
+          <div className="col-span-12 mb-2 p-2 bg-blue-50 border border-blue-100 rounded flex justify-between items-center animate-in fade-in slide-in-from-top-1">
             <span className="text-[10px] text-blue-400 font-bold uppercase tracking-widest">Counsel_ID</span>
             <span className="text-[11px] text-blue-700 font-mono font-bold leading-none">{form.counselId}</span>
           </div>
@@ -90,6 +105,7 @@ export const CustomerInfoForm = () => {
           <Input 
             id="name" 
             autoComplete="name"
+            isError={errors.name}
             value={form.name} 
             onChange={(e) => handleChange('name', e.target.value)}
             placeholder="이름 입력"
@@ -101,6 +117,7 @@ export const CustomerInfoForm = () => {
           <Input 
             id="personalId" 
             maxLength={14}
+            isError={errors.personalId}
             value={form.personalId} 
             onChange={(e) => handleChange('personalId', e.target.value)}
             placeholder="991209-1234567"
@@ -113,6 +130,7 @@ export const CustomerInfoForm = () => {
             id="phoneNumber"
             type="tel"
             autoComplete="tel"
+            isError={errors.phoneNumber}
             value={form.phoneNumber} 
             onChange={(e) => handleChange('phoneNumber', e.target.value)}
             placeholder="010-1234-5678"
@@ -126,14 +144,13 @@ export const CustomerInfoForm = () => {
           <Label htmlFor="loanPurpose">대출 목적</Label>
           <Select
             id="loanPurpose"
+            isError={errors.loanPurpose}
             value={form.loanPurpose}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleChange('loanPurpose', e.target.value)}
           >
             <option value="" disabled>대출 목적 선택</option>
             {LOAN_PURPOSE_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
+              <option key={option} value={option}>{option}</option>
             ))}
           </Select>
         </div>
@@ -142,14 +159,13 @@ export const CustomerInfoForm = () => {
           <Label htmlFor="employmentType">근로 형태</Label>
           <Select
             id="employmentType"
+            isError={errors.employmentType}
             value={form.employmentType}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleChange('employmentType', e.target.value)}
           >
             <option value="" disabled>근로 형태 선택</option>
             {EMPLOYMENT_TYPES.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
+              <option key={option} value={option}>{option}</option>
             ))}
           </Select>
         </div>
@@ -160,6 +176,7 @@ export const CustomerInfoForm = () => {
             <Input 
               id="desiredAmount" 
               className="pr-8 text-right font-bold text-[#004b93]"
+              isError={errors.desiredAmount}
               value={form.desiredAmount} 
               onChange={(e) => handleChange('desiredAmount', e.target.value)}
               placeholder="123,456,789"
@@ -175,6 +192,7 @@ export const CustomerInfoForm = () => {
               <Input 
                 id="houseCount" 
                 className="pr-6 text-right"
+                isError={errors.houseCount}
                 type="number"
                 min="0"
                 value={form.houseCount} 
