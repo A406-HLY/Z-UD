@@ -77,7 +77,7 @@ export const CustomerInfoForm = () => {
           />
         </div>
 
-        <div className="col-span-4 space-y-1.5">
+        <div className="col-span-3 space-y-1.5">
           <Label htmlFor="phoneNumber">전화번호</Label>
           <Input 
             id="phoneNumber"
@@ -89,7 +89,7 @@ export const CustomerInfoForm = () => {
           />
         </div>
 
-        <div className="col-span-3" /> {/* 여백 */}
+        <div className="col-span-4" /> {/* 여백 줄임 */}
 
         {/* 2행 */}
         <div className="col-span-2 space-y-1.5">
@@ -118,7 +118,7 @@ export const CustomerInfoForm = () => {
           </Select>
         </div>
 
-        <div className="col-span-4 space-y-1.5">
+        <div className="col-span-3 space-y-1.5">
           <Label htmlFor="desiredAmount">희망 금액</Label>
           <div className="relative flex items-center">
             <Input 
@@ -131,8 +131,23 @@ export const CustomerInfoForm = () => {
             <span className="absolute right-3 text-sm text-gray-400">원</span>
           </div>
         </div>
+
+        <div className="col-span-2 space-y-1.5">
+          <Label htmlFor="houseCount">보유 주택 개수</Label>
+          <div className="relative flex items-center">
+            <Input 
+              id="houseCount" 
+              className="pr-8 text-right"
+              type="number"
+              value={form.houseCount} 
+              onChange={(e) => handleChange('houseCount', e.target.value)}
+              placeholder="0"
+            />
+            <span className="absolute right-3 text-sm text-gray-400">채</span>
+          </div>
+        </div>
         
-        <div className="col-span-3" /> {/* 여백 */}
+        <div className="col-span-2" /> {/* 여백 줄임 */}
       </div>
     </Card>
   );
