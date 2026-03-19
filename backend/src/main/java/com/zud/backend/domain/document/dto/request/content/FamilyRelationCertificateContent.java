@@ -1,7 +1,6 @@
 package com.zud.backend.domain.document.dto.request.content;
 
 import java.util.EnumMap;
-import java.util.List;
 import java.util.Map;
 
 import com.zud.backend.common.dto.common.DataField;
@@ -21,9 +20,7 @@ public record FamilyRelationCertificateContent(
 	@Schema(description = "본인 주민등록번호")
 	DataField<String> residentRegistrationNumber,
 	@Schema(description = "배우자 정보")
-	Spouse spouse,
-	@Schema(description = "자녀 목록")
-	List<Child> children
+	Spouse spouse
 ) implements DocumentContent {
 
 	@Override
@@ -40,18 +37,6 @@ public record FamilyRelationCertificateContent(
 		DataField<String> name,
 		@Schema(description = "배우자 주민등록번호")
 		DataField<String> residentRegistrationNumber
-	) {
-	}
-
-	@Schema(description = "자녀 정보")
-	@Builder
-	public record Child(
-		@Schema(description = "자녀 성명")
-		DataField<String> name,
-		@Schema(description = "자녀 주민등록번호")
-		DataField<String> residentRegistrationNumber,
-		@Schema(description = "성인 여부")
-		DataField<Boolean> isAdult
 	) {
 	}
 
