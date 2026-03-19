@@ -1,12 +1,11 @@
 package com.zud.backend.domain.branch.converter;
 
-import org.springframework.stereotype.Component;
-
 import com.zud.backend.domain.branch.dto.response.NearestBranchResDto;
 import com.zud.backend.domain.branch.entity.Branch;
 import com.zud.backend.domain.branch.repository.NearestBranchProjection;
+import lombok.experimental.UtilityClass;
 
-@Component
+@UtilityClass
 public class BranchConverter {
 
 	private static final String CURRENT_BRANCH_IS_NEAREST_MESSAGE =

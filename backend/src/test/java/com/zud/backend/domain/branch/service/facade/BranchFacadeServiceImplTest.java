@@ -15,8 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.zud.backend.domain.branch.client.AddressGeocodingClient;
 import com.zud.backend.domain.branch.client.dto.CoordinateResultDto;
-import com.zud.backend.domain.branch.converter.BranchConverter;
-import com.zud.backend.domain.branch.dto.request.NearestBranchReqDto;
 import com.zud.backend.domain.branch.dto.response.NearestBranchResDto;
 import com.zud.backend.domain.branch.entity.Branch;
 import com.zud.backend.domain.branch.repository.NearestBranchProjection;
@@ -41,9 +39,6 @@ class BranchFacadeServiceImplTest {
 
 	@Mock
 	private BranchQueryServiceImpl branchQueryService;
-
-	@Mock
-	private BranchConverter branchConverter;
 
 	@InjectMocks
 	private BranchFacadeServiceImpl branchFacadeService;
@@ -74,11 +69,15 @@ class BranchFacadeServiceImplTest {
 		@DisplayName("조회_성공시_converter_결과_반환")
 		void 조회_성공시_converter_결과_반환() {
 			// given
-			NearestBranchReqDto reqDto = new NearestBranchReqDto(ADDRESS);
 			User user = createDefaultUser();
 			Long userId = user.getId();
 			CoordinateResultDto coordinate = new CoordinateResultDto(LATITUDE, LONGITUDE);
 			NearestBranchProjection nearestBranch = Mockito.mock(NearestBranchProjection.class);
+			// converter가 사용하는 값들을 Projection에서 채워줍니다.
+			Mockito.when(nearestBranch.getId()).thenReturn(2L);
+			Mockito.when(nearestBranch.getName()).thenReturn("강남");
+			Mockito.when(nearestBranch.getFullAddress()).thenReturn("서울특별시 강남구 테헤란로 212");
+			Mockito.when(nearestBranch.getDistanceMeter()).thenReturn(10.0);
 			double currentBranchDistanceMeter = 100.0;
 			NearestBranchResDto expected = new NearestBranchResDto(
 				false,
@@ -96,46 +95,53 @@ class BranchFacadeServiceImplTest {
 			given(branchQueryService.findNearestBranch(LONGITUDE, LATITUDE)).willReturn(nearestBranch);
 			given(branchQueryService.calculateDistanceToBranch(1L, LONGITUDE, LATITUDE))
 				.willReturn(currentBranchDistanceMeter);
-			given(branchConverter.toNearestBranchResDto(user.getBranch(), currentBranchDistanceMeter, nearestBranch))
-				.willReturn(expected);
 
 			// when
-			NearestBranchResDto result = branchFacadeService.findNearestBranch(userId, reqDto);
+			NearestBranchResDto result = branchFacadeService.findNearestBranch(userId, ADDRESS);
 
 			// then
-			assertThat(result).isSameAs(expected);
+			assertThat(result).isEqualTo(expected);
 		}
 
 		@Test
 		@DisplayName("조회_성공시_의존성_호출_인자_검증")
 		void 조회_성공시_의존성_호출_인자_검증() {
 			// given
-			NearestBranchReqDto reqDto = new NearestBranchReqDto(ADDRESS);
 			User user = createDefaultUser();
 			Long userId = user.getId();
 			CoordinateResultDto coordinate = new CoordinateResultDto(LATITUDE, LONGITUDE);
 			NearestBranchProjection nearestBranch = Mockito.mock(NearestBranchProjection.class);
+			Mockito.when(nearestBranch.getId()).thenReturn(2L);
+			Mockito.when(nearestBranch.getName()).thenReturn("강남");
+			Mockito.when(nearestBranch.getFullAddress()).thenReturn("서울특별시 강남구 테헤란로 212");
+			Mockito.when(nearestBranch.getDistanceMeter()).thenReturn(10.0);
 			double currentBranchDistanceMeter = 100.0;
-			NearestBranchResDto expected = Mockito.mock(NearestBranchResDto.class);
+			NearestBranchResDto expected = new NearestBranchResDto(
+				false,
+				"세종",
+				"세종특별자치시 나리로 16",
+				currentBranchDistanceMeter,
+				"강남",
+				"서울특별시 강남구 테헤란로 212",
+				10.0,
+				"현재 근무 지점은 해당 건물과 가장 가까운 지점이 아닙니다."
+			);
 
 			given(userQueryService.findById(user.getId())).willReturn(user);
 			given(addressGeocodingClient.getCoordinates(ADDRESS)).willReturn(coordinate);
 			given(branchQueryService.findNearestBranch(LONGITUDE, LATITUDE)).willReturn(nearestBranch);
 			given(branchQueryService.calculateDistanceToBranch(1L, LONGITUDE, LATITUDE))
 				.willReturn(currentBranchDistanceMeter);
-			given(branchConverter.toNearestBranchResDto(user.getBranch(), currentBranchDistanceMeter, nearestBranch))
-				.willReturn(expected);
 
 			// when
-			branchFacadeService.findNearestBranch(userId, reqDto);
+			NearestBranchResDto result = branchFacadeService.findNearestBranch(userId, ADDRESS);
 
 			// then
 			then(userQueryService).should().findById(user.getId());
 			then(addressGeocodingClient).should().getCoordinates(ADDRESS);
 			then(branchQueryService).should().findNearestBranch(LONGITUDE, LATITUDE);
 			then(branchQueryService).should().calculateDistanceToBranch(1L, LONGITUDE, LATITUDE);
-			then(branchConverter).should()
-				.toNearestBranchResDto(user.getBranch(), currentBranchDistanceMeter, nearestBranch);
+			assertThat(result).isEqualTo(expected);
 		}
 	}
 }

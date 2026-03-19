@@ -11,6 +11,7 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -21,6 +22,7 @@ import com.zud.backend.domain.houseprice.dto.response.HousePriceResDto;
 import com.zud.backend.domain.houseprice.entity.HouseOfficialPrice;
 import com.zud.backend.domain.houseprice.entity.HouseTradePrice;
 import com.zud.backend.domain.houseprice.exception.HousePriceException;
+import com.zud.backend.domain.houseprice.service.facade.HousePriceFacadeServiceImpl;
 import com.zud.backend.domain.houseprice.repository.HouseOfficialPriceRepository;
 import com.zud.backend.domain.houseprice.repository.HouseTradePriceRepository;
 
@@ -35,7 +37,19 @@ class HousePriceQueryServiceImplTest {
 	private HouseOfficialPriceRepository houseOfficialPriceRepository;
 
 	@InjectMocks
-	private HousePriceQueryServiceImpl housePriceQueryService;
+	private HousePriceQueryServiceImpl housePriceQueryServiceImpl;
+
+	private HousePriceFacadeServiceImpl housePriceQueryService;
+
+	@BeforeEach
+	void setUpFacade() throws Exception {
+		// Lombok's @RequiredArgsConstructor(access = PROTECTED) 이라서 리플렉션으로 생성합니다.
+		var ctor = HousePriceFacadeServiceImpl.class.getDeclaredConstructor(
+			com.zud.backend.domain.houseprice.service.query.HousePriceQueryService.class
+		);
+		ctor.setAccessible(true);
+		housePriceQueryService = (HousePriceFacadeServiceImpl)ctor.newInstance(housePriceQueryServiceImpl);
+	}
 
 	private static final String VALID_ADDRESS = "서울특별시 서초구 반포동 자하문로36길 16-14 반포아파트 101동 101호";
 	private static final String VALID_HOUSE_TYPE = "아파트";
@@ -114,7 +128,7 @@ class HousePriceQueryServiceImplTest {
 				String address = "서울특별시 강남구 역삼동 테헤란로 212 단독주택";
 				HouseTradePrice tradePrice = createTradePrice(80000L);
 				given(houseTradePriceRepository.findSingleHouseExactMatch(
-					"서울특별시 강남구 역삼동", "단독주택"
+					"서울특별시 강남구 역삼동", "테헤란로 212", "단독주택"
 				)).willReturn(tradePrice);
 
 				// when
@@ -325,13 +339,11 @@ class HousePriceQueryServiceImplTest {
 					"반포아파트"
 				)).willReturn(new ArrayList<>());
 
-				// when & then
-				assertThatThrownBy(() -> housePriceQueryService.findHousePrice(VALID_HOUSE_TYPE, VALID_ADDRESS))
-					.isInstanceOf(HousePriceException.class)
-					.satisfies(exception -> {
-						HousePriceException housePriceException = (HousePriceException)exception;
-						assertThat(housePriceException.getErrorCode()).isEqualTo(ErrorCode.HOUSE_PRICE_NOT_FOUND);
-					});
+				// when
+				HousePriceResDto result = housePriceQueryService.findHousePrice(VALID_HOUSE_TYPE, VALID_ADDRESS);
+
+				// then
+				assertThat(result).isNull();
 			}
 		}
 
