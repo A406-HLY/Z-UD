@@ -1,8 +1,11 @@
 package com.zud.backend.domain.document.dto.request.content;
 
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 import com.zud.backend.common.dto.common.DataField;
+import com.zud.backend.domain.document.enums.CrossField;
 import com.zud.backend.domain.document.enums.DocumentTag;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -50,5 +53,17 @@ public record FamilyRelationCertificateContent(
 		@Schema(description = "성인 여부")
 		DataField<Boolean> isAdult
 	) {
+	}
+
+	@Override
+	public Map<CrossField, String> getCrossCheckFields() {
+		Map<CrossField, String> fields = new EnumMap<>(CrossField.class);
+		if (name != null && name.value() != null) {
+			fields.put(CrossField.CUSTOMER_NAME, name.value());
+		}
+		if (residentRegistrationNumber != null && residentRegistrationNumber.value() != null) {
+			fields.put(CrossField.RESIDENT_REGISTRATION_NUMBER, residentRegistrationNumber().value());
+		}
+		return fields;
 	}
 }
