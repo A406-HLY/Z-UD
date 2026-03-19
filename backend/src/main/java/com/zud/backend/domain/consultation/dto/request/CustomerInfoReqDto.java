@@ -12,8 +12,12 @@ import jakarta.validation.constraints.Positive;
 
 @Schema(description = "고객 정보 입력 요청 DTO")
 public record CustomerInfoReqDto(
-	@Schema(description = "상담 ID", example = "CONSULT-20260318-001")
-	@NotBlank(message = "상담 ID는 필수 입력값 입니다.")
+	@Schema(description = "외부 상담 UUID(v4)", example = "550e8400-e29b-41d4-a716-446655440000")
+	@NotBlank(message = "상담 UUID는 필수 입력값 입니다.")
+	@Pattern(
+		regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$",
+		message = "상담 UUID는 UUID v4 형식이어야 합니다."
+	)
 	String consultationId,
 
 	@Schema(description = "고객명", example = "홍길동")

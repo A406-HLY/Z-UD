@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
-public class CounselStatusServiceImpl implements CounselStatusService {
+public class ConsultationStatusServiceImpl implements ConsultationStatusService {
 
 	private static final String STATUS_KEY_PREFIX = "counsel:status:";
 	private static final String DATA_KEY_PREFIX = "counsel:data:";

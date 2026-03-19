@@ -27,4 +27,12 @@ public class ConsultationQueryServiceImpl implements ConsultationQueryService {
 		log.info("상담 조회 완료: consultationId={}", consultation.getId());
 		return consultation;
 	}
+
+	@Override
+	public Consultation findByUuid(final String uuid) {
+		Consultation consultation = consultationRepository.findByExternalConsultationUuid(uuid)
+			.orElseThrow(() -> new ConsultationException(ErrorCode.CONSULTATION_NOT_FOUND));
+		log.info("상담 조회 완료: externalConsultationUuid={}", consultation.getExternalConsultationUuid());
+		return consultation;
+	}
 }

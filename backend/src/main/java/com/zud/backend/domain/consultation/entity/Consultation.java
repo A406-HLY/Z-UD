@@ -39,6 +39,9 @@ public class Consultation {
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 
+	@Column(name = "external_consultation_uuid", nullable = false, unique = true)
+	private String externalConsultationUuid;
+
 	@Convert(converter = ResidentRegistrationNumberEncryptConverter.class)
 	@Column(name = "resident_registration_number")
 	private String residentRegistrationNumber;
@@ -65,6 +68,7 @@ public class Consultation {
 
 	public static Consultation create(
 		final User user,
+		final String externalConsultationUuid,
 		final String name,
 		final String phoneNumber,
 		final String residentRegistrationNumber,
@@ -75,6 +79,7 @@ public class Consultation {
 	) {
 		return Consultation.builder()
 			.user(user)
+			.externalConsultationUuid(externalConsultationUuid)
 			.name(name)
 			.phoneNumber(phoneNumber)
 			.residentRegistrationNumber(residentRegistrationNumber)
