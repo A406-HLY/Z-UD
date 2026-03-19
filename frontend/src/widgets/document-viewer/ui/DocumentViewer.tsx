@@ -6,6 +6,9 @@ import { documentMapper } from '@/entities/loan-document/model/document.mapper';
 import { useAgentFiles } from '@/features/document-sync/api/use-agent-files';
 import { useSelectSync } from '@/features/document-sync/model/use-select-sync';
 import { useAppSelector } from '@/app/store/hooks';
+import { useNavigate } from 'react-router-dom';
+import { useUploadDocuments } from '@/features/document-sync/api/use-upload-documents';
+
 
 const EMPTY_DOCS: Document[] = [];
 
@@ -28,7 +31,48 @@ export const DocumentViewer = () => {
   }, [agentFiles]);
 
   // 3. 비즈니스 로직 및 상태 관리 (Hook)
-  const { selectedIds, toggleSelect } = useSelectSync(agentDocs);
+  const navigate = useNavigate();
+  const { selectedIds, toggleSelect, toggleAll } = useSelectSync(agentDocs);
+  const { mutate: uploadDocuments, isPending } = useUploadDocuments();
+
+  
+  // (Why) Redux Store에 저장된 상담 ID를 가져와 업로드 요청 시 사용합니다.
+  const counselId = useAppSelector((state) => state.customer.data.counselId);
+
+  /** 
+   * "다음 단계" 진행 핸들러 
+   * (Why) 선택된 서류들의 시퀀스 정보를 에이전트를 통해 백엔드로 전송하고, 성공 시 결과 페이지로 이동합니다.
+   */
+  const handleNextStep = () => {
+    if (!counselId) {
+
+
+      alert('상담 ID가 존재하지 않습니다. 고객 정보를 먼저 저장해 주세요.');
+      return;
+    }
+
+    if (selectedIds.size === 0) {
+      alert('전송할 서류를 선택해 주세요.');
+      return;
+    }
+
+    const sequenceIds = Array.from(selectedIds).map(id => 
+      parseInt(id.replace('agent-', ''), 10)
+    );
+
+    uploadDocuments(
+      { counselId, mode: 'selected', sequenceIds },
+      {
+        onSuccess: () => {
+          // (Why) 다른 팀원이 개발 중인 결과 확인 페이지로 이동합니다.
+          navigate('/verification-result');
+        },
+        onError: () => {
+          alert('서류 전송 중 오류가 발생했습니다.');
+        }
+      }
+    );
+  };
 
   // 4. 데이터 섹션 조립
   const displayDocsA = useMemo(() => [...agentDocs, ...EMPTY_DOCS], [agentDocs]);
@@ -51,13 +95,19 @@ export const DocumentViewer = () => {
         <thead className="bg-gray-50 text-[11px] uppercase text-gray-400 font-bold border-b border-gray-200">
           <tr>
             <th className="px-3 py-2 w-10 text-center">
-              <input type="checkbox" className="rounded-sm border-gray-300" />
+              <input 
+                type="checkbox" 
+                className="rounded-sm border-gray-300" 
+                checked={docs.length > 0 && Array.from(docs).every(d => selectedIds.has(d.id))}
+                onChange={(e) => toggleAll(e.target.checked)}
+              />
             </th>
             <th className="px-3 py-2 w-12">NO.</th>
             <th className="px-3 py-2">FILE NAME</th>
             <th className="px-3 py-2 w-28 text-center">STATUS</th>
           </tr>
         </thead>
+
         <tbody className="divide-y divide-gray-100">
           {docs.map((doc) => (
             <tr key={doc.id} className="hover:bg-blue-50/50 transition-colors text-xs">
@@ -97,10 +147,12 @@ export const DocumentViewer = () => {
           size="sm" 
           variant="primary"
           className="bg-[#004b93] text-white text-xs px-6"
-          onClick={() => alert('다음 단계로 진행합니다.')}
+          onClick={handleNextStep}
+          disabled={isPending}
         >
-          다음 단계
+          {isPending ? '전송 중...' : '다음 단계'}
         </Button>
+
       </div>
       <div className="flex h-[500px]">
         {renderTable('BATCH SEGMENT A', displayDocsA)}
