@@ -1,6 +1,10 @@
 package com.zud.backend.domain.document.dto.request.content;
 
+import java.util.EnumMap;
+import java.util.Map;
+
 import com.zud.backend.common.dto.common.DataField;
+import com.zud.backend.domain.document.enums.CrossField;
 import com.zud.backend.domain.document.enums.DocumentTag;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -32,5 +36,14 @@ public record SaleOrLeaseContractContent(
 		@Schema(description = "성명")
 		DataField<String> name
 	) {
+	}
+
+	@Override
+	public Map<CrossField, String> getCrossCheckFields() {
+		Map<CrossField, String> fields = new EnumMap<>(CrossField.class);
+		if (buyer.name != null && buyer.name.value() != null) {
+			fields.put(CrossField.CUSTOMER_NAME, buyer.name.value());
+		}
+		return fields;
 	}
 }

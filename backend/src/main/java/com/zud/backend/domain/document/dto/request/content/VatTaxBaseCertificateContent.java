@@ -1,6 +1,10 @@
 package com.zud.backend.domain.document.dto.request.content;
 
+import java.util.EnumMap;
+import java.util.Map;
+
 import com.zud.backend.common.dto.common.DataField;
+import com.zud.backend.domain.document.enums.CrossField;
 import com.zud.backend.domain.document.enums.DocumentTag;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -28,5 +32,17 @@ public record VatTaxBaseCertificateContent(
 	@Override
 	public DocumentTag getDocumentTag() {
 		return DocumentTag.FILE_010_VAT_TAX_BASE_CERTIFICATE;
+	}
+
+	@Override
+	public Map<CrossField, String> getCrossCheckFields() {
+		Map<CrossField, String> fields = new EnumMap<>(CrossField.class);
+		if (representativeName() != null && representativeName.value() != null) {
+			fields.put(CrossField.CUSTOMER_NAME, representativeName.value());
+		}
+		if (businessName != null && businessName.value() != null) {
+			fields.put(CrossField.BUSINESS_NAME, businessName.value());
+		}
+		return fields;
 	}
 }

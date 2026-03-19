@@ -9,7 +9,7 @@ import lombok.Builder;
 @Schema(description = "재직증명서 (FILE_004)")
 @Builder
 public record EmploymentCertificateContent(
-	@Schema(description = "대표자 성명")
+	@Schema(description = "이름")
 	DataField<String> representativeName,
 	@Schema(description = "회사 직인 여부")
 	DataField<Boolean> hasCompanySeal

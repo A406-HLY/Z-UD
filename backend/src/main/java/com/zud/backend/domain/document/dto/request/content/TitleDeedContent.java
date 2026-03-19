@@ -1,8 +1,11 @@
 package com.zud.backend.domain.document.dto.request.content;
 
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 import com.zud.backend.common.dto.common.DataField;
+import com.zud.backend.domain.document.enums.CrossField;
 import com.zud.backend.domain.document.enums.DocumentTag;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -46,5 +49,14 @@ public record TitleDeedContent(
 		@Schema(description = "채권최고액")
 		DataField<Long> maximumClaimAmount
 	) {
+	}
+
+	@Override
+	public Map<CrossField, String> getCrossCheckFields() {
+		Map<CrossField, String> fields = new EnumMap<>(CrossField.class);
+		if (ownerName != null && ownerName.value() != null) {
+			fields.put(CrossField.CUSTOMER_NAME, ownerName.value());
+		}
+		return fields;
 	}
 }
