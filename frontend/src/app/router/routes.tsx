@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 import LoginPage from '../../pages/login/ui/LoginPage';
+import { LoanApplicationPage } from '@/pages/loan-application/ui/LoanApplicationPage';
 
 /**
  * 프로젝트 전체 라우팅 설정
@@ -21,8 +22,8 @@ export const router = createBrowserRouter([
         element: <LoginPage />,
       },
       {
-        path: 'basic-info', // 기초 정보 입력 화면 (로그인 후 접근 가능)
-        element: <div>기초 정보 입력 화면 (로그인 후 접근 가능)</div>,
+        path: 'basic-info', // 기초 정보 입력 화면
+        element: <LoanApplicationPage />,
       },
       {
         path: 'upload', // 서류 업로드

@@ -13,12 +13,12 @@ import { LoginResponseData, User } from './user.types';
  */
 export const mapLoginResponseToUser = (response: LoginResponseData): User => {
   return {
-    id: response.user_id,
-    employeeNumber: response.employee_number,
-    name: response.name,
-    branchId: response.branch_id,
-    branchName: response.branch_name,
-    // (Why) 문자열 날짜는 UI 계산이나 포맷팅에 불편하므로 Date 객체로 미리 변환함
-    sessionExpiry: new Date(response.session_expiry),
+    id: response.userInfoDto.userId,
+    employeeNumber: response.userInfoDto.employeeNumber,
+    name: response.userInfoDto.name,
+    branchId: response.branchInfoDto.id,
+    branchName: response.branchInfoDto.name,
+    // (Why) Redux 직렬화 규칙 준수를 위해 Date 객체 대신 문자열 그대로 유지함
+    sessionExpiry: response.sessionExpiry,
   };
 };
