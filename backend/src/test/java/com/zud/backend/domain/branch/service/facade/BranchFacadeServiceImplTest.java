@@ -16,7 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.zud.backend.domain.branch.client.AddressGeocodingClient;
 import com.zud.backend.domain.branch.client.dto.CoordinateResultDto;
 import com.zud.backend.domain.branch.converter.BranchConverter;
-import com.zud.backend.domain.branch.dto.request.NearestBranchReqDto;
 import com.zud.backend.domain.branch.dto.response.NearestBranchResDto;
 import com.zud.backend.domain.branch.entity.Branch;
 import com.zud.backend.domain.branch.repository.NearestBranchProjection;
@@ -74,7 +73,6 @@ class BranchFacadeServiceImplTest {
 		@DisplayName("조회_성공시_converter_결과_반환")
 		void 조회_성공시_converter_결과_반환() {
 			// given
-			NearestBranchReqDto reqDto = new NearestBranchReqDto(ADDRESS);
 			User user = createDefaultUser();
 			Long userId = user.getId();
 			CoordinateResultDto coordinate = new CoordinateResultDto(LATITUDE, LONGITUDE);
@@ -100,7 +98,7 @@ class BranchFacadeServiceImplTest {
 				.willReturn(expected);
 
 			// when
-			NearestBranchResDto result = branchFacadeService.findNearestBranch(userId, reqDto);
+			NearestBranchResDto result = branchFacadeService.findNearestBranch(userId, ADDRESS);
 
 			// then
 			assertThat(result).isSameAs(expected);
@@ -110,7 +108,6 @@ class BranchFacadeServiceImplTest {
 		@DisplayName("조회_성공시_의존성_호출_인자_검증")
 		void 조회_성공시_의존성_호출_인자_검증() {
 			// given
-			NearestBranchReqDto reqDto = new NearestBranchReqDto(ADDRESS);
 			User user = createDefaultUser();
 			Long userId = user.getId();
 			CoordinateResultDto coordinate = new CoordinateResultDto(LATITUDE, LONGITUDE);
@@ -127,7 +124,7 @@ class BranchFacadeServiceImplTest {
 				.willReturn(expected);
 
 			// when
-			branchFacadeService.findNearestBranch(userId, reqDto);
+			branchFacadeService.findNearestBranch(userId, ADDRESS);
 
 			// then
 			then(userQueryService).should().findById(user.getId());

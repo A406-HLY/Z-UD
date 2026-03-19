@@ -9,10 +9,11 @@ import lombok.extern.slf4j.Slf4j;
 public class AddressParser {
 
 	private static final String INVALID_ADDRESS_MESSAGE = "주소 형식이 올바르지 않습니다: ";
+	private static final String EMPTY_ADDRESS_MESSAGE = "주소가 비어있습니다";
 
 	public static ParsedAddress parse(final String address) {
 		if (address == null || address.isBlank()) {
-			throw new IllegalArgumentException(INVALID_ADDRESS_MESSAGE + address);
+			throw new IllegalArgumentException(EMPTY_ADDRESS_MESSAGE);
 		}
 
 		final String[] tokens = address.trim().split("\\s+");

@@ -114,7 +114,7 @@ class HousePriceQueryServiceImplTest {
 				String address = "서울특별시 강남구 역삼동 테헤란로 212 단독주택";
 				HouseTradePrice tradePrice = createTradePrice(80000L);
 				given(houseTradePriceRepository.findSingleHouseExactMatch(
-					"서울특별시 강남구 역삼동", "단독주택"
+					"서울특별시 강남구 역삼동", "테헤란로 212", "단독주택"
 				)).willReturn(tradePrice);
 
 				// when

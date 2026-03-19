@@ -16,9 +16,7 @@ import com.zud.backend.domain.audit.converter.AuditConverter;
 import com.zud.backend.domain.audit.dto.request.AuditReqDto;
 import com.zud.backend.domain.audit.dto.response.AuditResDto;
 import com.zud.backend.domain.branch.dto.response.NearestBranchResDto;
-import com.zud.backend.domain.branch.dto.request.NearestBranchReqDto;
 import com.zud.backend.domain.branch.service.facade.BranchFacadeService;
-import com.zud.backend.domain.houseprice.dto.request.HousePriceReqDto;
 import com.zud.backend.domain.houseprice.dto.response.HousePriceResDto;
 import com.zud.backend.domain.houseprice.service.facade.HousePriceFacadeService;
 
@@ -67,9 +65,9 @@ class AuditFacadeServiceImplTest {
 				.housePrice(housePriceResDto)
 				.build();
 
-			given(branchFacadeService.findNearestBranch(USER_ID, new NearestBranchReqDto(ADDRESS)))
+			given(branchFacadeService.findNearestBranch(USER_ID, ADDRESS))
 				.willReturn(nearestBranchResDto);
-			given(housePriceFacadeService.findHousePrice(new HousePriceReqDto(HOUSE_TYPE, ADDRESS)))
+			given(housePriceFacadeService.findHousePrice(HOUSE_TYPE, ADDRESS))
 				.willReturn(housePriceResDto);
 			given(auditConverter.toAuditResDto(false, nearestBranchResDto, true, housePriceResDto))
 				.willReturn(expected);
@@ -80,9 +78,9 @@ class AuditFacadeServiceImplTest {
 			// then
 			assertThat(result).isNotNull();
 			assertThat(result).isSameAs(expected);
-			then(branchFacadeService).should().findNearestBranch(USER_ID, new NearestBranchReqDto(ADDRESS));
+			then(branchFacadeService).should().findNearestBranch(USER_ID, ADDRESS);
 			then(housePriceFacadeService).should()
-				.findHousePrice(new HousePriceReqDto(HOUSE_TYPE, ADDRESS));
+				.findHousePrice(HOUSE_TYPE, ADDRESS);
 			then(auditConverter).should()
 				.toAuditResDto(false, nearestBranchResDto, true, housePriceResDto);
 		}
@@ -110,9 +108,9 @@ class AuditFacadeServiceImplTest {
 				.housePrice(nullHousePrice)
 				.build();
 
-			given(branchFacadeService.findNearestBranch(USER_ID, new NearestBranchReqDto(ADDRESS)))
+			given(branchFacadeService.findNearestBranch(USER_ID, ADDRESS))
 				.willReturn(nearestBranchResDto);
-			given(housePriceFacadeService.findHousePrice(new HousePriceReqDto(HOUSE_TYPE, ADDRESS)))
+			given(housePriceFacadeService.findHousePrice(HOUSE_TYPE, ADDRESS))
 				.willReturn(null);
 			given(auditConverter.toAuditResDto(false, nearestBranchResDto, true, nullHousePrice))
 				.willReturn(expected);
@@ -123,9 +121,9 @@ class AuditFacadeServiceImplTest {
 			// then
 			assertThat(result).isNotNull();
 			assertThat(result).isSameAs(expected);
-			then(branchFacadeService).should().findNearestBranch(USER_ID, new NearestBranchReqDto(ADDRESS));
+			then(branchFacadeService).should().findNearestBranch(USER_ID, ADDRESS);
 			then(housePriceFacadeService).should()
-				.findHousePrice(new HousePriceReqDto(HOUSE_TYPE, ADDRESS));
+				.findHousePrice(HOUSE_TYPE, ADDRESS);
 			then(auditConverter).should()
 				.toAuditResDto(false, nearestBranchResDto, true, nullHousePrice);
 		}

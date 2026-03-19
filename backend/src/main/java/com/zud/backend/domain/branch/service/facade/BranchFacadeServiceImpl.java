@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.zud.backend.domain.branch.client.AddressGeocodingClient;
 import com.zud.backend.domain.branch.client.dto.CoordinateResultDto;
 import com.zud.backend.domain.branch.converter.BranchConverter;
-import com.zud.backend.domain.branch.dto.request.NearestBranchReqDto;
 import com.zud.backend.domain.branch.dto.response.NearestBranchResDto;
 import com.zud.backend.domain.branch.entity.Branch;
 import com.zud.backend.domain.branch.repository.NearestBranchProjection;
@@ -27,12 +26,12 @@ public class BranchFacadeServiceImpl implements BranchFacadeService {
 	private final BranchConverter branchConverter;
 
 	public NearestBranchResDto findNearestBranch(
-		final Long userId, final NearestBranchReqDto reqDto
+		final Long userId, final String propertyAddress
 	) {
 		User user = userQueryService.findById(userId);
 		Branch currentBranch = user.getBranch();
 
-		CoordinateResultDto coordinate = addressGeocodingClient.getCoordinates(reqDto.propertyAddress());
+		CoordinateResultDto coordinate = addressGeocodingClient.getCoordinates(propertyAddress);
 
 		NearestBranchProjection nearestBranch = branchQueryService.findNearestBranch(
 			coordinate.longitude(),

@@ -12,7 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.zud.backend.domain.houseprice.dto.request.HousePriceReqDto;
 import com.zud.backend.domain.houseprice.dto.response.HousePriceResDto;
 import com.zud.backend.domain.houseprice.service.query.HousePriceQueryService;
 
@@ -37,11 +36,6 @@ class HousePriceFacadeServiceImplTest {
 		@DisplayName("조회_성공시_QueryService_결과_반환")
 		void 조회_성공시_QueryService_결과_반환() {
 			// given
-			HousePriceReqDto reqDto = HousePriceReqDto.builder()
-				.houseType(HOUSE_TYPE)
-				.address(ADDRESS)
-				.build();
-
 			HousePriceResDto expected = HousePriceResDto.builder()
 				.price(50000L)
 				.priceType("실거래가")
@@ -52,7 +46,7 @@ class HousePriceFacadeServiceImplTest {
 				.willReturn(expected);
 
 			// when
-			HousePriceResDto result = housePriceFacadeService.findHousePrice(reqDto);
+			HousePriceResDto result = housePriceFacadeService.findHousePrice(HOUSE_TYPE, ADDRESS);
 
 			// then
 			assertThat(result).isSameAs(expected);
@@ -63,11 +57,6 @@ class HousePriceFacadeServiceImplTest {
 		@DisplayName("조회_성공시_의존성_호출_인자_검증")
 		void 조회_성공시_의존성_호출_인자_검증() {
 			// given
-			HousePriceReqDto reqDto = HousePriceReqDto.builder()
-				.houseType(HOUSE_TYPE)
-				.address(ADDRESS)
-				.build();
-
 			HousePriceResDto expected = HousePriceResDto.builder()
 				.price(50000L)
 				.priceType("실거래가")
@@ -78,7 +67,7 @@ class HousePriceFacadeServiceImplTest {
 				.willReturn(expected);
 
 			// when
-			housePriceFacadeService.findHousePrice(reqDto);
+			housePriceFacadeService.findHousePrice(HOUSE_TYPE, ADDRESS);
 
 			// then
 			then(housePriceQueryService).should().findHousePrice(HOUSE_TYPE, ADDRESS);

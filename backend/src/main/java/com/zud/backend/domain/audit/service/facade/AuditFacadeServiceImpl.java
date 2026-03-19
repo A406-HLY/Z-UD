@@ -8,10 +8,8 @@ import com.zud.backend.domain.audit.converter.AuditConverter;
 import com.zud.backend.domain.audit.dto.request.AuditReqDto;
 import com.zud.backend.domain.audit.dto.response.AuditResDto;
 import com.zud.backend.domain.audit.exception.AuditException;
-import com.zud.backend.domain.branch.dto.request.NearestBranchReqDto;
 import com.zud.backend.domain.branch.dto.response.NearestBranchResDto;
 import com.zud.backend.domain.branch.service.facade.BranchFacadeService;
-import com.zud.backend.domain.houseprice.dto.request.HousePriceReqDto;
 import com.zud.backend.domain.houseprice.dto.response.HousePriceResDto;
 import com.zud.backend.domain.houseprice.entity.HouseType;
 import com.zud.backend.domain.houseprice.service.facade.HousePriceFacadeService;
@@ -58,8 +56,7 @@ public class AuditFacadeServiceImpl implements AuditFacadeService {
 	}
 
 	private NearestBranchResDto findNearestBranch(final Long userId, final String propertyAddress) {
-		NearestBranchReqDto nearestBranchReqDto = new NearestBranchReqDto(propertyAddress);
-		return branchFacadeService.findNearestBranch(userId, nearestBranchReqDto);
+		return branchFacadeService.findNearestBranch(userId, propertyAddress);
 	}
 
 	private HousePriceAuditResult evaluateHousePrice(final String houseType, final String propertyAddress) {
@@ -68,9 +65,7 @@ public class AuditFacadeServiceImpl implements AuditFacadeService {
 			return new HousePriceAuditResult(false, createNullHousePrice(UNSUPPORTED_HOUSE_TYPE_MESSAGE));
 		}
 
-		HousePriceResDto housePrice = housePriceFacadeService.findHousePrice(
-			new HousePriceReqDto(houseType, propertyAddress)
-		);
+		HousePriceResDto housePrice = housePriceFacadeService.findHousePrice(houseType, propertyAddress);
 		if (housePrice == null) {
 			return new HousePriceAuditResult(true, createNullHousePrice(HOUSE_PRICE_MANUAL_INPUT_MESSAGE));
 		}
