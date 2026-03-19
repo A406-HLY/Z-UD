@@ -3,14 +3,18 @@
  * - 가이드라인에 따라 백엔드 응답 타입(Response)과 프론트엔드 UI 모델(User)을 분리합니다.
  */
 
-/** 백엔드 로그인 API 응답 데이터 (snake_case) */
+/** 백엔드 로그인 API 응답 데이터 (Nested CamelCase) */
 export interface LoginResponseData {
-  user_id: number;
-  employee_number: string;
-  name: string;
-  branch_id: number;
-  branch_name: string;
-  session_expiry: string;
+  userInfoDto: {
+    userId: number;
+    employeeNumber: string;
+    name: string;
+  };
+  branchInfoDto: {
+    id: number;
+    name: string;
+  };
+  sessionExpiry: string;
 }
 
 /** 필드별 상세 에러 규격 */
@@ -41,7 +45,7 @@ export interface User {
   name: string;
   branchId: number;
   branchName: string;
-  sessionExpiry: Date;
+  sessionExpiry: string; // [FIX] Redux Serializability 대응 (Date -> string)
 }
 
 /** 로그인 정보를 포함한 인증 상태 타입 */
