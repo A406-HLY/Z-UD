@@ -8,6 +8,7 @@ export interface Customer {
   loanPurpose: string; // 대출 목적
   employmentType: string; // 근로 형태
   desiredAmount: string;  // 희망 금액
+  houseCount: string;     // 보유 주택 개수
 }
 
 /**
@@ -20,4 +21,5 @@ export const INITIAL_CUSTOMER_STATE: Customer = {
   loanPurpose: '',
   employmentType: '',
   desiredAmount: '',
+  houseCount: '',
 };
