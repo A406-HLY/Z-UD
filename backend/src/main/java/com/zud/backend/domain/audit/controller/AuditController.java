@@ -26,12 +26,12 @@ public class AuditController {
 
 	private final AuditFacadeService auditFacadeService;
 
-	@PostMapping
-	public ResponseEntity<BaseResponse<AuditResDto>> audit(
+	@PostMapping("/house")
+	public ResponseEntity<BaseResponse<AuditResDto>> auditHouse(
 		@Authentication Long userId,
 		@Valid @RequestBody AuditReqDto reqDto
 	) {
-		AuditResDto response = auditFacadeService.audit(userId, reqDto);
+		AuditResDto response = auditFacadeService.auditHouse(userId, reqDto);
 		return ResponseUtils.ok(response);
 	}
 }

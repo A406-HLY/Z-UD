@@ -2,7 +2,8 @@ package com.zud.backend.domain.houseprice.service.facade;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -12,7 +13,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.zud.backend.domain.houseprice.dto.request.HousePriceReqDto;
+import java.util.Optional;
+
+import com.zud.backend.domain.houseprice.entity.HouseOfficialPrice;
+import com.zud.backend.domain.houseprice.entity.HouseTradePrice;
+import com.zud.backend.domain.houseprice.util.ParsedAddress;
 import com.zud.backend.domain.houseprice.dto.response.HousePriceResDto;
 import com.zud.backend.domain.houseprice.service.query.HousePriceQueryService;
 
@@ -27,7 +32,7 @@ class HousePriceFacadeServiceImplTest {
 	private HousePriceFacadeServiceImpl housePriceFacadeService;
 
 	private static final String HOUSE_TYPE = "아파트";
-	private static final String ADDRESS = "서울특별시 서초구 반포동 1-1 반포아파트 101동 101호";
+	private static final String ADDRESS = "서울특별시 서초구 반포동 자하문로36길 16-14 반포아파트 101동 101호";
 
 	@Nested
 	@DisplayName("findHousePrice()")
@@ -36,52 +41,38 @@ class HousePriceFacadeServiceImplTest {
 		@Test
 		@DisplayName("조회_성공시_QueryService_결과_반환")
 		void 조회_성공시_QueryService_결과_반환() {
-			// given
-			HousePriceReqDto reqDto = HousePriceReqDto.builder()
-				.houseType(HOUSE_TYPE)
-				.address(ADDRESS)
-				.build();
+			HouseTradePrice tradePrice = org.mockito.Mockito.mock(HouseTradePrice.class);
+			org.mockito.Mockito.when(tradePrice.getDealAmountManwon()).thenReturn(50000L);
 
-			HousePriceResDto expected = HousePriceResDto.builder()
-				.price(50000L)
-				.priceType("실거래가")
-				.message("실거래가 기준으로 조회되었습니다.")
-				.build();
-
-			given(housePriceQueryService.findHousePrice(HOUSE_TYPE, ADDRESS))
-				.willReturn(expected);
+			given(housePriceQueryService.findExactTradePrice(eq("APARTMENT"), any(ParsedAddress.class)))
+				.willReturn(Optional.of(tradePrice));
 
 			// when
-			HousePriceResDto result = housePriceFacadeService.findHousePrice(reqDto);
+			HousePriceResDto result = housePriceFacadeService.findHousePrice(HOUSE_TYPE, ADDRESS);
 
 			// then
-			assertThat(result).isSameAs(expected);
-			then(housePriceQueryService).should().findHousePrice(HOUSE_TYPE, ADDRESS);
+			assertThat(result.price()).isEqualTo(50000L);
+			assertThat(result.priceType()).isEqualTo("실거래가");
 		}
 
 		@Test
-		@DisplayName("조회_성공시_의존성_호출_인자_검증")
-		void 조회_성공시_의존성_호출_인자_검증() {
-			// given
-			HousePriceReqDto reqDto = HousePriceReqDto.builder()
-				.houseType(HOUSE_TYPE)
-				.address(ADDRESS)
-				.build();
+		@DisplayName("실거래가_없을_때_공시가_조회_성공")
+		void 실거래가_없을_때_공시가_조회_성공() {
+			given(housePriceQueryService.findExactTradePrice(eq("APARTMENT"), any(ParsedAddress.class)))
+				.willReturn(Optional.empty());
 
-			HousePriceResDto expected = HousePriceResDto.builder()
-				.price(50000L)
-				.priceType("실거래가")
-				.message("실거래가 기준으로 조회되었습니다.")
-				.build();
-
-			given(housePriceQueryService.findHousePrice(HOUSE_TYPE, ADDRESS))
-				.willReturn(expected);
+			HouseOfficialPrice officialPrice = org.mockito.Mockito.mock(HouseOfficialPrice.class);
+			org.mockito.Mockito.when(officialPrice.getOfficialPrice()).thenReturn(600_000_000L); // 6억원 = 60000만원
+			given(housePriceQueryService.findExactOfficialPrice(any(ParsedAddress.class)))
+				.willReturn(Optional.of(officialPrice));
 
 			// when
-			housePriceFacadeService.findHousePrice(reqDto);
+			housePriceFacadeService.findHousePrice(HOUSE_TYPE, ADDRESS);
 
 			// then
-			then(housePriceQueryService).should().findHousePrice(HOUSE_TYPE, ADDRESS);
+			HousePriceResDto result = housePriceFacadeService.findHousePrice(HOUSE_TYPE, ADDRESS);
+			assertThat(result.price()).isEqualTo(60000L);
+			assertThat(result.priceType()).isEqualTo("공시가");
 		}
 	}
 }

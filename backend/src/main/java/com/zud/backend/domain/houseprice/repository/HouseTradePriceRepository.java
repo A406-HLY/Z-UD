@@ -33,12 +33,14 @@ public interface HouseTradePriceRepository extends JpaRepository<HouseTradePrice
 		SELECT h FROM HouseTradePrice h
 		WHERE h.houseType = 'SINGLE'
 		AND h.sigungu = :sigungu
-		AND h.buildingName = :buildingName
+		AND h.roadName = :roadName
+		AND (:buildingName IS NULL OR h.buildingName = :buildingName)
 		ORDER BY h.contractYearMonth DESC, h.contractDay DESC
 		LIMIT 1
 		""")
 	HouseTradePrice findSingleHouseExactMatch(
 		@Param("sigungu") final String sigungu,
+		@Param("roadName") final String roadName,
 		@Param("buildingName") final String buildingName
 	);
 

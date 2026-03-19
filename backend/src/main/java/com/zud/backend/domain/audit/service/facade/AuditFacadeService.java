@@ -4,6 +4,6 @@ import com.zud.backend.domain.audit.dto.request.AuditReqDto;
 import com.zud.backend.domain.audit.dto.response.AuditResDto;
 
 public interface AuditFacadeService {
-	AuditResDto audit(final Long userId, final AuditReqDto reqDto);
+	AuditResDto auditHouse(final Long userId, final AuditReqDto reqDto);
 }
 
