@@ -11,7 +11,11 @@ const apiClient = axios.create({
 });
 
 export class BackendApiClient {
-  public static async uploadFile(storedPath: string, sequenceId: number, counselId: number): Promise<void> {
+  /**
+   * 파일을 실제 백엔드 서버로 업로드합니다.
+   * (Why) 백엔드 규격 변경에 따라 counselId를 string(UUID) 타입으로 전송합니다.
+   */
+  public static async uploadFile(storedPath: string, sequenceId: number, counselId: string): Promise<void> {
     logger.info(`Starting ACTUAL upload to backend: [Seq: ${sequenceId}] for Counsel: ${counselId}`);
     
     try {
@@ -31,7 +35,8 @@ export class BackendApiClient {
 
       /**
        * 명세서에 따라 counselId를 Query Parameter로 전달합니다.
-       * POST /api/v1/documents?counselId=1001
+       * (Why) 백엔드가 문자열 규격의 UUID를 기대하므로 string 타입으로 전송됩니다.
+       * POST /api/v1/documents?counselId=550e8400-e29b-41d4-a716...
        */
       const url = '/documents';
       await apiClient.post(url, formData, {

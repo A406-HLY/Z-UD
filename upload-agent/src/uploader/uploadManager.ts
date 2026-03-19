@@ -5,7 +5,11 @@ import { logger } from '../utils/logger';
 export class UploadManager {
   private static isUploading = false;
 
-  public static async startUploading(mode: 'all' | 'selected' = 'all', sequenceIds?: number[], counselId?: number): Promise<void> {
+  /**
+   * 업로드 프로세스를 시작합니다.
+   * (Why) counselId는 백엔드 업로드 시 필수 식별자이며, 신규 규격에 따라 string 타입을 사용합니다.
+   */
+  public static async startUploading(mode: 'all' | 'selected' = 'all', sequenceIds?: number[], counselId?: string): Promise<void> {
     if (!counselId) {
       throw new Error('counselId is required for backend upload.');
     }
@@ -24,7 +28,10 @@ export class UploadManager {
     }
   }
 
-  private static async processQueue(mode: 'all' | 'selected', sequenceIds: number[] | undefined, counselId: number): Promise<void> {
+  /**
+   * 큐를 순차적으로 처리하며 파일을 업로드합니다.
+   */
+  private static async processQueue(mode: 'all' | 'selected', sequenceIds: number[] | undefined, counselId: string): Promise<void> {
     let filesToUpload: QueuedFile[] = [];
 
     if (mode === 'all') {
@@ -54,12 +61,13 @@ export class UploadManager {
       return;
     }
 
-    logger.info(`Starting upload for ${filesToUpload.length} files (mode: ${mode})...`);
+    logger.info(`Starting upload for ${filesToUpload.length} files (mode: ${mode}, counselId: ${counselId})...`);
 
     for (const file of filesToUpload) {
       try {
         FileQueueStore.updateFileStatus(file.sequenceId, 'UPLOADING');
         
+        // (Why) 백엔드 규격에 맞춰 string 타입의 counselId를 전달합니다.
         await BackendApiClient.uploadFile(file.storedPath, file.sequenceId, counselId);
         
         FileQueueStore.updateFileStatus(file.sequenceId, 'COMPLETED');

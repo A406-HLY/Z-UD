@@ -5,29 +5,29 @@ import { Document } from '@/entities/loan-document/model/types';
 import { documentMapper } from '@/entities/loan-document/model/document.mapper';
 import { useAgentFiles } from '@/features/document-sync/api/use-agent-files';
 import { useSelectSync } from '@/features/document-sync/model/use-select-sync';
-
-interface DocumentViewerProps {
-  isPollingActive: boolean;
-}
+import { useAppSelector } from '@/app/store/hooks';
 
 const EMPTY_DOCS: Document[] = [];
 
 /**
  * @widget DocumentViewer
  * 중앙 분할형 서류 뷰어 위젯입니다.
- * (Why) BATCH A/B 영역을 조립하며, 에이전트 연동 로직과 선택 상태 관리 로직을 각각 전용 훅과 매퍼로 분리하여 규칙을 준수합니다.
+ * (Why) 에이전트 연동 데이터와 전역 폴링 상태를 결합하여 실시간 서류 현황을 렌더링합니다.
  */
-export const DocumentViewer = ({ isPollingActive }: DocumentViewerProps) => {
+export const DocumentViewer = () => {
+  // (Why) 전역 상태(Redux)에서 폴링 활성화 여부를 직접 가져와 통신 여부를 결정합니다.
+  const isPollingActive = useAppSelector((state) => state.customer.isPollingActive);
+
   // 1. 데이터 가져오기 (Feature)
   const { data: agentFiles } = useAgentFiles(isPollingActive);
 
-  // 2. 데이터 변환 (Mapper - 규칙 3 준수)
+  // 2. 데이터 변환 (Mapper)
   const agentDocs = useMemo(() => {
     if (!agentFiles) return [];
     return agentFiles.map(documentMapper.toDomainFromAgent);
   }, [agentFiles]);
 
-  // 3. 비즈니스 로직 및 상태 관리 (Hook - 규칙 4 준수)
+  // 3. 비즈니스 로직 및 상태 관리 (Hook)
   const { selectedIds, toggleSelect } = useSelectSync(agentDocs);
 
   // 4. 데이터 섹션 조립
