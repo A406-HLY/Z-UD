@@ -27,3 +27,4 @@ export const fetchAgentFiles = async (): Promise<AgentFile[]> => {
   const response = await agentClient.get<{ data: { items: AgentFile[] } }>('/api/files');
   return response.data.data.items;
 };
+

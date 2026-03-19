@@ -37,3 +37,12 @@ export const formatCurrency = (value: string): string => {
   if (!digits) return '';
   return Number(digits).toLocaleString();
 };
+
+/**
+ * 성함 포맷팅 (숫자 및 특수문자 제거)
+ * (Why) 고객 성함 필드에서 숫자나 기호 입력을 원천 차단하여 데이터 신뢰도를 높이고 재사용성을 확보합니다.
+ * @param value 입력 문자열
+ */
+export const formatName = (value: string): string => {
+  return value.replace(/[^a-zA-Zㄱ-ㅎㅏ-ㅣ가-힣]/g, '');
+};
