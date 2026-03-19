@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Card, Input, Label, Select } from '@/shared/ui';
+import { Card, Input, Label, Select, Button } from '@/shared/ui';
 import { Customer, INITIAL_CUSTOMER_STATE } from '@/entities/customer/model/types';
 import { 
   formatPersonalId, 
@@ -8,17 +8,22 @@ import {
 } from '@/shared/lib/utils/format-utils';
 import { EMPLOYMENT_TYPES } from '@/entities/customer/model/customer.constants';
 
+interface CustomerInfoFormProps {
+  isPollingActive: boolean;
+  onTogglePolling: () => void;
+}
+
 /**
  * @widget CustomerInfoForm
  * 고객의 기초 정보를 입력받는 폼 위젯입니다.
- * (Why) 사용자의 입력 편의성을 위해 실시간 포맷팅(하이픈, 콤마) 기능을 제공하며, 범용 로직은 Shared 유틸리티를 재사용합니다.
+ * (Why) 사용자의 입력 편의성을 위해 실시간 포맷팅 기능을 제공하며, 에이전트 연동을 위한 트리거 버튼을 포함합니다.
  */
-export const CustomerInfoForm = () => {
+export const CustomerInfoForm = ({ isPollingActive, onTogglePolling }: CustomerInfoFormProps) => {
   const [form, setForm] = useState<Customer>(INITIAL_CUSTOMER_STATE);
 
   /** 
    * 입력 필드 변경 핸들러
-   * (Why) 각 필드에 적절한 포맷터를 적용하여 데이터 일관성을 유지합니다.
+   * (Why) 각 필드에 적절한 포맷터를 적용하여 데이터 일관성을 유지하고, 위젯 내 복잡도를 낮추기 위해 Shared 유틸리티를 호출합니다.
    */
   const handleChange = (field: keyof Customer, value: string) => {
     let finalValue = value;
@@ -123,22 +128,33 @@ export const CustomerInfoForm = () => {
           </div>
         </div>
 
-        <div className="col-span-2 space-y-1.5">
+        <div className="col-span-3 space-y-1.5 font-bold">
           <Label htmlFor="houseCount">보유 주택 개수</Label>
-          <div className="relative flex items-center">
-            <Input 
-              id="houseCount" 
-              className="pr-8 text-right"
-              type="number"
-              value={form.houseCount} 
-              onChange={(e) => handleChange('houseCount', e.target.value)}
-              placeholder="0"
-            />
-            <span className="absolute right-3 text-sm text-gray-400">채</span>
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1 flex items-center">
+              <Input 
+                id="houseCount" 
+                className="pr-6 text-right"
+                type="number"
+                value={form.houseCount} 
+                onChange={(e) => handleChange('houseCount', e.target.value)}
+                placeholder="0"
+              />
+              <span className="absolute right-2 text-xs text-gray-400">채</span>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant={isPollingActive ? 'outline' : 'primary'}
+              className={`text-[11px] px-3 ${isPollingActive ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-[#004b93] text-white'}`}
+              onClick={onTogglePolling}
+            >
+              {isPollingActive ? '중지' : '서류 감지'}
+            </Button>
           </div>
         </div>
         
-        <div className="col-span-2" />
+        <div className="col-span-1" />
       </div>
     </Card>
   );
