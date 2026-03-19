@@ -19,25 +19,30 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt
       - /var/www/certbot:/var/www/certbot
     healthcheck:
-      test: [ "CMD", "nginx", "-t" ]
-      interval: 30s
-      timeout: 10s
+      test: [ "CMD-SHELL", "curl -f http://localhost/ || exit 1" ]
+      interval: 5s
+      timeout: 3s
       retries: 3
-    restart: unless-stopped
-
-  certbot:
-    container_name: certbot
-    image: certbot/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
-    environment:
-      - TZ=Asia/Seoul
-    volumes:
-      - /etc/letsencrypt:/etc/letsencrypt
-      - /var/www/certbot:/var/www/certbot
+      start_period: 5s
     depends_on:
-      nginx:
+      backend:
         condition: service_healthy
     restart: unless-stopped
+
+
+#  certbot:
+#    container_name: certbot
+#    image: certbot/certbot
+#    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+#    environment:
+#      - TZ=Asia/Seoul
+#    volumes:
+#      - /etc/letsencrypt:/etc/letsencrypt
+#      - /var/www/certbot:/var/www/certbot
+#    depends_on:
+#      nginx:
+#        condition: service_healthy
+#    restart: unless-stopped
 
   backend:
     container_name: backend
@@ -69,11 +74,11 @@ services:
     volumes:
       - ../logs:/app/logs
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health || exit 1" ]
-      interval: 30s
-      timeout: 10s
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/actuator/health || exit 1"]
+      interval: 5s
+      timeout: 5s
       retries: 3
-      start_period: 40s
+      start_period: 20s
     depends_on:
       postgres:
         condition: service_healthy
@@ -96,10 +101,10 @@ services:
     volumes:
       - ../data/redis:/data
     healthcheck:
-      test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: ["CMD-SHELL", "redis-cli -a ${REDIS_PASSWORD} ping | grep PONG || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
     restart: always
 
   postgres:
@@ -117,13 +122,16 @@ services:
       - ../data/postgres:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME}" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 5s
+      timeout: 3s
+      retries: 3
     restart: always
 
 networks:
   app-network:
     external: true
   monitoring-network:
+    external: true
+  default:
+    name: app-network
     external: true
