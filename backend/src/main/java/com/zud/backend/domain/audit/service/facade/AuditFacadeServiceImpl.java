@@ -29,7 +29,6 @@ public class AuditFacadeServiceImpl implements AuditFacadeService {
 
 	private final BranchFacadeService branchFacadeService;
 	private final HousePriceFacadeService housePriceFacadeService;
-	private final AuditConverter auditConverter;
 
 	@Override
 	public AuditResDto auditHouse(final Long userId, final AuditReqDto reqDto) {
@@ -41,7 +40,7 @@ public class AuditFacadeServiceImpl implements AuditFacadeService {
 		NearestBranchResDto nearestBranch = findNearestBranch(userId, propertyAddress);
 		HousePriceAuditResult housePriceResult = evaluateHousePrice(houseType, propertyAddress);
 
-		return auditConverter.toAuditResDto(
+		return AuditConverter.toAuditResDto(
 			false,
 			nearestBranch,
 			housePriceResult.supportedHouseType(),

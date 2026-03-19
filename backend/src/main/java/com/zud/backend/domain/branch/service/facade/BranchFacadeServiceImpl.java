@@ -23,7 +23,6 @@ public class BranchFacadeServiceImpl implements BranchFacadeService {
 	private final UserQueryService userQueryService;
 	private final AddressGeocodingClient addressGeocodingClient;
 	private final BranchQueryServiceImpl branchQueryService;
-	private final BranchConverter branchConverter;
 
 	public NearestBranchResDto findNearestBranch(
 		final Long userId, final String propertyAddress
@@ -44,7 +43,7 @@ public class BranchFacadeServiceImpl implements BranchFacadeService {
 			coordinate.latitude()
 		);
 
-		return branchConverter.toNearestBranchResDto(
+		return BranchConverter.toNearestBranchResDto(
 			currentBranch,
 			currentBranchDistanceMeter,
 			nearestBranch
