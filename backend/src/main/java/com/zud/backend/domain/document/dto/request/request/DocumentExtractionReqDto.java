@@ -1,18 +1,20 @@
-package com.zud.backend.domain.document.dto.request;
+package com.zud.backend.domain.document.dto.request.request;
 
 import java.util.List;
 
-import jakarta.validation.Valid;
+import com.zud.backend.domain.document.dto.request.DocumentDto;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
 @Builder
-public record DocumentExtractionRequest(
+public record DocumentExtractionReqDto(
 	String schemaVersion,
 	String jobId,
 	String caseId,
 	ProcessedAt processedAt,
-	@Valid @NotNull List<DocumentDto> documents
+	@NotNull
+	List<DocumentDto> documents
 ) {
 	public record ProcessedAt(
 		String startedAt,
