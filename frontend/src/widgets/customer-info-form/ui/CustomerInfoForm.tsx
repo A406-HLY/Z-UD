@@ -1,55 +1,46 @@
 import { useState } from 'react';
-import { Input, Label, Card, Select } from '@/shared/ui';
+import { Card, Input, Label, Select } from '@/shared/ui';
 import { Customer, INITIAL_CUSTOMER_STATE } from '@/entities/customer/model/types';
+import { 
+  formatPersonalId, 
+  formatPhoneNumber, 
+  formatCurrency 
+} from '@/shared/lib/utils/format-utils';
+import { EMPLOYMENT_TYPES } from '@/entities/customer/model/customer.constants';
 
 /**
- * 고객 기본정보 입력 폼 위젯
- * - 주민등록번호 자동 하이픈 삽입
- * - 근로 형태 토글 버튼 선택 방식
- * - 입력 타입 정교화
+ * @widget CustomerInfoForm
+ * 고객의 기초 정보를 입력받는 폼 위젯입니다.
+ * (Why) 사용자의 입력 편의성을 위해 실시간 포맷팅(하이픈, 콤마) 기능을 제공하며, 범용 로직은 Shared 유틸리티를 재사용합니다.
  */
 export const CustomerInfoForm = () => {
   const [form, setForm] = useState<Customer>(INITIAL_CUSTOMER_STATE);
 
+  /** 
+   * 입력 필드 변경 핸들러
+   * (Why) 각 필드에 적절한 포맷터를 적용하여 데이터 일관성을 유지합니다.
+   */
   const handleChange = (field: keyof Customer, value: string) => {
     let finalValue = value;
 
-    // 1. 주민등록번호 자동 하이픈 로직 (6자리-7자리)
-    if (field === 'personalId') {
-      const nums = value.replace(/[^0-9]/g, '');
-      if (nums.length <= 6) {
-        finalValue = nums;
-      } else {
-        finalValue = `${nums.slice(0, 6)}-${nums.slice(6, 13)}`;
-      }
-    }
-
-    // 2. 전화번호 자동 하이픈 로직 (010-XXXX-XXXX)
-    if (field === 'phoneNumber') {
-      const nums = value.replace(/[^0-9]/g, '');
-      if (nums.length <= 3) {
-        finalValue = nums;
-      } else if (nums.length <= 7) {
-        finalValue = `${nums.slice(0, 3)}-${nums.slice(3)}`;
-      } else {
-        finalValue = `${nums.slice(0, 3)}-${nums.slice(3, 7)}-${nums.slice(7, 11)}`;
-      }
-    }
-
-    // 3. 희망 금액 천 단위 콤마 포맷팅
-    if (field === 'desiredAmount') {
-      const nums = value.replace(/[^0-9]/g, '');
-      if (!nums) {
-        finalValue = '';
-      } else {
-        finalValue = Number(nums).toLocaleString();
-      }
+    // (Why) 필드별로 특화된 포맷팅 로직을 분기 처리합니다.
+    switch (field) {
+      case 'personalId':
+        finalValue = formatPersonalId(value);
+        break;
+      case 'phoneNumber':
+        finalValue = formatPhoneNumber(value);
+        break;
+      case 'desiredAmount':
+        finalValue = formatCurrency(value);
+        break;
+      default:
+        // 일반 입력 필드는 별도 포매팅 없이 처리
+        break;
     }
 
     setForm((prev) => ({ ...prev, [field]: finalValue }));
   };
-
-  const employmentOptions = ['직장인', '자영업자', '프리랜서'];
 
   return (
     <Card className="p-4 bg-[#f8f9fa]">
@@ -89,7 +80,7 @@ export const CustomerInfoForm = () => {
           />
         </div>
 
-        <div className="col-span-4" /> {/* 여백 줄임 */}
+        <div className="col-span-4" />
 
         {/* 2행 */}
         <div className="col-span-2 space-y-1.5">
@@ -110,7 +101,7 @@ export const CustomerInfoForm = () => {
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleChange('employmentType', e.target.value)}
           >
             <option value="" disabled>근로 형태 선택</option>
-            {employmentOptions.map((option) => (
+            {EMPLOYMENT_TYPES.map((option) => (
               <option key={option} value={option}>
                 {option}
               </option>
@@ -147,7 +138,7 @@ export const CustomerInfoForm = () => {
           </div>
         </div>
         
-        <div className="col-span-2" /> {/* 여백 줄임 */}
+        <div className="col-span-2" />
       </div>
     </Card>
   );
