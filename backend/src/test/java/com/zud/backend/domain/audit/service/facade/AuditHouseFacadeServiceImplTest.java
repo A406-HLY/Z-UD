@@ -127,7 +127,7 @@ class AuditHouseFacadeServiceImplTest {
 	void getMyData는_분리된_MyDataService를_호출한다() {
 		// given
 		MyDataReqDto reqDto = new MyDataReqDto("zud@ssafy.co.kr");
-		MyDataResDto expected = new MyDataResDto("zud@ssafy.co.kr", "A", java.util.List.of());
+		MyDataResDto expected = new MyDataResDto("zud@ssafy.co.kr", "A", "0", "0", java.util.List.of());
 		given(myDataService.getMyData(reqDto)).willReturn(expected);
 
 		// when
