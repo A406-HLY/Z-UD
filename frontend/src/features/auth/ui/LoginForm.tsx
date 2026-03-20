@@ -7,8 +7,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AxiosError } from 'axios';
-import { Button } from '../../../shared/ui/button';
-import { Input } from '../../../shared/ui/input';
+import { Button, Input } from '@/shared/ui';
 import { useLoginMutation } from '../api/use-login-mutation';
 import { ApiResponse } from '../../../entities/user';
 
