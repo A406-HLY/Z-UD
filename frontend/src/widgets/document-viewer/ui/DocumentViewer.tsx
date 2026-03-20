@@ -1,14 +1,17 @@
 import { useMemo } from 'react';
-import { Button } from '@/shared/ui';
+import { Button, LegacySpinner } from '@/shared/ui';
 import { StatusBadge } from '@/entities/loan-document/ui/StatusBadge';
 import { Document } from '@/entities/loan-document/model/types';
 import { documentMapper } from '@/entities/loan-document/model/document.mapper';
+import { 
+  DOCUMENT_VIEWER_LABELS, 
+  DOCUMENT_TABLE_HEADERS 
+} from '@/entities/loan-document/model/document.constants';
 import { useAgentFiles } from '@/features/document-sync/api/use-agent-files';
 import { useSelectSync } from '@/features/document-sync/model/use-select-sync';
 import { useAppSelector } from '@/app/store/hooks';
 import { useNavigate } from 'react-router-dom';
 import { useUploadDocuments } from '@/features/document-sync/api/use-upload-documents';
-
 
 const EMPTY_DOCS: Document[] = [];
 
@@ -35,7 +38,6 @@ export const DocumentViewer = () => {
   const { selectedIds, toggleSelect, toggleAll } = useSelectSync(agentDocs);
   const { mutate: uploadDocuments, isPending } = useUploadDocuments();
 
-  
   // (Why) Redux Store에 저장된 상담 ID를 가져와 업로드 요청 시 사용합니다.
   const counselId = useAppSelector((state) => state.customer.data.counselId);
 
@@ -45,8 +47,6 @@ export const DocumentViewer = () => {
    */
   const handleNextStep = () => {
     if (!counselId) {
-
-
       alert('상담 ID가 존재하지 않습니다. 고객 정보를 먼저 저장해 주세요.');
       return;
     }
@@ -82,16 +82,18 @@ export const DocumentViewer = () => {
     <div className="flex-1 flex flex-col min-w-0">
       <div className="px-3 py-1.5 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
         <h3 className="text-xs font-bold text-gray-700">{title} <span className="text-[10px] text-gray-400 font-normal">({docs.length})</span></h3>
-        {isPollingActive && title.includes('A') && (
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-none bg-slate-100 border border-slate-200">
-            <span className="w-1 h-1 rounded-none bg-slate-400 animate-pulse" />
+        {isPollingActive && title === DOCUMENT_VIEWER_LABELS.SEGMENT_A && (
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-none bg-slate-100 border border-slate-200">
+            {/** (Why) 공통으로 추출된 레거시 스피너를 사용하여 일관된 로딩 UI를 제공합니다. */}
+            <LegacySpinner size="sm" />
             <span className="text-[9px] text-slate-600 font-bold tracking-tight">
-              스캔본 불러오는 중...
+              {DOCUMENT_VIEWER_LABELS.SCANNING_STATUS}
             </span>
           </div>
         )}
       </div>
-      <table className="w-full text-left border-collapse">
+      {/* (Why) 테이블 내부 텍스트(파일명 등)가 길어져도 부모 너비를 뚫고 나가지 않도록 table-fixed를 적용합니다. */}
+      <table className="w-full text-left border-collapse table-fixed">
         <thead className="bg-gray-50 text-[10px] uppercase text-gray-400 font-bold border-b border-gray-200">
           <tr>
             <th className="px-2 py-1.5 w-8 text-center">
@@ -102,9 +104,9 @@ export const DocumentViewer = () => {
                 onChange={(e) => toggleAll(e.target.checked)}
               />
             </th>
-            <th className="px-2 py-1.5 w-10 text-center">NO.</th>
-            <th className="px-2 py-1.5">FILE NAME</th>
-            <th className="px-2 py-1.5 w-24 text-center">STATUS</th>
+            <th className="px-2 py-1.5 w-10 text-center">{DOCUMENT_TABLE_HEADERS.NO}</th>
+            <th className="px-2 py-1.5">{DOCUMENT_TABLE_HEADERS.FILE_NAME}</th>
+            <th className="px-2 py-1.5 w-24 text-center">{DOCUMENT_TABLE_HEADERS.STATUS}</th>
           </tr>
         </thead>
 
@@ -131,9 +133,9 @@ export const DocumentViewer = () => {
           {docs.length === 0 && (
             <tr>
               <td colSpan={4} className="px-3 py-6 text-center text-gray-400 text-[10px] text-not-italic leading-relaxed">
-                스캔된 서류가 없습니다.
+                {DOCUMENT_VIEWER_LABELS.EMPTY_MESSAGE_LINE1}
                 <br/>
-                서류를 스캔해 주세요
+                {DOCUMENT_VIEWER_LABELS.EMPTY_MESSAGE_LINE2}
               </td>
             </tr>
           )}
@@ -152,14 +154,13 @@ export const DocumentViewer = () => {
           onClick={handleNextStep}
           disabled={isPending}
         >
-          {isPending ? '전송 중...' : '다음 단계'}
+          {isPending ? DOCUMENT_VIEWER_LABELS.UPLOADING_STATUS : DOCUMENT_VIEWER_LABELS.NEXT_STEP_BUTTON}
         </Button>
-
       </div>
-      <div className="flex h-[500px]">
-        {renderTable('BATCH SEGMENT A', displayDocsA)}
+      <div className="flex flex-1 min-h-[300px]">
+        {renderTable(DOCUMENT_VIEWER_LABELS.SEGMENT_A, displayDocsA)}
         <div className="w-px bg-gray-200" />
-        {renderTable('BATCH SEGMENT B', EMPTY_DOCS)}
+        {renderTable(DOCUMENT_VIEWER_LABELS.SEGMENT_B, EMPTY_DOCS)}
       </div>
     </div>
   );
