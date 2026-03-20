@@ -33,7 +33,32 @@ public class AuditConverter {
 		final String ratingName,
 		final List<MyDataResDto.LoanProductResDto> loanProducts
 	) {
-		return new MyDataResDto(userId, ratingName, loanProducts);
+		long totalLoanBalance = 0L;
+		long totalRemainingLoanBalance = 0L;
+
+		for (MyDataResDto.LoanProductResDto loanProduct : loanProducts) {
+			totalLoanBalance += parseAmount(loanProduct.loanBalance());
+			totalRemainingLoanBalance += parseAmount(loanProduct.remainingLoanBalance());
+		}
+
+		return new MyDataResDto(
+			userId,
+			ratingName,
+			String.valueOf(totalLoanBalance),
+			String.valueOf(totalRemainingLoanBalance),
+			loanProducts
+		);
+	}
+
+	private long parseAmount(final String amount) {
+		if (amount == null || amount.isBlank()) {
+			return 0L;
+		}
+		try {
+			return Long.parseLong(amount);
+		} catch (NumberFormatException e) {
+			return 0L;
+		}
 	}
 
 	public MyDataResDto.LoanProductResDto toLoanProductResDto(
