@@ -8,7 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.zud.backend.common.error.ErrorCode;
 import com.zud.backend.domain.audit.client.SsafyMyDataClient;
-import com.zud.backend.domain.audit.converter.AuditConverter;
+import com.zud.backend.domain.audit.converter.LoanProductConverter;
+import com.zud.backend.domain.audit.converter.MyDataConverter;
 import com.zud.backend.domain.audit.dto.external.response.ExternalCreditRatingResDto;
 import com.zud.backend.domain.audit.dto.external.response.ExternalInquireLoanAccountListResDto;
 import com.zud.backend.domain.audit.dto.external.response.ExternalInquireRepaymentRecordsResDto;
@@ -32,7 +33,7 @@ public class AuditMyDataFacadeServiceImpl implements AuditMyDataFacadeService {
 		ExternalMemberSearchResDto member = findMemberOrThrow(reqDto.email());
 		String ratingName = fetchRatingName(member.userKey());
 		List<MyDataResDto.LoanProductResDto> loanProducts = fetchLoanProducts(member.userKey());
-		return AuditConverter.toMyDataResDto(member.userId(), ratingName, loanProducts);
+		return MyDataConverter.toMyDataResDto(member.userId(), ratingName, loanProducts);
 	}
 
 	private ExternalMemberSearchResDto findMemberOrThrow(final String email) {
@@ -63,7 +64,7 @@ public class AuditMyDataFacadeServiceImpl implements AuditMyDataFacadeService {
 				userKey,
 				account.accountNo()
 			);
-			loanProducts.add(AuditConverter.toLoanProductResDto(account, repaymentRecords));
+			loanProducts.add(LoanProductConverter.toLoanProductResDto(account, repaymentRecords));
 		}
 		return loanProducts;
 	}
