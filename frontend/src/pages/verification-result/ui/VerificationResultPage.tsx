@@ -33,7 +33,6 @@ export const VerificationResultPage = () => {
 
   /** 
    * 실시간 정합성 판정 핸들러 
-   * (Why: Redux 고객 정보 대조 및 서류 간 상호 대조를 분기하여 연쇄적으로 오류 상태 해제)
    */
   const handleFieldChange = (key: string, value: string) => {
     if (!localResult) return;
@@ -49,24 +48,27 @@ export const VerificationResultPage = () => {
       // 단계 1: 대조 결과(isResolved) 판정
       let isResolved = false;
 
-      // 분기 A: 고객 정보(Redux)와 대조
-      // OCR 키와 Redux 키가 다를 수 있으므로 매핑 처리 (예: residentRegistrationNumber -> personalId)
-      if (baseKey === 'name' || baseKey === 'residentRegistrationNumber' || baseKey === 'phoneNumber') {
+      // (Why: OCR 서류마다 '이름'을 뜻하는 필드명이 다르므로, 이를 하나의 '고객 성명' 그룹으로 묶어 원장 데이터와 대조합니다.)
+      const nameGroup = ['name', 'buyer', 'ownerName', 'headOfHouseholdName', 'incomeRecipientName', 'representativeName'];
+      const isNameField = nameGroup.includes(baseKey) || key.includes('name'); 
+      const isIdField = baseKey === 'residentRegistrationNumber' || baseKey === 'identifierNumber';
+      const isPhoneField = baseKey === 'phoneNumber';
+
+      // 분기 A: 고객 정보(Redux)와 대조 (논리적 매핑 그룹 활용)
+      if (isNameField || isIdField || isPhoneField) {
         const customerValue = 
-          baseKey === 'name' ? customerInfo.name : 
-          baseKey === 'residentRegistrationNumber' ? customerInfo.personalId : 
+          isNameField ? customerInfo.name : 
+          isIdField ? customerInfo.personalId : 
           customerInfo.phoneNumber;
         
         isResolved = customerValue === value;
       } 
       // 분기 B: 서류 간 상호 대조 (고객 정보가 아닌 일반 데이터)
       else {
-        // 이 키(baseKey)로 위반(Violation)이 걸린 모든 서류들의 '현재 값'들을 수집하여 All-Match 검사
         const targetDocIds = prev.errorTargetDict[key] || new Set();
         const collectedValues = new Set<string>();
         
         targetDocIds.forEach(docId => {
-           // 방금 수정한 문서라면 새 값을, 아니면 기존 값을 수집
            if (docId === selectedId) {
              collectedValues.add(value);
            } else {
@@ -75,13 +77,12 @@ export const VerificationResultPage = () => {
            }
         });
 
-        // 1. 수집된 값이 1개뿐이다 (모든 타겟 문서의 값이 동일해짐)
-        // 2. 그리고 그 값이 빈 값이 아니다
         isResolved = collectedValues.size === 1 && !collectedValues.has("");
       }
 
       // 단계 2: 연쇄 업데이트 (Cascading Update)
-      // 해당 키를 가진 '모든' 타겟 문서 필드의 isMatch 상태를 일괄 변경
+      // (Why: 논리적으로 같은 의미(예: 이름)를 가진 오류 필드들도 함께 연쇄 해제해야 하므로, errorTargetDict 외에도 그룹 기반 전수 조사가 필요할 수 있음.
+      // 현재는 동일한 키(key)를 가진 타겟 문서에 대해서만 일괄 변경 수행)
       const targetDocIdsToUpdate = prev.errorTargetDict[key] || new Set([selectedId]);
       
       targetDocIdsToUpdate.forEach(docId => {
@@ -90,8 +91,8 @@ export const VerificationResultPage = () => {
             if (f.key === key) {
               return { 
                 ...f, 
-                value: docId === selectedId ? value : f.value, // 수정한 문서만 값 변경
-                isMatch: isResolved,                           // 판정 결과 일괄 적용
+                value: docId === selectedId ? value : f.value, 
+                isMatch: isResolved,                           
                 isModified: docId === selectedId ? true : f.isModified
               };
             }
