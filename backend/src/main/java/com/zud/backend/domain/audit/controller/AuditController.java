@@ -14,6 +14,7 @@ import com.zud.backend.domain.audit.dto.request.MyDataReqDto;
 import com.zud.backend.domain.audit.dto.response.AuditHouseResDto;
 import com.zud.backend.domain.audit.dto.response.MyDataResDto;
 import com.zud.backend.domain.audit.service.facade.AuditHouseFacadeService;
+import com.zud.backend.domain.audit.service.facade.AuditMyDataFacadeService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -27,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 public class AuditController {
 
 	private final AuditHouseFacadeService auditHouseFacadeService;
+	private final AuditMyDataFacadeService auditMyDataFacadeService;
 
 	@PostMapping("/house")
 	public ResponseEntity<BaseResponse<AuditHouseResDto>> auditHouse(
@@ -39,7 +41,7 @@ public class AuditController {
 
 	@PostMapping("/my-data")
 	public ResponseEntity<BaseResponse<MyDataResDto>> getMyData(@Valid @RequestBody MyDataReqDto reqDto) {
-		MyDataResDto response = auditHouseFacadeService.getMyData(reqDto);
+		MyDataResDto response = auditMyDataFacadeService.getMyData(reqDto);
 		return ResponseUtils.ok(response);
 	}
 }
