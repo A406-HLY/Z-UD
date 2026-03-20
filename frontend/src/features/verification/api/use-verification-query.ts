@@ -1,45 +1,70 @@
 import { useQuery } from '@tanstack/react-query';
-import { VerificationResult } from '@/entities/verification/model/types';
+import { VerificationServerResponse } from '@/entities/verification/model/types';
 
 /**
  * @feature verification/api/useVerificationQuery
- * 서류 검증 결과 데이터를 조회하는 훅입니다. (Why: 데이터의 실시간 상태 확인)
+ * 서버로부터 서류 검증 결과 원본 데이터를 조회합니다.
+ * (Why: FSD 규칙에 따라 데이터 조회 로직을 Feature 레이어에 격리)
  */
 export const useVerificationQuery = (id: string) => {
   return useQuery({
     queryKey: ['verification', id],
-    queryFn: async (): Promise<VerificationResult> => {
-      // Mock 네트워크 지연 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 500));
+    queryFn: async (): Promise<VerificationServerResponse> => {
+      // Mock 네트워크 지연
+      await new Promise(resolve => setTimeout(resolve, 800));
 
       return {
-        id,
-        selectedDocId: 'item-1',
-        categories: [
-          {
-            id: 'cat-1',
-            name: 'Identity Documents',
-            items: [
-              { id: 'item-1', name: 'HONG_GILDONG_ID.JPG', status: 'VERIFIED', size: '1.2MB' },
-              { id: 'item-2', name: 'PASSPORT_COPY.PDF', status: 'PENDING', size: '2.5MB' },
+        data: {
+          documents: [
+            { 
+              id: 'item-1', 
+              name: 'HONG_GILDONG_ID.JPG', 
+              documentType: 'ID_CARD',
+              uploadTime: '2024-03-20 14:30',
+              pageCount: 1,
+              size: '1.2MB',
+              fields: [
+                { id: 'f1', key: '성명', value: '홍길동', confidence: 0.99, isMatch: true, isModified: false },
+                { id: 'f2', key: '생년월일', value: '1990-01-01', confidence: 0.95, isMatch: true, isModified: false },
+                { id: 'f3', key: '주소', value: '서울특별시 강남구...', confidence: 0.92, isMatch: true, isModified: false },
+              ]
+            },
+            { 
+              id: 'item-2', 
+              name: 'RESIDENT_REGISTER.PDF', 
+              documentType: 'RESIDENT_REGISTER',
+              uploadTime: '2024-03-20 15:15',
+              pageCount: 1,
+              size: '2.5MB',
+              fields: [
+                { id: 'f4', key: '성명', value: '홍길순', confidence: 0.98, isMatch: false, isModified: false }, // 위반 필드 (홍길동과 다름)
+                { id: 'f5', key: '생년월일', value: '1990-01-01', confidence: 0.94, isMatch: true, isModified: false },
+              ]
+            },
+            { 
+              id: 'item-4', 
+              name: 'RISKY_DOC.PDF', 
+              documentType: 'MOVE_IN_HOUSEHOLD_REPORT',
+              uploadTime: '2024-03-20 16:30',
+              pageCount: 1,
+              size: '1.5MB',
+              fields: [
+                { id: 'f6', key: '출력일자', value: '2024-01-01', confidence: 0.75, isMatch: true, isModified: false },
+              ]
+            }
+          ],
+          validationResult: {
+            documentMissings: [
+              { documentType: 'WITHHOLDING_TAX_CERTIFICATE', documentTypeLabel: '근로소득 원천징수영수증' }
             ],
-          },
-          {
-            id: 'cat-2',
-            name: 'Income Statements',
-            items: [
-              { id: 'item-3', name: 'TAX_2023_PROOFS.PDF', status: 'ERROR', size: '0.8MB' },
+            violations: [
+              { documentType: 'RESIDENT_REGISTER', documentTypeLabel: '주민등록등본', fields: ['성명'] }
             ],
-          },
-        ],
-        extractedData: {
-          DOCUMENT_TYPE: 'RESIDENT_IDENTITY_CARD',
-          FULL_NAME: 'HONG GILDONG',
-          BIRTH_DATE: '1999-12-09',
-          ISSUE_DATE: '2018-05-14',
-          ADDRESS: 'GANGNAM-GU, SEOUL, KOREA',
-          VERIFICATION_SCORE: '98.5%',
-        },
+            risks: [
+              { documentType: 'MOVE_IN_HOUSEHOLD_REPORT', documentTypeLabel: '전입세대열람내역서', fields: ['출력일자'] }
+            ]
+          }
+        }
       };
     },
     enabled: !!id,
