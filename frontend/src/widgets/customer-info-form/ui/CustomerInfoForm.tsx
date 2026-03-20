@@ -104,50 +104,50 @@ export const CustomerInfoForm = () => {
   return (
     <Card className={clsx(
       "transition-all duration-300 ease-in-out border-l-4 rounded-none",
-      isPollingActive ? "p-2.5 bg-white border-l-slate-700 shadow-sm" : "p-4 bg-[#f8f9fa] border-l-transparent shadow-sm"
+      isPollingActive ? "p-1.5 bg-white border-l-slate-700 shadow-sm" : "p-3 bg-[#f8f9fa] border-l-transparent shadow-sm"
     )}>
       {isPollingActive ? (
         // [Summary Mode] 저장 후 정보를 텍스트로 요약해서 보여줌
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 animate-in fade-in slide-in-from-top-1">
-          <div className="flex items-center gap-4 text-sm text-slate-700">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">성함</span>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 animate-in fade-in slide-in-from-top-1">
+          <div className="flex items-center gap-4 text-xs text-slate-700">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">성함</span>
               <span className="font-bold text-slate-900">{form.name || '-'}</span>
             </div>
-            <div className="w-px h-3 bg-slate-200" />
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">주민번호</span>
+            <div className="w-px h-2.5 bg-slate-200" />
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">주민번호</span>
               <span className="font-mono text-slate-600">{form.personalId || '-'}</span>
             </div>
-            <div className="w-px h-3 bg-slate-200" />
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">연락처</span>
+            <div className="w-px h-2.5 bg-slate-200" />
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">연락처</span>
               <span className="text-slate-600">{form.phoneNumber || '-'}</span>
             </div>
-            <div className="w-px h-3 bg-slate-200" />
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">대출목적</span>
-              <span className="text-slate-600">{form.loanPurpose || '-'}</span>
+            <div className="w-px h-2.5 bg-slate-200" />
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">대출목적</span>
+              <span className="text-slate-600 text-[11px]">{form.loanPurpose || '-'}</span>
             </div>
-            <div className="w-px h-3 bg-slate-200" />
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">근로형태</span>
-              <span className="text-slate-600">{form.employmentType || '-'}</span>
+            <div className="w-px h-2.5 bg-slate-200" />
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">근로형태</span>
+              <span className="text-slate-600 text-[11px]">{form.employmentType || '-'}</span>
             </div>
-            <div className="w-px h-3 bg-slate-200" />
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">희망금액</span>
+            <div className="w-px h-2.5 bg-slate-200" />
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">희망금액</span>
               <span className="font-bold text-slate-900">{form.desiredAmount || '0'}</span>
-              <span className="text-[10px] text-slate-400">원</span>
+              <span className="text-[9px] text-slate-400">원</span>
             </div>
           </div>
 
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex items-center gap-2">
             <Button
               type="button"
               variant="outline"
               size="sm"
-              className="h-8 text-[11px] px-4 border-slate-200 text-slate-500 rounded-none hover:bg-slate-50 hover:text-slate-900 transition-colors bg-white font-bold"
+              className="h-7 text-[10px] px-3 border-slate-200 text-slate-500 rounded-none hover:bg-slate-50 hover:text-slate-900 transition-colors bg-white font-bold"
               onClick={handleSave}
             >
               정보 수정
@@ -156,17 +156,17 @@ export const CustomerInfoForm = () => {
         </div>
       ) : (
         // [Edit Mode] 기존 인라인 라벨 입력 폼
-        <div className="flex flex-wrap gap-x-10 gap-y-4 items-center animate-in fade-in zoom-in-95 duration-300">
+        <div className="flex flex-wrap gap-x-6 gap-y-3 items-center animate-in fade-in zoom-in-95 duration-300">
           {/* 상담 ID 표시 */}
           {form.counselId && (
-            <div className="w-full mb-1 p-2 bg-slate-100 border border-slate-200 rounded-none flex justify-between items-center">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none">Counsel_Session_ID</span>
-              <span className="text-[11px] text-slate-700 font-mono font-bold leading-none">{form.counselId}</span>
+            <div className="w-full mb-0.5 p-1.5 bg-slate-100 border border-slate-200 rounded-none flex justify-between items-center">
+              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">Counsel_Session_ID</span>
+              <span className="text-[10px] text-slate-700 font-mono font-bold leading-none">{form.counselId}</span>
             </div>
           )}
 
-          <div className="flex items-center gap-3">
-            <Label htmlFor="name" className="text-xs font-bold text-slate-500 w-16 text-right shrink-0">고객 성함</Label>
+          <div className="flex items-center gap-2.5">
+            <Label htmlFor="name" className="text-[11px] font-bold text-slate-500 w-14 text-right shrink-0">고객 성함</Label>
             <Input 
               id="name" 
               autoFocus
@@ -176,14 +176,14 @@ export const CustomerInfoForm = () => {
               onChange={(e) => handleChange('name', e.target.value)}
               placeholder="이름"
               className={clsx(
-                "h-10 w-[90px] text-sm transition-all duration-300 rounded-none",
+                "h-9 w-[80px] text-xs transition-all duration-300 rounded-none",
                 firstEmptyField === 'name' && "border-slate-800 border-2 bg-slate-50"
               )}
             />
           </div>
           
-          <div className="flex items-center gap-3">
-            <Label htmlFor="personalId" className="text-xs font-bold text-slate-500 w-20 text-right shrink-0">주민번호</Label>
+          <div className="flex items-center gap-2.5">
+            <Label htmlFor="personalId" className="text-[11px] font-bold text-slate-500 w-16 text-right shrink-0">주민번호</Label>
             <Input 
               id="personalId" 
               maxLength={14}
@@ -192,14 +192,14 @@ export const CustomerInfoForm = () => {
               onChange={(e) => handleChange('personalId', e.target.value)}
               placeholder="주민번호 13자리"
               className={clsx(
-                "h-10 w-[160px] text-sm transition-all duration-300 rounded-none",
+                "h-9 w-[140px] text-xs transition-all duration-300 rounded-none",
                 firstEmptyField === 'personalId' && "border-slate-800 border-2 bg-slate-50"
               )}
             />
           </div>
 
-          <div className="flex items-center gap-3">
-            <Label htmlFor="phoneNumber" className="text-xs font-bold text-slate-500 w-16 text-right shrink-0">전화번호</Label>
+          <div className="flex items-center gap-2.5">
+            <Label htmlFor="phoneNumber" className="text-[11px] font-bold text-slate-500 w-14 text-right shrink-0">전화번호</Label>
             <Input 
               id="phoneNumber"
               type="tel"
@@ -209,21 +209,21 @@ export const CustomerInfoForm = () => {
               onChange={(e) => handleChange('phoneNumber', e.target.value)}
               placeholder="010-0000-0000"
               className={clsx(
-                "h-10 w-[150px] text-sm transition-all duration-300 rounded-none",
+                "h-9 w-[130px] text-xs transition-all duration-300 rounded-none",
                 firstEmptyField === 'phoneNumber' && "border-slate-800 border-2 bg-slate-50"
               )}
             />
           </div>
 
-          <div className="flex items-center gap-3">
-            <Label htmlFor="loanPurpose" className="text-xs font-bold text-slate-500 w-16 text-right shrink-0">대출 목적</Label>
+          <div className="flex items-center gap-2.5">
+            <Label htmlFor="loanPurpose" className="text-[11px] font-bold text-slate-500 w-14 text-right shrink-0">대출 목적</Label>
             <Select
               id="loanPurpose"
               isError={errors.loanPurpose}
               value={form.loanPurpose}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleChange('loanPurpose', e.target.value)}
               className={clsx(
-                "h-10 w-[240px] text-sm px-2 transition-all duration-300 focus:ring-0 focus:ring-offset-0 rounded-none",
+                "h-9 w-[200px] text-xs px-2 transition-all duration-300 focus:ring-0 focus:ring-offset-0 rounded-none",
                 firstEmptyField === 'loanPurpose' && "border-slate-800 border-2 bg-slate-50"
               )}
             >
@@ -234,15 +234,15 @@ export const CustomerInfoForm = () => {
             </Select>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Label htmlFor="employmentType" className="text-xs font-bold text-slate-500 w-16 text-right shrink-0">근로 형태</Label>
+          <div className="flex items-center gap-2.5">
+            <Label htmlFor="employmentType" className="text-[11px] font-bold text-slate-500 w-14 text-right shrink-0">근로 형태</Label>
             <Select
               id="employmentType"
               isError={errors.employmentType}
               value={form.employmentType}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleChange('employmentType', e.target.value)}
               className={clsx(
-                "h-10 w-[180px] text-sm px-2 transition-all duration-300 focus:ring-0 focus:ring-offset-0 rounded-none",
+                "h-9 w-[160px] text-xs px-2 transition-all duration-300 focus:ring-0 focus:ring-offset-0 rounded-none",
                 firstEmptyField === 'employmentType' && "border-slate-800 border-2 bg-slate-50"
               )}
             >
@@ -253,13 +253,13 @@ export const CustomerInfoForm = () => {
             </Select>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Label htmlFor="desiredAmount" className="text-xs font-bold text-slate-500 w-16 text-right shrink-0">희망 금액</Label>
-            <div className="relative flex items-center w-[210px]">
+          <div className="flex items-center gap-2.5">
+            <Label htmlFor="desiredAmount" className="text-[11px] font-bold text-slate-500 w-14 text-right shrink-0">희망 금액</Label>
+            <div className="relative flex items-center w-[180px]">
               <Input 
                 id="desiredAmount" 
                 className={clsx(
-                  "h-10 w-full pr-7 text-right font-bold text-slate-900 text-sm transition-all duration-300 rounded-none",
+                  "h-9 w-full pr-7 text-right font-bold text-slate-900 text-xs transition-all duration-300 rounded-none",
                   firstEmptyField === 'desiredAmount' && "border-slate-800 border-2 bg-slate-50"
                 )}
                 isError={errors.desiredAmount}
@@ -267,17 +267,17 @@ export const CustomerInfoForm = () => {
                 onChange={(e) => handleChange('desiredAmount', e.target.value)}
                 placeholder="100,000,000"
               />
-              <span className="absolute right-2.5 text-[10px] text-slate-400 uppercase font-bold">KRW</span>
+              <span className="absolute right-2 text-[9px] text-slate-400 uppercase font-bold">KRW</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Label htmlFor="houseCount" className="text-xs font-bold text-slate-500 w-16 text-right shrink-0">보유 주택</Label>
-            <div className="relative flex items-center w-[100px]">
+          <div className="flex items-center gap-2.5">
+            <Label htmlFor="houseCount" className="text-[11px] font-bold text-slate-500 w-14 text-right shrink-0">보유 주택</Label>
+            <div className="relative flex items-center w-[80px]">
               <Input 
                 id="houseCount" 
                 className={clsx(
-                  "h-10 w-full pr-6 text-right text-sm transition-all duration-300 rounded-none",
+                  "h-9 w-full pr-5 text-right text-xs transition-all duration-300 rounded-none",
                   firstEmptyField === 'houseCount' && "border-slate-800 border-2 bg-slate-50"
                 )}
                 isError={errors.houseCount}
@@ -287,7 +287,7 @@ export const CustomerInfoForm = () => {
                 onChange={(e) => handleChange('houseCount', e.target.value)}
                 placeholder="0"
               />
-              <span className="absolute right-2 text-xs text-slate-400">채</span>
+              <span className="absolute right-1.5 text-[10px] text-slate-400">채</span>
             </div>
           </div>
 
@@ -298,7 +298,7 @@ export const CustomerInfoForm = () => {
               size="sm"
               disabled={progressPercentage < 100}
               className={clsx(
-                "h-10 px-10 text-sm font-bold transition-all duration-500 border rounded-none relative overflow-hidden active:scale-95 shadow-sm",
+                "h-9 px-8 text-xs font-bold transition-all duration-500 border rounded-none relative overflow-hidden active:scale-95 shadow-sm",
                 progressPercentage === 100 
                   ? "bg-slate-800 text-white border-slate-900 hover:bg-slate-900"
                   : "bg-white text-slate-400 border-slate-200 cursor-not-allowed"
