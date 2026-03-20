@@ -4,12 +4,12 @@
  */
 
 export const DOCUMENT_VIEWER_LABELS = {
-  SEGMENT_A: 'BATCH SEGMENT A',
-  SEGMENT_B: 'BATCH SEGMENT B',
+  SEGMENT_A: '스캔 서류',
+  SEGMENT_B: '업로드 서류',
   SCANNING_STATUS: '스캔본 불러오는 중...',
   EMPTY_MESSAGE_LINE1: '스캔된 서류가 없습니다.',
   EMPTY_MESSAGE_LINE2: '서류를 스캔해 주세요',
-  NEXT_STEP_BUTTON: '다음 단계',
+  NEXT_STEP_BUTTON: '서류 검증',
   UPLOADING_STATUS: '전송 중...',
 } as const;
 

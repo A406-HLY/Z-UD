@@ -103,7 +103,7 @@ export const CustomerInfoForm = () => {
   return (
     <Card className={clsx(
       "transition-all duration-300 ease-in-out border-l-4 rounded-none",
-      isPollingActive ? "p-1.5 bg-white border-l-slate-700 shadow-sm" : "p-3 bg-[#f8f9fa] border-l-transparent shadow-sm"
+      isPollingActive ? "p-1.5 bg-white border-l-[#004b93] shadow-sm" : "p-3 bg-[#f8f9fa] border-l-transparent shadow-sm"
     )}>
       {isPollingActive ? (
         // [Summary Mode] 저장 후 정보를 텍스트로 요약해서 보여줌
@@ -163,7 +163,7 @@ export const CustomerInfoForm = () => {
               placeholder={CUSTOMER_FORM_PLACEHOLDERS.name}
               className={clsx(
                 "h-8 w-full max-w-[80px] text-xs transition-all duration-300 rounded-none",
-                firstEmptyField === 'name' && "border-slate-800 border-2 bg-slate-50"
+                firstEmptyField === 'name' && "border-[#004b93] border-2 bg-blue-50/30"
               )}
             />
           </div>
@@ -179,7 +179,7 @@ export const CustomerInfoForm = () => {
               placeholder={CUSTOMER_FORM_PLACEHOLDERS.personalId}
               className={clsx(
                 "h-8 w-full max-w-[140px] text-xs transition-all duration-300 rounded-none",
-                firstEmptyField === 'personalId' && "border-slate-800 border-2 bg-slate-50"
+                firstEmptyField === 'personalId' && "border-[#004b93] border-2 bg-blue-50/30"
               )}
             />
           </div>
@@ -196,7 +196,7 @@ export const CustomerInfoForm = () => {
               placeholder={CUSTOMER_FORM_PLACEHOLDERS.phoneNumber}
               className={clsx(
                 "h-8 w-full max-w-[130px] text-xs transition-all duration-300 rounded-none",
-                firstEmptyField === 'phoneNumber' && "border-slate-800 border-2 bg-slate-50"
+                firstEmptyField === 'phoneNumber' && "border-[#004b93] border-2 bg-blue-50/30"
               )}
             />
           </div>
@@ -210,7 +210,7 @@ export const CustomerInfoForm = () => {
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleChange('loanPurpose', e.target.value)}
               className={clsx(
                 "h-8 w-full max-w-[200px] text-xs px-2 transition-all duration-300 focus:ring-0 focus:ring-offset-0 rounded-none",
-                firstEmptyField === 'loanPurpose' && "border-slate-800 border-2 bg-slate-50"
+                firstEmptyField === 'loanPurpose' && "border-[#004b93] border-2 bg-blue-50/30"
               )}
             >
               <option value="">{CUSTOMER_FORM_PLACEHOLDERS.loanPurpose}</option>
@@ -229,7 +229,7 @@ export const CustomerInfoForm = () => {
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleChange('employmentType', e.target.value)}
               className={clsx(
                 "h-8 w-full max-w-[160px] text-xs px-2 transition-all duration-300 focus:ring-0 focus:ring-offset-0 rounded-none",
-                firstEmptyField === 'employmentType' && "border-slate-800 border-2 bg-slate-50"
+                firstEmptyField === 'employmentType' && "border-[#004b93] border-2 bg-blue-50/30"
               )}
             >
               <option value="">{CUSTOMER_FORM_PLACEHOLDERS.employmentType}</option>
@@ -264,7 +264,7 @@ export const CustomerInfoForm = () => {
                 id="houseCount" 
                 className={clsx(
                   "h-8 w-full pr-5 text-right text-xs transition-all duration-300 rounded-none",
-                  firstEmptyField === 'houseCount' && "border-slate-800 border-2 bg-slate-50"
+                  firstEmptyField === 'houseCount' && "border-[#004b93] border-2 bg-blue-50/30"
                 )}
                 isError={errors.houseCount}
                 type="number"
@@ -286,7 +286,7 @@ export const CustomerInfoForm = () => {
               className={clsx(
                 "h-8 px-6 text-xs font-bold transition-all duration-500 border rounded-none relative overflow-hidden active:scale-95 shadow-sm",
                 progressPercentage === 100 
-                  ? "bg-slate-800 text-white border-slate-900 hover:bg-slate-900"
+                  ? "bg-[#004b93] text-white border-[#003d7a] hover:bg-[#003d7a]"
                   : "bg-white text-slate-400 border-slate-200 cursor-not-allowed"
               )}
               style={progressPercentage < 100 ? {

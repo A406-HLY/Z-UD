@@ -79,6 +79,9 @@ export class UploadManager {
           if (fs.existsSync(file.storedPath)) {
             fs.unlinkSync(file.storedPath);
             logger.info(`Successfully cleaned up staged file: ${file.storedPath}`);
+            
+            // (Why) 물리적 파일 삭제 후, 프론트엔드 UI에서도 즉시 제거하기 위해 큐에서 삭제합니다.
+            FileQueueStore.removeFile(file.sequenceId);
           }
         } catch (cleanupError) {
           logger.warn(`Failed to clean up staged file: ${file.storedPath}`, cleanupError);
