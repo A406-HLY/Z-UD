@@ -26,10 +26,6 @@ export const router = createBrowserRouter([
         element: <LoanApplicationPage />,
       },
       {
-        path: 'upload', // 서류 업로드
-        element: <div>서류 업로드 화면</div>,
-      },
-      {
         path: 'verification-result', // 서류 검증 결과 (다른 팀원 작업 영역)
         element: (
           <div className="p-10 text-center">
