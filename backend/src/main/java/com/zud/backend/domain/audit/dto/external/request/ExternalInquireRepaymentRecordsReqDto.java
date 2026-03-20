@@ -3,11 +3,10 @@ package com.zud.backend.domain.audit.dto.external.request;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.zud.backend.domain.audit.dto.external.response.ExternalHeaderResDto;
 
 public record ExternalInquireRepaymentRecordsReqDto(
 	@JsonProperty("Header")
-	ExternalHeaderResDto header,
+	ExternalHeaderReqDto header,
 
 	String accountNo
 ) {
