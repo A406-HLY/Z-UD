@@ -13,9 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.zud.backend.domain.audit.dto.request.AuditHouseReqDto;
-import com.zud.backend.domain.audit.dto.request.MyDataReqDto;
 import com.zud.backend.domain.audit.dto.response.AuditHouseResDto;
-import com.zud.backend.domain.audit.dto.response.MyDataResDto;
 import com.zud.backend.domain.branch.dto.response.NearestBranchResDto;
 import com.zud.backend.domain.branch.service.facade.BranchFacadeService;
 import com.zud.backend.domain.houseprice.dto.response.HousePriceResDto;
@@ -35,9 +33,6 @@ class AuditHouseFacadeServiceImplTest {
 
 	@Mock
 	private HousePriceFacadeService housePriceFacadeService;
-
-	@Mock
-	private AuditMyDataFacadeService myDataService;
 
 	@InjectMocks
 	private AuditHouseFacadeServiceImpl auditFacadeService;
@@ -122,20 +117,5 @@ class AuditHouseFacadeServiceImplTest {
 		}
 	}
 
-	@Test
-	@DisplayName("getMyData는_분리된_MyDataService를_호출한다")
-	void getMyData는_분리된_MyDataService를_호출한다() {
-		// given
-		MyDataReqDto reqDto = new MyDataReqDto("zud@ssafy.co.kr");
-		MyDataResDto expected = new MyDataResDto("zud@ssafy.co.kr", "A", "0", "0", java.util.List.of());
-		given(myDataService.getMyData(reqDto)).willReturn(expected);
-
-		// when
-		MyDataResDto result = auditFacadeService.getMyData(reqDto);
-
-		// then
-		assertThat(result).isEqualTo(expected);
-		then(myDataService).should().getMyData(reqDto);
-	}
 }
 
