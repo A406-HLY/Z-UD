@@ -31,108 +31,96 @@ export const mapServerResponseToVerificationResult = (
   const crossValidationFields = new Set<string>();
   validationResult.violations.forEach(v => v.fields.forEach(f => crossValidationFields.add(f)));
 
-  const crossValidationDict: Record<string, Set<string>> = {};
+  const errorTargetDict: Record<string, Set<string>> = {};
   const documentFields: Record<string, ExtractedField[]> = {};
 
-  /**
-   * @private flattenContent
-   * 중첩된 OCR 응답 데이터를 에디터 UI에서 사용하기 위한 평면 리스트로 변환합니다.
-   * (Why: 재귀적 탐색을 통해 객체 계층에 상관없이 모든 추출 필드를 O(1) 조회 가능한 리스트로 구축)
-   */
+  // 1-1. errorTargetDict 초기 구축 (위반 문서 ID를 키별로 수집)
+  validationResult.violations.forEach(v => {
+    v.fields.forEach(field => {
+      if (!errorTargetDict[field]) errorTargetDict[field] = new Set<string>();
+      // 여기서는 documentType을 임시로 넣지만, 아래 문서 순회 시 fileId로 매핑을 고도화합니다.
+    });
+  });
+
+  /** 재귀적 평면화 함수 */
   const flattenContent = (content: any, prefix = '', labelPrefix = ''): ExtractedField[] => {
     let fields: ExtractedField[] = [];
-    
     for (const key in content) {
       const item = content[key];
-      // 시스템용 키 (예: buyer_name)
       const fieldKey = prefix ? `${prefix}_${key}` : key;
-      // 화면 표시용 레이블 (예: 구매자 > 성명)
       const displayLabel = labelPrefix ? `${labelPrefix} > ${key}` : key;
 
       if (item && typeof item === 'object' && 'value' in item) {
-        // [Leaf Node] 실제 값이 들어있는 필드 객체인 경우
         fields.push({
           id: `field-${fieldKey}-${Math.random().toString(36).substr(2, 9)}`,
           key: fieldKey,
-          // 화면 표시를 위해 key 대신 가공된 레이블을 임시로 사용할 수도 있으나, 
-          // 여기서는 시스템 키를 유지하고 UI 렌더링 시 가공하도록 설계
+          label: displayLabel,
           value: item.value,
           confidence: item.confidence || 0,
           isMatch: true, 
+          isViolationTarget: false, // 아래에서 재평가
+          isRiskTarget: false,      // 아래에서 재평가
           isModified: false,
           evidence: item.evidence
         });
       } else if (Array.isArray(item)) {
-        // [Array Node] 세대원, 세목 등 배열 데이터인 경우
         item.forEach((subItem, index) => {
-          fields = [
-            ...fields, 
-            ...flattenContent(subItem, `${fieldKey}[${index}]`, `${displayLabel}[${index + 1}]`)
-          ];
+          fields = [...fields, ...flattenContent(subItem, `${fieldKey}[${index}]`, `${displayLabel}[${index + 1}]`)];
         });
       } else if (item && typeof item === 'object') {
-        // [Nested Object Node] 중첩 객체인 경우
         fields = [...fields, ...flattenContent(item, fieldKey, displayLabel)];
       }
     }
     return fields;
   };
 
-  // 3. 문서 순회 및 딕셔너리 구축 (Pass 1)
+  // 2. 문서 처리 및 타겟 마킹
   const processedDocs: DocItem[] = documents.map(doc => {
+    const docType = doc.documentClassification.documentType;
     const flattened = flattenContent(doc.extraction.content);
-    documentFields[doc.fileId] = flattened;
+    
+    // (Why: 백엔드에서 명시한 위반/위험 필드에 플래그를 달아 UI 권한 제어에 활용)
+    const markedFields = flattened.map(field => {
+      // 배열 키(예: householdMembers[0]_name)일 경우 원본 키(name)로 매칭 검사 필요 (정규식 활용)
+      const baseKey = field.key.replace(/\[\d+\]/g, '').split('_').pop() || field.key;
+      
+      const isViolation = violationMap[docType]?.has(baseKey) || violationMap[docType]?.has(field.key);
+      const isRisk = riskMap[docType]?.has(baseKey) || riskMap[docType]?.has(field.key);
 
-    // 딕셔너리 수집
-    flattened.forEach(field => {
-      if (crossValidationFields.has(field.key)) {
-        if (!crossValidationDict[field.key]) {
-          crossValidationDict[field.key] = new Set<string>();
-        }
-        if (field.value !== null) {
-          crossValidationDict[field.key].add(String(field.value));
-        }
+      // errorTargetDict에 실제 fileId 수집
+      if (isViolation) {
+        if (!errorTargetDict[field.key]) errorTargetDict[field.key] = new Set();
+        errorTargetDict[field.key].add(doc.fileId);
       }
+
+      return {
+        ...field,
+        isViolationTarget: !!isViolation,
+        isRiskTarget: !!isRisk,
+        isMatch: !isViolation // 초기 상태: 위반 타겟이면 무조건 false(빨간색), 아니면 true
+      };
     });
 
-    let status: DocumentStatus = 'APPROVED';
-    if (missingSet.has(doc.documentClassification.documentType)) {
-      status = 'MISSING';
-    } else if (violationMap[doc.documentClassification.documentType]) {
-      status = 'REVIEW_NEEDED';
-    } else if (riskMap[doc.documentClassification.documentType]) {
-      status = 'RISK';
-    }
+    documentFields[doc.fileId] = markedFields;
 
-    return {
-      ...doc,
-      id: doc.fileId,
-      status,
-      isRisk: !!riskMap[doc.documentClassification.documentType]
-    };
+    let status: DocumentStatus = 'APPROVED';
+    if (missingSet.has(docType)) status = 'MISSING';
+    else if (violationMap[docType]) status = 'REVIEW_NEEDED';
+    else if (riskMap[docType]) status = 'RISK';
+
+    return { ...doc, id: doc.fileId, status, isRisk: !!riskMap[docType] };
   });
 
-  // 4. 초기 정합성 결과 반영 (Self-correction based on dict)
-  for (const docId in documentFields) {
-    documentFields[docId] = documentFields[docId].map(field => ({
-      ...field,
-      isMatch: crossValidationFields.has(field.key) 
-        ? (crossValidationDict[field.key]?.has(String(field.value)) ?? true)
-        : true
-    }));
-  }
-
-  // 5. 카테고리 그룹화
+  // 4. 카테고리 그룹화 (번호 유지)
   const categories: DocCategory[] = [];
   const groups = Array.from(new Set(processedDocs.map(d => d.documentClassification.documentGroup)));
-  
   groups.forEach(group => {
     const items = processedDocs.filter(d => d.documentClassification.documentGroup === group);
     categories.push({
       id: `cat-${group}`,
-      name: items[0].documentClassification.documentGroup === 'IDENTITY_FAMILY' ? '본인 및 가족관계' :
-            items[0].documentClassification.documentGroup === 'INCOME_EMPLOYEE' ? '소득 및 재직증빙' :
-            items[0].documentClassification.documentGroup === 'TAX' ? '세금 납부 증빙' : '주택 및 권리관계',
+      name: group === 'IDENTITY_FAMILY' ? '본인 및 가족관계' :
+            group === 'INCOME_EMPLOYEE' ? '소득 및 재직증빙' :
+            group === 'TAX' ? '세금 납부 증빙' : '주택 및 권리관계',
       items
     });
   });
@@ -142,7 +130,7 @@ export const mapServerResponseToVerificationResult = (
     selectedDocId: processedDocs[0]?.id || '',
     categories,
     documentFields,
-    crossValidationDict,
+    errorTargetDict,
     violationMap,
     riskMap,
     missingSet
