@@ -79,7 +79,7 @@ export const VerificationRepository = ({ categories, selectedId, onSelect }: Pro
                       >
                         <FileText className={`w-3 h-3 mr-2 ${isSelected ? 'text-white' : 'text-gray-400'}`} />
                         <span className="text-[9px] font-medium uppercase truncate flex-1">
-                          {item.name} {item.status === 'MISSING' && '(누락)'}
+                          {item.fileName} {item.status === 'MISSING' && '(누락)'}
                         </span>
                         {!isSelected && icon}
                       </div>
