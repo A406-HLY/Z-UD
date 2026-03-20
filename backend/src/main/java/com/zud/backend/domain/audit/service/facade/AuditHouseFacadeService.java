@@ -7,6 +7,7 @@ import com.zud.backend.domain.audit.dto.response.MyDataResDto;
 
 public interface AuditHouseFacadeService {
 	AuditHouseResDto auditHouse(final Long userId, final AuditHouseReqDto reqDto);
+
 	MyDataResDto getMyData(final MyDataReqDto reqDto);
 }
 

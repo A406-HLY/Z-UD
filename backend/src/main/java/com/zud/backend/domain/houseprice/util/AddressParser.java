@@ -131,7 +131,9 @@ public class AddressParser {
 			.floor(floor)
 			.build();
 
-		log.debug("[AddressParser] Parsed address - raw: {}, sido: {}, sigungu: {}, dongRi: {}, roadName: {}, buildingName: {}, buildingDong: {}, floor: {}, ho: {}, roadAddress: {}",
+		log.debug(
+			"[AddressParser] Parsed address - raw: {}, sido: {}, sigungu: {}, dongRi: {}, roadName: {}, "
+				+ "buildingName: {}, buildingDong: {}, floor: {}, ho: {}, roadAddress: {}",
 			address,
 			result.getSido(),
 			result.getSigungu(),
