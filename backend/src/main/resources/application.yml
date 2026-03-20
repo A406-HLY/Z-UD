@@ -59,6 +59,14 @@ ssafy:
   api:
     base-url: https://finopenapi.ssafy.io/ssafy/api/v1
     api-key: ${SSAFY_API_KEY:}
+    date-pattern: "yyyyMMdd"
+    time-pattern: "HHmmss"
+    institution-code: "00100"
+    fintech-app-no: "001"
+    member-path: "/member/search"
+    inquire-credit-rating-path: "/edu/loan/inquireMyCreditRating"
+    inquire-loan-account-list-path: "/edu/loan/inquireLoanAccountList"
+    inquire-repayment-records-path: "/edu/loan/inquireRepaymentRecords"
 
 springdoc:
   swagger-ui:

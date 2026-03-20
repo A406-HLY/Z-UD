@@ -25,20 +25,15 @@ import lombok.extern.slf4j.Slf4j;
 @EnableConfigurationProperties(SsafyApiProperties.class)
 public class SsafyMyDataClient {
 
-	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
-	private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HHmmss");
-	private static final String INSTITUTION_CODE = "00100";
-	private static final String FINTECH_APP_NO = "001";
-	private static final String MEMBER_PATH = "/member/search";
-	private static final String INQUIRE_CREDIT_RATING_PATH = "/edu/loan/inquireMyCreditRating";
-	private static final String INQUIRE_LOAN_ACCOUNT_LIST_PATH = "/edu/loan/inquireLoanAccountList";
-	private static final String INQUIRE_REPAYMENT_RECORDS_PATH = "/edu/loan/inquireRepaymentRecords";
-
+	private final DateTimeFormatter dateFormatter;
+	private final DateTimeFormatter timeFormatter;
 	private final RestClient restClient;
 	private final SsafyApiProperties ssafyApiProperties;
 
 	public SsafyMyDataClient(final SsafyApiProperties ssafyApiProperties) {
 		this.ssafyApiProperties = ssafyApiProperties;
+		this.dateFormatter = DateTimeFormatter.ofPattern(ssafyApiProperties.datePattern());
+		this.timeFormatter = DateTimeFormatter.ofPattern(ssafyApiProperties.timePattern());
 		this.restClient = RestClient.builder()
 			.baseUrl(ssafyApiProperties.baseUrl())
 			.build();
@@ -46,7 +41,7 @@ public class SsafyMyDataClient {
 
 	public ExternalMemberSearchResDto findMemberByEmail(final String email) {
 		return restClient.post()
-			.uri(MEMBER_PATH)
+			.uri(ssafyApiProperties.memberPath())
 			.body(new ExternalMemberSearchReqDto(email, ssafyApiProperties.apiKey()))
 			.retrieve()
 			.body(ExternalMemberSearchResDto.class);
@@ -54,16 +49,16 @@ public class SsafyMyDataClient {
 
 	public ExternalCreditRatingResDto inquireCreditRating(final String userKey) {
 		return restClient.post()
-			.uri(INQUIRE_CREDIT_RATING_PATH)
-			.body(new ExternalCreditRatingReqDto(createHeader(INQUIRE_CREDIT_RATING_PATH, userKey)))
+			.uri(ssafyApiProperties.inquireCreditRatingPath())
+			.body(new ExternalCreditRatingReqDto(createHeader(ssafyApiProperties.inquireCreditRatingPath(), userKey)))
 			.retrieve()
 			.body(ExternalCreditRatingResDto.class);
 	}
 
 	public ExternalInquireLoanAccountListResDto inquireLoanAccountList(final String userKey) {
 		return restClient.post()
-			.uri(INQUIRE_LOAN_ACCOUNT_LIST_PATH)
-			.body(new ExternalInquireLoanAccountListReqDto(createHeader(INQUIRE_LOAN_ACCOUNT_LIST_PATH, userKey)))
+			.uri(ssafyApiProperties.inquireLoanAccountListPath())
+			.body(new ExternalInquireLoanAccountListReqDto(createHeader(ssafyApiProperties.inquireLoanAccountListPath(), userKey)))
 			.retrieve()
 			.body(ExternalInquireLoanAccountListResDto.class);
 	}
@@ -73,9 +68,9 @@ public class SsafyMyDataClient {
 		final String accountNo
 	) {
 		return restClient.post()
-			.uri(INQUIRE_REPAYMENT_RECORDS_PATH)
+			.uri(ssafyApiProperties.inquireRepaymentRecordsPath())
 			.body(new ExternalInquireRepaymentRecordsReqDto(
-				createHeader(INQUIRE_REPAYMENT_RECORDS_PATH, userKey),
+				createHeader(ssafyApiProperties.inquireRepaymentRecordsPath(), userKey),
 				accountNo
 			))
 			.retrieve()
@@ -87,10 +82,10 @@ public class SsafyMyDataClient {
 		String apiName = extractLastPathSegment(path);
 		return new ExternalHeaderReqDto(
 			apiName,
-			now.format(DATE_FORMATTER),
-			now.format(TIME_FORMATTER),
-			INSTITUTION_CODE,
-			FINTECH_APP_NO,
+			now.format(dateFormatter),
+			now.format(timeFormatter),
+			ssafyApiProperties.institutionCode(),
+			ssafyApiProperties.fintechAppNo(),
 			apiName,
 			createUniqueNo(),
 			ssafyApiProperties.apiKey(),
@@ -108,8 +103,8 @@ public class SsafyMyDataClient {
 
 	private String createUniqueNo() {
 		LocalDateTime now = LocalDateTime.now();
-		String date = now.format(DATE_FORMATTER);
-		String time = now.format(TIME_FORMATTER);
+		String date = now.format(dateFormatter);
+		String time = now.format(timeFormatter);
 		int random = java.util.concurrent.ThreadLocalRandom.current().nextInt(100000, 1000000);
 		return date + time + random;
 	}
