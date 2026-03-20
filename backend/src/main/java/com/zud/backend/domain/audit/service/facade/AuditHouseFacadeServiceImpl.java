@@ -5,8 +5,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.zud.backend.common.error.ErrorCode;
 import com.zud.backend.domain.audit.converter.AuditConverter;
-import com.zud.backend.domain.audit.dto.request.AuditReqDto;
-import com.zud.backend.domain.audit.dto.response.AuditResDto;
+import com.zud.backend.domain.audit.dto.request.AuditHouseReqDto;
+import com.zud.backend.domain.audit.dto.request.MyDataReqDto;
+import com.zud.backend.domain.audit.dto.response.AuditHouseResDto;
+import com.zud.backend.domain.audit.dto.response.MyDataResDto;
 import com.zud.backend.domain.audit.exception.AuditException;
 import com.zud.backend.domain.branch.dto.response.NearestBranchResDto;
 import com.zud.backend.domain.branch.service.facade.BranchFacadeService;
@@ -20,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 @Transactional(readOnly = true)
-public class AuditFacadeServiceImpl implements AuditFacadeService {
+public class AuditHouseFacadeServiceImpl implements AuditHouseFacadeService {
 
 	private static final String UNSUPPORTED_HOUSE_TYPE_MESSAGE =
 		"해당 주택 유형은 주택담보대출 심사에서 통과하지 않을 수 있으며, 주택 시세 조회가 불가해 수기 입력이 필요합니다.";
@@ -29,9 +31,10 @@ public class AuditFacadeServiceImpl implements AuditFacadeService {
 
 	private final BranchFacadeService branchFacadeService;
 	private final HousePriceFacadeService housePriceFacadeService;
+	private final AuditMyDataFacadeService myDataService;
 
 	@Override
-	public AuditResDto auditHouse(final Long userId, final AuditReqDto reqDto) {
+	public AuditHouseResDto auditHouse(final Long userId, final AuditHouseReqDto reqDto) {
 		validateIllegalBuilding(reqDto);
 
 		final String propertyAddress = reqDto.propertyAddress();
@@ -48,7 +51,12 @@ public class AuditFacadeServiceImpl implements AuditFacadeService {
 		);
 	}
 
-	private void validateIllegalBuilding(final AuditReqDto reqDto) {
+	@Override
+	public MyDataResDto getMyData(final MyDataReqDto reqDto) {
+		return myDataService.getMyData(reqDto);
+	}
+
+	private void validateIllegalBuilding(final AuditHouseReqDto reqDto) {
 		if (Boolean.TRUE.equals(reqDto.illegalBuilding())) {
 			throw new AuditException(ErrorCode.ILLEGAL_BUILDING);
 		}
