@@ -1,6 +1,8 @@
 import { FileQueueStore, QueuedFile } from '../state/fileQueueStore';
 import { BackendApiClient } from '../client/backendApiClient';
 import { logger } from '../utils/logger';
+import fs from 'fs';
+
 
 export class UploadManager {
   private static isUploading = false;
@@ -71,6 +73,17 @@ export class UploadManager {
         await BackendApiClient.uploadFile(file.storedPath, file.sequenceId, counselId);
         
         FileQueueStore.updateFileStatus(file.sequenceId, 'COMPLETED');
+
+        // (Why) 보안 및 저장 공간 관리를 위해 업로드 성공 시 스테이징 폴더에서 파일을 삭제합니다.
+        try {
+          if (fs.existsSync(file.storedPath)) {
+            fs.unlinkSync(file.storedPath);
+            logger.info(`Successfully cleaned up staged file: ${file.storedPath}`);
+          }
+        } catch (cleanupError) {
+          logger.warn(`Failed to clean up staged file: ${file.storedPath}`, cleanupError);
+        }
+
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         logger.error(`Failed to upload file [Seq: ${file.sequenceId}]:`, errorMessage);
