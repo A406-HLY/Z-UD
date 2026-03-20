@@ -83,10 +83,10 @@ export const DocumentViewer = () => {
       <div className="px-4 py-2 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
         <h3 className="text-sm font-bold text-gray-700">{title} [COUNT: {docs.length}]</h3>
         {isPollingActive && title.includes('A') && (
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-50 border border-blue-100">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-            <span className="text-[10px] text-blue-600 font-bold uppercase tracking-tight">
-              Agent Synced
+          <div className="flex items-center gap-1.5 px-3 py-0.5 rounded-none bg-slate-100 border border-slate-200">
+            <span className="w-1.5 h-1.5 rounded-none bg-slate-400 animate-pulse" />
+            <span className="text-[10px] text-slate-600 font-bold tracking-tight">
+              스캔본 불러오는 중...
             </span>
           </div>
         )}
@@ -131,7 +131,10 @@ export const DocumentViewer = () => {
           {docs.length === 0 && (
             <tr>
               <td colSpan={4} className="px-3 py-10 text-center text-gray-400 text-xs text-not-italic">
-                제출된 서류가 없습니다.
+                스캔된 서류가 없습니다.
+                <br/>
+                <br/>
+                서류를 스캔해 주세요
               </td>
             </tr>
           )}
