@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '@/widgets/header';
 import { LoanTabs } from '@/widgets/loan-tabs';
 import { CustomerInfoForm } from '@/widgets/customer-info-form';
@@ -8,22 +8,21 @@ import { DocumentImageViewer } from '@/widgets/document-image-viewer/ui/Document
 import { useVerificationQuery } from '@/features/verification/api/use-verification-query';
 import { mapServerResponseToVerificationResult } from '@/entities/verification/model/verification.mapper';
 import { VerificationResult } from '@/entities/verification/model/types';
+import { useAppSelector } from '@/app/store/hooks';
 
 /**
  * @page verification-result
  * 서류 검증 결과 및 OCR 교정을 수행하는 업무 페이지입니다.
- * (Why: 전처리된 데이터를 기반으로 실시간 교차 검증 상태를 중앙 관리)
  */
 export const VerificationResultPage = () => {
   const [selectedId, setSelectedId] = useState('item-1');
   const [localResult, setLocalResult] = useState<VerificationResult | null>(null);
   
+  // 1. Redux에서 전역 고객 원천 데이터(기준 정답) 가져오기
+  const customerInfo = useAppSelector(state => state.customer.data);
+  
   const { data: serverResponse, isLoading } = useVerificationQuery('v-12345');
 
-  /** 
-   * 데이터 전처리 (Two-pass 전략) 
-   * (Why: 서버 응답이 오면 즉시 인덱싱된 UI 상태 객체로 변환하여 로컬 상태 초기화)
-   */
   useEffect(() => {
     if (serverResponse) {
       const initialResult = mapServerResponseToVerificationResult(serverResponse, 'v-12345');
@@ -33,43 +32,84 @@ export const VerificationResultPage = () => {
   }, [serverResponse]);
 
   /** 
-   * 실시간 교차 검증 핸들러 (Real-time onChange) 
-   * (Why: 사용자가 입력할 때마다 O(1) 속도로 타 문서와 정합성 체크)
+   * 실시간 정합성 판정 핸들러 
+   * (Why: Redux 고객 정보 대조 및 서류 간 상호 대조를 분기하여 연쇄적으로 오류 상태 해제)
    */
   const handleFieldChange = (key: string, value: string) => {
     if (!localResult) return;
 
     setLocalResult(prev => {
       if (!prev) return null;
-
-      // 1. 현재 필드 데이터 업데이트
-      const updatedFields = { ...prev.documentFields };
-      const currentDocFields = [...(updatedFields[selectedId] || [])];
       
-      const fieldIndex = currentDocFields.findIndex(f => f.key === key);
-      if (fieldIndex > -1) {
-        // 교차 검증 딕셔너리 참조 (O(1))
-        const isMatch = prev.crossValidationDict[key]?.has(value) ?? true;
-        
-        currentDocFields[fieldIndex] = {
-          ...currentDocFields[fieldIndex],
-          value,
-          isMatch,
-          isModified: true
-        };
-      }
-      updatedFields[selectedId] = currentDocFields;
+      const newDocumentFields = { ...prev.documentFields };
+      
+      // 배열 키 정규화 (예: householdMembers[0]_name -> name)
+      const baseKey = key.replace(/\[\d+\]/g, '').split('_').pop() || key;
 
-      // 2. 문서 및 카테고리 상태 재평가 (필드 수정에 따른 실시간 UI 업데이트)
+      // 단계 1: 대조 결과(isResolved) 판정
+      let isResolved = false;
+
+      // 분기 A: 고객 정보(Redux)와 대조
+      // OCR 키와 Redux 키가 다를 수 있으므로 매핑 처리 (예: residentRegistrationNumber -> personalId)
+      if (baseKey === 'name' || baseKey === 'residentRegistrationNumber' || baseKey === 'phoneNumber') {
+        const customerValue = 
+          baseKey === 'name' ? customerInfo.name : 
+          baseKey === 'residentRegistrationNumber' ? customerInfo.personalId : 
+          customerInfo.phoneNumber;
+        
+        isResolved = customerValue === value;
+      } 
+      // 분기 B: 서류 간 상호 대조 (고객 정보가 아닌 일반 데이터)
+      else {
+        // 이 키(baseKey)로 위반(Violation)이 걸린 모든 서류들의 '현재 값'들을 수집하여 All-Match 검사
+        const targetDocIds = prev.errorTargetDict[key] || new Set();
+        const collectedValues = new Set<string>();
+        
+        targetDocIds.forEach(docId => {
+           // 방금 수정한 문서라면 새 값을, 아니면 기존 값을 수집
+           if (docId === selectedId) {
+             collectedValues.add(value);
+           } else {
+             const field = newDocumentFields[docId]?.find(f => f.key === key);
+             if (field && field.value !== null) collectedValues.add(String(field.value));
+           }
+        });
+
+        // 1. 수집된 값이 1개뿐이다 (모든 타겟 문서의 값이 동일해짐)
+        // 2. 그리고 그 값이 빈 값이 아니다
+        isResolved = collectedValues.size === 1 && !collectedValues.has("");
+      }
+
+      // 단계 2: 연쇄 업데이트 (Cascading Update)
+      // 해당 키를 가진 '모든' 타겟 문서 필드의 isMatch 상태를 일괄 변경
+      const targetDocIdsToUpdate = prev.errorTargetDict[key] || new Set([selectedId]);
+      
+      targetDocIdsToUpdate.forEach(docId => {
+        if (newDocumentFields[docId]) {
+          newDocumentFields[docId] = newDocumentFields[docId].map(f => {
+            if (f.key === key) {
+              return { 
+                ...f, 
+                value: docId === selectedId ? value : f.value, // 수정한 문서만 값 변경
+                isMatch: isResolved,                           // 판정 결과 일괄 적용
+                isModified: docId === selectedId ? true : f.isModified
+              };
+            }
+            return f;
+          });
+        }
+      });
+
+      // 단계 3: 카테고리/문서 상태 재평가 (좌측 트리 시각화 업데이트용)
       const updatedCategories = prev.categories.map(cat => ({
         ...cat,
         items: cat.items.map(item => {
-          if (item.id === selectedId) {
-            // 하나라도 불일치 필드가 있으면 REVIEW_NEEDED 상태 유지
-            const hasMismatch = currentDocFields.some(f => !f.isMatch);
+          if (targetDocIdsToUpdate.has(item.id)) {
+            const hasMismatch = newDocumentFields[item.id]?.some(f => !f.isMatch);
+            const newStatus: "REVIEW_NEEDED" | "RISK" | "APPROVED" = hasMismatch ? 'REVIEW_NEEDED' : item.isRisk ? 'RISK' : 'APPROVED';
             return {
               ...item,
-              status: hasMismatch ? 'REVIEW_NEEDED' : item.isRisk ? 'RISK' : 'APPROVED'
+              status: newStatus
             };
           }
           return item;
@@ -78,13 +118,14 @@ export const VerificationResultPage = () => {
 
       return {
         ...prev,
-        documentFields: updatedFields,
+        documentFields: newDocumentFields,
         categories: updatedCategories
       };
     });
   };
 
   if (isLoading || !localResult) {
+
     return (
       <div className="min-h-screen flex flex-col bg-gray-50 font-sans">
         <Header />

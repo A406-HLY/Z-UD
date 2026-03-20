@@ -53,9 +53,12 @@ export interface DocumentClassification {
 export interface ExtractedField {
   id: string;
   key: string;
+  label: string; // 화면 표시용 레이블 (예: 세대원[1] > 성명)
   value: string | number | boolean | null;
   confidence: number;
-  isMatch: boolean; // 초기 정합성 결과
+  isMatch: boolean; // 딕셔너리 대조 결과 (실시간 일치 여부)
+  isViolationTarget: boolean; // 백엔드가 지정한 정합성 오류 필드 여부 (수정 활성화 기준)
+  isRiskTarget: boolean; // 백엔드가 지정한 위험(주의) 필드 여부 (노란색 강조 기준)
   isModified: boolean; // 사용자 수정 여부
   evidence?: {
     pageNum: number;
@@ -96,8 +99,9 @@ export interface VerificationResult {
   categories: DocCategory[];
   // 각 문서별 필드 데이터 (평면화된 리스트로 변환하여 관리)
   documentFields: Record<string, ExtractedField[]>;
-  // 교차 검증을 위한 딕셔너리 (Key: 필드명, Value: 해당 필드의 중복 값들)
-  crossValidationDict: Record<string, Set<string>>;
+  // 정합성 오류가 발생한 타겟 문서 ID를 키(필드명)별로 관리
+  // (Why: 사용자가 값을 수정했을 때, 해당 키의 오류를 공유하는 문서들만 핀포인트로 재대조하기 위함)
+  errorTargetDict: Record<string, Set<string>>;
   // 빠른 조회를 위한 맵들
   violationMap: Record<string, Set<string>>; // docType -> fields
   riskMap: Record<string, Set<string>>;      // docType -> fields

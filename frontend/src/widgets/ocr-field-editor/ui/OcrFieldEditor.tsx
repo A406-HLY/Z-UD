@@ -42,7 +42,7 @@ export const OcrFieldEditor = ({ fields, status, isRisk, onFieldChange }: Props)
         )}
       </div>
 
-      {/* Risk Alert Banner (Why: 행원이 위험 문서를 즉각 인지하도록 상단에 강조 노출) */}
+      {/* Risk Alert Banner */}
       {isRisk && (
         <div className="bg-yellow-100 border-b border-yellow-200 px-4 py-2 flex items-start gap-3">
           <Info className="w-4 h-4 text-yellow-700 mt-0.5 shrink-0" />
@@ -59,23 +59,27 @@ export const OcrFieldEditor = ({ fields, status, isRisk, onFieldChange }: Props)
           {fields.map((field) => {
             // 정합성 통과 여부 및 수정 가능 여부 판단
             const isErrorField = !field.isMatch;
-            const canEdit = !field.isMatch; // 정합성 탈락한 경우만 수정 가능
+
+            // (Why: 위험(Risk) 필드는 행원에게 경고(인지)만 하고 원본 보존을 위해 수정은 막음. 
+            // 오직 정합성 오류(Violation)가 있거나 이미 수정을 시작한 필드만 편집 허용)
+            const canEdit = isErrorField || field.isModified;
 
             return (
               <div key={field.id} className="space-y-1.5 group">
                 <label className={`
                   text-[9px] font-bold uppercase tracking-tighter flex items-center gap-1
-                  ${isErrorField ? 'text-red-500' : 'text-gray-400'}
+                  ${isErrorField ? 'text-red-500' : isRisk ? 'text-yellow-700' : 'text-gray-400'}
                 `}>
-                  {field.key} 
+                  {field.label} 
                   {isErrorField && <span className="text-[8px] text-red-600 bg-red-50 px-1 border border-red-100 font-normal">(! 불일치)</span>}
-                  {!isErrorField && <Check className="w-2.5 h-2.5 text-green-500" />}
+                  {!isErrorField && isRisk && <span className="text-[8px] text-yellow-700 bg-yellow-50 px-1 border border-yellow-100 font-normal">(! 주의)</span>}
+                  {!isErrorField && !isRisk && <Check className="w-2.5 h-2.5 text-green-500" />}
                 </label>
                 
                 <div className="relative">
                   <input 
                     type="text" 
-                    defaultValue={field.value}
+                    defaultValue={String(field.value ?? '')}
                     disabled={!canEdit}
                     onChange={(e) => onFieldChange?.(field.key, e.target.value)}
                     className={`
@@ -84,7 +88,9 @@ export const OcrFieldEditor = ({ fields, status, isRisk, onFieldChange }: Props)
                         ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed' 
                         : isErrorField 
                           ? 'border-red-400 bg-red-50 text-red-700 font-bold focus:border-red-600 focus:bg-white focus:outline-none' 
-                          : 'border-gray-300 bg-[#fcfcfc] focus:border-[#004b93] focus:bg-white focus:outline-none'
+                          : isRisk
+                            ? 'border-yellow-400 bg-yellow-50 text-yellow-800 focus:border-yellow-600 focus:bg-white focus:outline-none'
+                            : 'border-gray-300 bg-[#fcfcfc] focus:border-[#004b93] focus:bg-white focus:outline-none'
                       }
                       ${field.isModified ? 'border-blue-400 !bg-blue-50' : ''}
                     `}
@@ -92,6 +98,8 @@ export const OcrFieldEditor = ({ fields, status, isRisk, onFieldChange }: Props)
                   <div className="absolute right-2 top-2">
                     {isErrorField ? (
                       <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                    ) : isRisk ? (
+                      <Info className="w-3.5 h-3.5 text-yellow-600" />
                     ) : (
                       <Check className="w-3.5 h-3.5 text-green-500 opacity-60" />
                     )}
