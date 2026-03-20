@@ -6,9 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.zud.backend.common.error.ErrorCode;
 import com.zud.backend.domain.audit.converter.AuditConverter;
 import com.zud.backend.domain.audit.dto.request.AuditHouseReqDto;
-import com.zud.backend.domain.audit.dto.request.MyDataReqDto;
 import com.zud.backend.domain.audit.dto.response.AuditHouseResDto;
-import com.zud.backend.domain.audit.dto.response.MyDataResDto;
 import com.zud.backend.domain.audit.exception.AuditException;
 import com.zud.backend.domain.branch.dto.response.NearestBranchResDto;
 import com.zud.backend.domain.branch.service.facade.BranchFacadeService;
@@ -31,7 +29,6 @@ public class AuditHouseFacadeServiceImpl implements AuditHouseFacadeService {
 
 	private final BranchFacadeService branchFacadeService;
 	private final HousePriceFacadeService housePriceFacadeService;
-	private final AuditMyDataFacadeService myDataService;
 
 	@Override
 	public AuditHouseResDto auditHouse(final Long userId, final AuditHouseReqDto reqDto) {
@@ -49,11 +46,6 @@ public class AuditHouseFacadeServiceImpl implements AuditHouseFacadeService {
 			housePriceResult.supportedHouseType(),
 			housePriceResult.housePrice()
 		);
-	}
-
-	@Override
-	public MyDataResDto getMyData(final MyDataReqDto reqDto) {
-		return myDataService.getMyData(reqDto);
 	}
 
 	private void validateIllegalBuilding(final AuditHouseReqDto reqDto) {
