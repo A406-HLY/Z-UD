@@ -1,4 +1,4 @@
-package com.zud.backend.domain.counsel.service;
+package com.zud.backend.domain.consultation.service;
 
 import java.time.Duration;
 import java.util.List;
@@ -7,7 +7,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import com.zud.backend.domain.counsel.enums.CounselStatus;
+import com.zud.backend.domain.consultation.enums.CounselStatus;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
-public class CounselStatusServiceImpl implements CounselStatusService {
+public class ConsultationStatusServiceImpl implements ConsultationStatusService {
 
 	private static final String STATUS_KEY_PREFIX = "counsel:status:";
 	private static final String DATA_KEY_PREFIX = "counsel:data:";

@@ -1,4 +1,4 @@
-package com.zud.backend.domain.counsel.enums;
+package com.zud.backend.domain.consultation.enums;
 
 public enum CounselStatus {
 	UPLOADING,
