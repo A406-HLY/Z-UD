@@ -7,7 +7,7 @@ import lombok.Builder;
 
 @Schema(description = "주택 심사 요청 DTO")
 @Builder
-public record AuditReqDto(
+public record AuditHouseReqDto(
 	
 	@Schema(description = "위반건축물 여부", example = "false")
 	@NotNull(message = "위반건축물 여부는 필수입니다.")
