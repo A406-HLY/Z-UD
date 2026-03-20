@@ -8,7 +8,7 @@ import lombok.Builder;
 
 @Schema(description = "심사 응답 DTO")
 @Builder
-public record AuditResDto(
+public record AuditHouseResDto(
 	@Schema(description = "위반건축물 여부")
 	boolean illegalBuilding,
 
