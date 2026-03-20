@@ -7,7 +7,14 @@ import {
   formatName
 } from '@/shared/lib/utils/format-utils';
 import { generateUUID } from '@/shared/lib/utils/id-utils';
-import { EMPLOYMENT_TYPES, LOAN_PURPOSE_OPTIONS } from '@/entities/customer/model/customer.constants';
+import { 
+  EMPLOYMENT_TYPES, 
+  LOAN_PURPOSE_OPTIONS,
+  CUSTOMER_FORM_LABELS,
+  CUSTOMER_FORM_PLACEHOLDERS,
+  REQUIRED_FIELDS
+} from '@/entities/customer/model/customer.constants';
+import { calculateCustomerProgress } from '@/entities/customer/model/utils';
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { setCounselId, setIsPollingActive, updateCustomerData } from '@/entities/customer/model/slice';
 import { validateCustomer } from '@/entities/customer/model/validation';
@@ -28,6 +35,9 @@ export const CustomerInfoForm = () => {
 
   // (Why) 각 필드별 에러 상태를 로컬로 관리하여 실시간 시각적 피드백(빨간 테두리)을 제공합니다.
   const [errors, setErrors] = useState<Partial<Record<keyof Customer, boolean>>>({});
+
+  // (Why) 진척도 및 유효성 검사 기준을 외부 유틸리티에서 계산하여 로직을 단순화합니다.
+  const { percentage: progressPercentage, firstEmptyField } = calculateCustomerProgress(form);
 
   /** 
    * 입력 필드 변경 핸들러
@@ -90,17 +100,6 @@ export const CustomerInfoForm = () => {
     dispatch(setIsPollingActive(!isPollingActive));
   };
 
-  // (Why) 7개의 필수 필드가 얼마나 채워졌는지 진척도를 계산합니다.
-  const requiredFields: (keyof Customer)[] = [
-    'name', 'personalId', 'phoneNumber', 'loanPurpose', 
-    'employmentType', 'desiredAmount', 'houseCount'
-  ];
-  const filledCount = requiredFields.filter(field => !!form[field]).length;
-  const progressPercentage = Math.round((filledCount / requiredFields.length) * 100);
-
-  // (Why) 다음에 입력해야 할 첫 번째 빈 필드를 찾아 시각적 가이드를 제공합니다.
-  const firstEmptyField = requiredFields.find(field => !form[field]);
-
   return (
     <Card className={clsx(
       "transition-all duration-300 ease-in-out border-l-4 rounded-none",
@@ -110,36 +109,23 @@ export const CustomerInfoForm = () => {
         // [Summary Mode] 저장 후 정보를 텍스트로 요약해서 보여줌
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 animate-in fade-in slide-in-from-top-1">
           <div className="flex items-center gap-4 text-xs text-slate-700">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">성함</span>
-              <span className="font-bold text-slate-900">{form.name || '-'}</span>
-            </div>
-            <div className="w-px h-2.5 bg-slate-200" />
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">주민번호</span>
-              <span className="font-mono text-slate-600">{form.personalId || '-'}</span>
-            </div>
-            <div className="w-px h-2.5 bg-slate-200" />
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">연락처</span>
-              <span className="text-slate-600">{form.phoneNumber || '-'}</span>
-            </div>
-            <div className="w-px h-2.5 bg-slate-200" />
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">대출목적</span>
-              <span className="text-slate-600 text-[11px]">{form.loanPurpose || '-'}</span>
-            </div>
-            <div className="w-px h-2.5 bg-slate-200" />
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">근로형태</span>
-              <span className="text-slate-600 text-[11px]">{form.employmentType || '-'}</span>
-            </div>
-            <div className="w-px h-2.5 bg-slate-200" />
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">희망금액</span>
-              <span className="font-bold text-slate-900">{form.desiredAmount || '0'}</span>
-              <span className="text-[9px] text-slate-400">원</span>
-            </div>
+            {REQUIRED_FIELDS.map((field, idx) => (
+              <div key={field} className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-bold text-slate-400 font-sans uppercase tracking-tighter">
+                    {CUSTOMER_FORM_LABELS[field as keyof typeof CUSTOMER_FORM_LABELS] || field}
+                  </span>
+                  <span className={clsx(
+                    "font-bold",
+                    field === 'name' || field === 'desiredAmount' ? "text-slate-900" : "text-slate-600 font-mono"
+                  )}>
+                    {form[field] || '-'}
+                  </span>
+                  {field === 'desiredAmount' && <span className="text-[9px] text-slate-400 ml-0.5">원</span>}
+                </div>
+                {idx < REQUIRED_FIELDS.length - 1 && <div className="w-px h-2.5 bg-slate-200 ml-2" />}
+              </div>
+            ))}
           </div>
 
           <div className="ml-auto flex items-center gap-2">
@@ -155,9 +141,9 @@ export const CustomerInfoForm = () => {
           </div>
         </div>
       ) : (
-        // [Edit Mode] 기존 인라인 라벨 입력 폼
-        <div className="flex flex-wrap gap-x-6 gap-y-3 items-center animate-in fade-in zoom-in-95 duration-300">
-          {/* 상담 ID 표시 */}
+        /** (Why) 1920x1080 해상도에서 모든 요소를 한눈에 보기 위해 최소한의 간격(gap-2)과 높이(h-8)를 사용하는 초소형 레이아웃을 적용합니다. */
+        <div className="flex flex-wrap gap-x-4 gap-y-2 items-center animate-in fade-in zoom-in-95 duration-300">
+          {/* 상담 ID 표시 - 전체 너비 차지 */}
           {form.counselId && (
             <div className="w-full mb-0.5 p-1.5 bg-slate-100 border border-slate-200 rounded-none flex justify-between items-center">
               <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">Counsel_Session_ID</span>
@@ -165,8 +151,8 @@ export const CustomerInfoForm = () => {
             </div>
           )}
 
-          <div className="flex items-center gap-2.5">
-            <Label htmlFor="name" className="text-[11px] font-bold text-slate-500 w-14 text-right shrink-0">고객 성함</Label>
+          <div className="flex items-center gap-1.5">
+            <Label htmlFor="name" className="text-[11px] font-bold text-slate-500 w-16 text-right shrink-0">{CUSTOMER_FORM_LABELS.name}</Label>
             <Input 
               id="name" 
               autoFocus
@@ -174,110 +160,110 @@ export const CustomerInfoForm = () => {
               isError={errors.name}
               value={form.name} 
               onChange={(e) => handleChange('name', e.target.value)}
-              placeholder="이름"
+              placeholder={CUSTOMER_FORM_PLACEHOLDERS.name}
               className={clsx(
-                "h-9 w-[80px] text-xs transition-all duration-300 rounded-none",
+                "h-8 w-full max-w-[80px] text-xs transition-all duration-300 rounded-none",
                 firstEmptyField === 'name' && "border-slate-800 border-2 bg-slate-50"
               )}
             />
           </div>
           
-          <div className="flex items-center gap-2.5">
-            <Label htmlFor="personalId" className="text-[11px] font-bold text-slate-500 w-16 text-right shrink-0">주민번호</Label>
+          <div className="flex items-center gap-1.5">
+            <Label htmlFor="personalId" className="text-[11px] font-bold text-slate-500 w-16 text-right shrink-0">{CUSTOMER_FORM_LABELS.personalId}</Label>
             <Input 
               id="personalId" 
               maxLength={14}
               isError={errors.personalId}
               value={form.personalId} 
               onChange={(e) => handleChange('personalId', e.target.value)}
-              placeholder="주민번호 13자리"
+              placeholder={CUSTOMER_FORM_PLACEHOLDERS.personalId}
               className={clsx(
-                "h-9 w-[140px] text-xs transition-all duration-300 rounded-none",
+                "h-8 w-full max-w-[140px] text-xs transition-all duration-300 rounded-none",
                 firstEmptyField === 'personalId' && "border-slate-800 border-2 bg-slate-50"
               )}
             />
           </div>
 
-          <div className="flex items-center gap-2.5">
-            <Label htmlFor="phoneNumber" className="text-[11px] font-bold text-slate-500 w-14 text-right shrink-0">전화번호</Label>
+          <div className="flex items-center gap-1.5">
+            <Label htmlFor="phoneNumber" className="text-[11px] font-bold text-slate-500 w-16 text-right shrink-0">{CUSTOMER_FORM_LABELS.phoneNumber}</Label>
             <Input 
-              id="phoneNumber"
+              id="phoneNumber" 
               type="tel"
               autoComplete="tel"
               isError={errors.phoneNumber}
               value={form.phoneNumber} 
               onChange={(e) => handleChange('phoneNumber', e.target.value)}
-              placeholder="010-0000-0000"
+              placeholder={CUSTOMER_FORM_PLACEHOLDERS.phoneNumber}
               className={clsx(
-                "h-9 w-[130px] text-xs transition-all duration-300 rounded-none",
+                "h-8 w-full max-w-[130px] text-xs transition-all duration-300 rounded-none",
                 firstEmptyField === 'phoneNumber' && "border-slate-800 border-2 bg-slate-50"
               )}
             />
           </div>
 
-          <div className="flex items-center gap-2.5">
-            <Label htmlFor="loanPurpose" className="text-[11px] font-bold text-slate-500 w-14 text-right shrink-0">대출 목적</Label>
+          <div className="flex items-center gap-1.5">
+            <Label htmlFor="loanPurpose" className="text-[11px] font-bold text-slate-500 w-16 text-right shrink-0">{CUSTOMER_FORM_LABELS.loanPurpose}</Label>
             <Select
               id="loanPurpose"
               isError={errors.loanPurpose}
               value={form.loanPurpose}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleChange('loanPurpose', e.target.value)}
               className={clsx(
-                "h-9 w-[200px] text-xs px-2 transition-all duration-300 focus:ring-0 focus:ring-offset-0 rounded-none",
+                "h-8 w-full max-w-[200px] text-xs px-2 transition-all duration-300 focus:ring-0 focus:ring-offset-0 rounded-none",
                 firstEmptyField === 'loanPurpose' && "border-slate-800 border-2 bg-slate-50"
               )}
             >
-              <option value="" disabled>본인의 목적을 선택하세요</option>
+              <option value="">{CUSTOMER_FORM_PLACEHOLDERS.loanPurpose}</option>
               {LOAN_PURPOSE_OPTIONS.map((option) => (
                 <option key={option} value={option}>{option}</option>
               ))}
             </Select>
           </div>
 
-          <div className="flex items-center gap-2.5">
-            <Label htmlFor="employmentType" className="text-[11px] font-bold text-slate-500 w-14 text-right shrink-0">근로 형태</Label>
+          <div className="flex items-center gap-1.5">
+            <Label htmlFor="employmentType" className="text-[11px] font-bold text-slate-500 w-16 text-right shrink-0">{CUSTOMER_FORM_LABELS.employmentType}</Label>
             <Select
               id="employmentType"
               isError={errors.employmentType}
               value={form.employmentType}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleChange('employmentType', e.target.value)}
               className={clsx(
-                "h-9 w-[160px] text-xs px-2 transition-all duration-300 focus:ring-0 focus:ring-offset-0 rounded-none",
+                "h-8 w-full max-w-[160px] text-xs px-2 transition-all duration-300 focus:ring-0 focus:ring-offset-0 rounded-none",
                 firstEmptyField === 'employmentType' && "border-slate-800 border-2 bg-slate-50"
               )}
             >
-              <option value="" disabled>근로 형태 선택</option>
+              <option value="">{CUSTOMER_FORM_PLACEHOLDERS.employmentType}</option>
               {EMPLOYMENT_TYPES.map((option) => (
                 <option key={option} value={option}>{option}</option>
               ))}
             </Select>
           </div>
 
-          <div className="flex items-center gap-2.5">
-            <Label htmlFor="desiredAmount" className="text-[11px] font-bold text-slate-500 w-14 text-right shrink-0">희망 금액</Label>
-            <div className="relative flex items-center w-[180px]">
+          <div className="flex items-center gap-1.5">
+            <Label htmlFor="desiredAmount" className="text-[11px] font-bold text-slate-500 w-16 text-right shrink-0">{CUSTOMER_FORM_LABELS.desiredAmount}</Label>
+            <div className="relative flex items-center w-full max-w-[140px]">
               <Input 
                 id="desiredAmount" 
                 className={clsx(
-                  "h-9 w-full pr-7 text-right font-bold text-slate-900 text-xs transition-all duration-300 rounded-none",
+                  "h-8 w-full pr-7 text-right font-bold text-slate-900 text-xs transition-all duration-300 rounded-none",
                   firstEmptyField === 'desiredAmount' && "border-slate-800 border-2 bg-slate-50"
                 )}
                 isError={errors.desiredAmount}
                 value={form.desiredAmount} 
                 onChange={(e) => handleChange('desiredAmount', e.target.value)}
-                placeholder="100,000,000"
+                placeholder={CUSTOMER_FORM_PLACEHOLDERS.desiredAmount}
               />
               <span className="absolute right-2 text-[9px] text-slate-400 uppercase font-bold">KRW</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
-            <Label htmlFor="houseCount" className="text-[11px] font-bold text-slate-500 w-14 text-right shrink-0">보유 주택</Label>
-            <div className="relative flex items-center w-[80px]">
+          <div className="flex items-center gap-1.5">
+            <Label htmlFor="houseCount" className="text-[11px] font-bold text-slate-500 w-16 text-right shrink-0">{CUSTOMER_FORM_LABELS.houseCount}</Label>
+            <div className="relative flex items-center w-full max-w-[50px]">
               <Input 
                 id="houseCount" 
                 className={clsx(
-                  "h-9 w-full pr-5 text-right text-xs transition-all duration-300 rounded-none",
+                  "h-8 w-full pr-5 text-right text-xs transition-all duration-300 rounded-none",
                   firstEmptyField === 'houseCount' && "border-slate-800 border-2 bg-slate-50"
                 )}
                 isError={errors.houseCount}
@@ -285,20 +271,20 @@ export const CustomerInfoForm = () => {
                 min="0"
                 value={form.houseCount} 
                 onChange={(e) => handleChange('houseCount', e.target.value)}
-                placeholder="0"
+                placeholder={CUSTOMER_FORM_PLACEHOLDERS.houseCount}
               />
               <span className="absolute right-1.5 text-[10px] text-slate-400">채</span>
             </div>
           </div>
 
-          <div className="ml-auto relative">
+          <div className="ml-auto relative mt-0.5">
             {/* 진척도 기반 버튼 (Progress Activation) */}
             <Button
               type="button"
               size="sm"
               disabled={progressPercentage < 100}
               className={clsx(
-                "h-9 px-8 text-xs font-bold transition-all duration-500 border rounded-none relative overflow-hidden active:scale-95 shadow-sm",
+                "h-8 px-6 text-xs font-bold transition-all duration-500 border rounded-none relative overflow-hidden active:scale-95 shadow-sm",
                 progressPercentage === 100 
                   ? "bg-slate-800 text-white border-slate-900 hover:bg-slate-900"
                   : "bg-white text-slate-400 border-slate-200 cursor-not-allowed"
