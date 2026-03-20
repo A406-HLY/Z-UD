@@ -12,8 +12,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.zud.backend.domain.audit.dto.request.AuditReqDto;
-import com.zud.backend.domain.audit.dto.response.AuditResDto;
+import com.zud.backend.domain.audit.dto.request.AuditHouseReqDto;
+import com.zud.backend.domain.audit.dto.request.MyDataReqDto;
+import com.zud.backend.domain.audit.dto.response.AuditHouseResDto;
+import com.zud.backend.domain.audit.dto.response.MyDataResDto;
 import com.zud.backend.domain.branch.dto.response.NearestBranchResDto;
 import com.zud.backend.domain.branch.service.facade.BranchFacadeService;
 import com.zud.backend.domain.houseprice.dto.response.HousePriceResDto;
@@ -21,7 +23,7 @@ import com.zud.backend.domain.houseprice.service.facade.HousePriceFacadeService;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AuditFacadeServiceImpl 단위 테스트")
-class AuditFacadeServiceImplTest {
+class AuditHouseFacadeServiceImplTest {
 
 	private static final Long USER_ID = 1L;
 	private static final String ADDRESS = "서울특별시 강남구 테헤란로 212";
@@ -34,8 +36,11 @@ class AuditFacadeServiceImplTest {
 	@Mock
 	private HousePriceFacadeService housePriceFacadeService;
 
+	@Mock
+	private AuditMyDataFacadeService myDataService;
+
 	@InjectMocks
-	private AuditFacadeServiceImpl auditFacadeService;
+	private AuditHouseFacadeServiceImpl auditFacadeService;
 
 	@Nested
 	@DisplayName("auditHouse()")
@@ -45,7 +50,7 @@ class AuditFacadeServiceImplTest {
 		@DisplayName("심사_결과를_AuditResDto에_조립")
 		void 심사_결과를_AuditResDto에_조립() {
 			// given
-			AuditReqDto reqDto = AuditReqDto.builder()
+			AuditHouseReqDto reqDto = AuditHouseReqDto.builder()
 				.illegalBuilding(false)
 				.houseType(HOUSE_TYPE)
 				.propertyAddress(ADDRESS)
@@ -54,7 +59,7 @@ class AuditFacadeServiceImplTest {
 			NearestBranchResDto nearestBranchResDto = org.mockito.Mockito.mock(NearestBranchResDto.class);
 			HousePriceResDto housePriceResDto =
 				new HousePriceResDto(1_000L, "실거래가", "실거래가 기준으로 조회되었습니다.");
-			AuditResDto expected = AuditResDto.builder()
+			AuditHouseResDto expected = AuditHouseResDto.builder()
 				.illegalBuilding(false)
 				.nearestBranch(nearestBranchResDto)
 				.supportedHouseType(true)
@@ -67,7 +72,7 @@ class AuditFacadeServiceImplTest {
 				.willReturn(housePriceResDto);
 
 			// when
-			AuditResDto result = auditFacadeService.auditHouse(USER_ID, reqDto);
+			AuditHouseResDto result = auditFacadeService.auditHouse(USER_ID, reqDto);
 
 			// then
 			assertThat(result).isNotNull();
@@ -81,7 +86,7 @@ class AuditFacadeServiceImplTest {
 		@DisplayName("주택유형은_지원되지만_시세조회_불가시_housePrice_null_메시지_반환")
 		void 주택유형은_지원되지만_시세조회_불가시_housePrice_null_메시지_반환() {
 			// given
-			AuditReqDto reqDto = AuditReqDto.builder()
+			AuditHouseReqDto reqDto = AuditHouseReqDto.builder()
 				.illegalBuilding(false)
 				.houseType(HOUSE_TYPE)
 				.propertyAddress(ADDRESS)
@@ -93,7 +98,7 @@ class AuditFacadeServiceImplTest {
 				.priceType(null)
 				.message(HOUSE_PRICE_MANUAL_INPUT_MESSAGE)
 				.build();
-			AuditResDto expected = AuditResDto.builder()
+			AuditHouseResDto expected = AuditHouseResDto.builder()
 				.illegalBuilding(false)
 				.nearestBranch(nearestBranchResDto)
 				.supportedHouseType(true)
@@ -106,7 +111,7 @@ class AuditFacadeServiceImplTest {
 				.willReturn(null);
 
 			// when
-			AuditResDto result = auditFacadeService.auditHouse(USER_ID, reqDto);
+			AuditHouseResDto result = auditFacadeService.auditHouse(USER_ID, reqDto);
 
 			// then
 			assertThat(result).isNotNull();
@@ -115,6 +120,22 @@ class AuditFacadeServiceImplTest {
 			then(housePriceFacadeService).should()
 				.findHousePrice(HOUSE_TYPE, ADDRESS);
 		}
+	}
+
+	@Test
+	@DisplayName("getMyData는_분리된_MyDataService를_호출한다")
+	void getMyData는_분리된_MyDataService를_호출한다() {
+		// given
+		MyDataReqDto reqDto = new MyDataReqDto("zud@ssafy.co.kr");
+		MyDataResDto expected = new MyDataResDto("zud@ssafy.co.kr", "A", java.util.List.of());
+		given(myDataService.getMyData(reqDto)).willReturn(expected);
+
+		// when
+		MyDataResDto result = auditFacadeService.getMyData(reqDto);
+
+		// then
+		assertThat(result).isEqualTo(expected);
+		then(myDataService).should().getMyData(reqDto);
 	}
 }
 
