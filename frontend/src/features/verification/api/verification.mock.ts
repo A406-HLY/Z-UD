@@ -11,6 +11,8 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
       {
         fileId: "FILE_001",
         fileName: "주민등록등본_01.pdf",
+        // TODO: 백엔드 협의 결과에 따라 실제 해상도 수치로 교체 필요
+        resolution: { width: 1240, height: 1754 },
         status: "SUCCESS",
         documentClassification: {
           documentGroup: "IDENTITY_FAMILY",
@@ -38,6 +40,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
       {
         fileId: "FILE_002",
         fileName: "주민등록초본_01.pdf",
+        resolution: { width: 1240, height: 1754 },
         status: "SUCCESS",
         documentClassification: {
           documentGroup: "IDENTITY_FAMILY",
@@ -54,6 +57,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
       {
         fileId: "FILE_003",
         fileName: "가족관계증명서_01.pdf",
+        resolution: { width: 1240, height: 1754 },
         status: "SUCCESS",
         documentClassification: {
           documentGroup: "IDENTITY_FAMILY",
@@ -75,6 +79,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
       {
         fileId: "FILE_004",
         fileName: "재직증명서_01.pdf",
+        resolution: { width: 1240, height: 1754 },
         status: "SUCCESS",
         documentClassification: {
           documentGroup: "INCOME_EMPLOYEE",
@@ -91,6 +96,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
       {
         fileId: "FILE_005",
         fileName: "건강보험_자격득실_01.pdf",
+        resolution: { width: 1240, height: 1754 },
         status: "SUCCESS",
         documentClassification: {
           documentGroup: "INCOME_EMPLOYEE",
@@ -109,6 +115,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
       {
         fileId: "FILE_006",
         fileName: "국세_완납증명서_01.pdf",
+        resolution: { width: 1240, height: 1754 },
         status: "SUCCESS",
         documentClassification: {
           documentGroup: "TAX",
@@ -124,6 +131,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
       {
         fileId: "FILE_007",
         fileName: "지방세_납세증명서_01.pdf",
+        resolution: { width: 1240, height: 1754 },
         status: "SUCCESS",
         documentClassification: {
           documentGroup: "TAX",
@@ -139,6 +147,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
       {
         fileId: "FILE_008",
         fileName: "지방세_세목별_과세증명_01.pdf",
+        resolution: { width: 1240, height: 1754 },
         status: "SUCCESS",
         documentClassification: {
           documentGroup: "TAX",
@@ -156,6 +165,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
       {
         fileId: "FILE_009",
         fileName: "등기권리증_01.pdf",
+        resolution: { width: 1240, height: 1754 },
         status: "PARTIAL_SUCCESS",
         documentClassification: {
           documentGroup: "PROPERTY_HOUSING",
@@ -172,6 +182,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
       {
         fileId: "FILE_010",
         fileName: "집합건축물대장_01.pdf",
+        resolution: { width: 1240, height: 1754 },
         status: "SUCCESS",
         documentClassification: {
           documentGroup: "PROPERTY_HOUSING",
@@ -187,6 +198,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
       {
         fileId: "FILE_011",
         fileName: "매매계약서_01.pdf",
+        resolution: { width: 1240, height: 1754 },
         status: "PARTIAL_SUCCESS",
         documentClassification: {
           documentGroup: "PROPERTY_HOUSING",
@@ -205,6 +217,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
       {
         fileId: "FILE_012",
         fileName: "전입세대열람내역서_01.pdf",
+        resolution: { width: 1240, height: 1754 },
         status: "SUCCESS",
         documentClassification: {
           documentGroup: "PROPERTY_HOUSING",

@@ -8,7 +8,8 @@ import { ExtractedField } from '@/entities/verification/model/types';
 export const usePdfController = (
   fields: ExtractedField[], 
   focusedFieldKey: string | null,
-  originalWidth: number = 1200 // (Why: 백엔드 미응답 시 fallback)
+  // TODO: 백엔드에서 해상도 정보가 없을 경우의 기본값(Fallback) 처리 방안 협의 필요
+  originalWidth: number = 1240 
 ) => {
   const [scale, setScale] = useState(1);
   const [pageNumber, setPageNumber] = useState(1);

@@ -15,7 +15,9 @@ export const VerificationResultPage = () => {
     localResult, 
     selectedId, 
     isLoading, 
+    focusedFieldKey,
     setSelectedId, 
+    setFocusedFieldKey,
     handleFieldChange 
   } = useVerificationController('v-12345');
 
@@ -65,10 +67,15 @@ export const VerificationResultPage = () => {
             status={selectedDoc?.status || 'APPROVED'}
             isRisk={selectedDoc?.isRisk}
             onFieldChange={handleFieldChange}
+            onFocus={setFocusedFieldKey}
           />
           
           {/* 우측: 원본 서류 이미지 뷰어 */}
-          <DocumentImageViewer />
+          <DocumentImageViewer 
+            fields={localResult.documentFields[selectedId] || []}
+            focusedFieldKey={focusedFieldKey}
+            originalWidth={selectedDoc?.resolution?.width}
+          />
         </section>
       </main>
     </div>
