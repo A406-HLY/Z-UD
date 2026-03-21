@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Folder, FileText, ChevronDown, ChevronRight, AlertTriangle, Info } from 'lucide-react';
-import { DocCategory, DocumentStatus } from '@/entities/verification/model/types';
+import { DocCategory, DocumentStatus, DocItem } from '@/entities/verification/model/types';
 
 interface Props {
   categories: DocCategory[];
+  documents: Record<string, DocItem>; // (Why: 평면 구조에서 개별 문서 데이터를 참조하기 위함)
   selectedId: string;
   onSelect: (id: string) => void;
 }
@@ -13,7 +14,7 @@ interface Props {
  * 서류 카테고리를 트리 구조로 표시하며 아코디언 기능을 제공합니다.
  * (Why: 대규모 서류 묶음을 카테고리별로 효율적으로 관리하기 위함)
  */
-export const VerificationRepository = ({ categories, selectedId, onSelect }: Props) => {
+export const VerificationRepository = ({ categories, documents, selectedId, onSelect }: Props) => {
   const [expanded, setExpanded] = useState<string[]>(categories.map(c => c.id));
 
   const toggle = (id: string) => {
@@ -43,9 +44,10 @@ export const VerificationRepository = ({ categories, selectedId, onSelect }: Pro
         {categories.map(cat => {
           const isExpanded = expanded.includes(cat.id);
           
-          // 카테고리 상태 결정 (Why: 하위 아이템 중 가장 높은 우선순위 상태를 폴더 색상으로 반영)
-          const hasError = cat.items.some(i => i.status === 'REVIEW_NEEDED');
-          const hasRisk = cat.items.some(i => i.status === 'RISK');
+          // (Why: 하위 문서들의 ID를 순회하며 폴더의 대표 상태를 실시간 도출합니다.)
+          const catItems = cat.itemIds.map(id => documents[id]).filter(Boolean);
+          const hasError = catItems.some(i => i.status === 'REVIEW_NEEDED');
+          const hasRisk = catItems.some(i => i.status === 'RISK');
           const folderColor = hasError ? 'text-red-600' : hasRisk ? 'text-yellow-600' : 'text-[#00529B]';
 
           return (
@@ -63,7 +65,10 @@ export const VerificationRepository = ({ categories, selectedId, onSelect }: Pro
               
               {isExpanded && (
                 <div className="bg-white">
-                  {cat.items.map(item => {
+                  {cat.itemIds.map(id => {
+                    const item = documents[id];
+                    if (!item) return null;
+
                     const { text, bg, icon, disabled } = getStatusStyles(item.status);
                     const isSelected = selectedId === item.id;
 
