@@ -1,4 +1,4 @@
-import { ExtractedField, DocumentStatus, DocItem } from '@/entities/verification/model/types';
+import { ExtractedField, DocumentStatus } from '@/entities/verification/model/types';
 
 /**
  * @feature verification
