@@ -16,6 +16,7 @@ import {
 export const useVerificationController = (verificationId: string) => {
   const [selectedId, setSelectedId] = useState('item-1');
   const [localResult, setLocalResult] = useState<VerificationResult | null>(null);
+  const [focusedFieldKey, setFocusedFieldKey] = useState<string | null>(null);
 
   // 1. Redux에서 전역 고객 원천 데이터(기준 정답) 가져오기
   const customerInfo = useAppSelector(state => state.customer.data);
@@ -103,7 +104,9 @@ export const useVerificationController = (verificationId: string) => {
     localResult,
     selectedId,
     isLoading,
+    focusedFieldKey,
     setSelectedId,
+    setFocusedFieldKey,
     handleFieldChange
   };
 };
