@@ -18,6 +18,7 @@ export interface ValidationViolation {
 export interface ValidationMissing {
   documentType: string;
   documentTypeLabel: string;
+  // TODO: 백엔드 협의 필요 - documentMissings 응답에 documentGroup 필드 추가 요청 (Why: 누락된 서류를 올바른 폴더에 표시하기 위함)
 }
 
 export interface ValidationRisk {
@@ -89,7 +90,7 @@ export interface DocItem extends Omit<ServerDocItem, 'extraction'> {
 export interface DocCategory {
   id: string;
   name: string;
-  items: DocItem[];
+  itemIds: string[]; // (Why: 평면적 구조 관리를 위해 실제 객체 대신 ID 리스트만 보유)
 }
 
 /** 최종 가공된 검증 결과 데이터 (UI State용) */
@@ -97,6 +98,8 @@ export interface VerificationResult {
   id: string;
   selectedDocId: string;
   categories: DocCategory[];
+  // (Why: 평면적 관리를 위해 문서 정보를 ID 기반 Map으로 분리)
+  documents: Record<string, DocItem>; 
   // 각 문서별 필드 데이터 (평면화된 리스트로 변환하여 관리)
   documentFields: Record<string, ExtractedField[]>;
   // 정합성 오류가 발생한 타겟 문서 ID를 키(필드명)별로 관리
