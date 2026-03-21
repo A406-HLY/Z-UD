@@ -1,4 +1,3 @@
-import { useMemo, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/app/store/hooks';
 import { Header } from '@/widgets/header/ui/Header';
@@ -8,8 +7,7 @@ import { DocumentViewer } from '@/widgets/document-viewer/ui/DocumentViewer';
 import { PollingStatusToast } from '@/entities/customer/ui/PollingStatusToast';
 import { useSelectSync } from '@/features/document-sync/model/use-select-sync';
 import { useUploadDocuments } from '@/features/document-sync/api/use-upload-documents';
-import { useAgentFiles } from '@/features/document-sync/api/use-agent-files';
-import { documentMapper } from '@/entities/loan-document/model/document.mapper';
+import { useAgentDocs } from '@/features/document-sync/model/use-agent-docs';
 
 /**
  * @page LoanApplicationPage
@@ -18,54 +16,15 @@ import { documentMapper } from '@/entities/loan-document/model/document.mapper';
  */
 export const LoanApplicationPage = () => {
   const navigate = useNavigate();
-  const isPollingActive = useAppSelector((state) => state.customer.isPollingActive);
   const counselId = useAppSelector((state) => state.customer.data.counselId);
 
-  // 1. 데이터 가져와서 가공 (DocumentViewer에 전달할 데이터 준비)
-  const { data: agentFiles } = useAgentFiles(isPollingActive);
-  const agentDocs = useMemo(() => {
-    if (!agentFiles) return [];
-    return agentFiles.map(documentMapper.toDomainFromAgent);
-  }, [agentFiles]);
+  // 1. 에이전트 서류 데이터, 폴링 상태, 스캔 완료 상태 가져오기 (Feature)
+  const { docs: agentDocs, isPollingActive, isScanComplete } = useAgentDocs();
 
+  // 2. 선택 상태 훅 초기화
   const { selectedIds, toggleSelect, toggleAll } = useSelectSync(agentDocs);
   const { mutate: uploadDocuments, isPending } = useUploadDocuments();
 
-  // (Why) 마지막 서류 감지 후 일정 시간(5초) 동안 변화가 없으면 "스캔 완료"로 간주하여 시각적 가이드를 제공합니다.
-  const [isScanComplete, setIsScanComplete] = useState(false);
-  const lastFilesCountRef = useRef(0);
-  const lastDetectionTimeRef = useRef(Date.now());
-
-  // 1. 서류 개수가 변할 때마다 마지막 감지 시간 업데이트
-  useEffect(() => {
-    if (agentDocs.length > 0 && agentDocs.length !== lastFilesCountRef.current) {
-      lastFilesCountRef.current = agentDocs.length;
-      lastDetectionTimeRef.current = Date.now();
-      setIsScanComplete(false);
-      console.log(`[Scan] New file detected. Count: ${agentDocs.length}. Timer reset.`);
-    }
-  }, [agentDocs.length]);
-
-  // 2. 폴링 중이고 서류가 있을 때, 1초마다 무활동 시간 체크
-  useEffect(() => {
-    if (!isPollingActive || agentDocs.length === 0) {
-      setIsScanComplete(false);
-      lastFilesCountRef.current = agentDocs.length;
-      return;
-    }
-
-    if (isScanComplete) return;
-
-    const timer = setInterval(() => {
-      const idleTime = Date.now() - lastDetectionTimeRef.current;
-      if (idleTime > 5000) {
-        console.log('[Scan] 5 seconds of idle detected. Marking scan as complete.');
-        setIsScanComplete(true);
-      }
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [agentDocs.length, isPollingActive, isScanComplete]);
 
   /** "다음 단계" 진행 핸들러 */
   const handleNextStep = () => {
@@ -123,6 +82,8 @@ export const LoanApplicationPage = () => {
         {/* 서류 뷰어/콘솔 영역 (Flex-1) */}
         <section className="flex-1 min-h-0">
           <DocumentViewer 
+            agentDocs={agentDocs}
+            isPollingActive={isPollingActive}
             selectedIds={selectedIds}
             toggleSelect={toggleSelect}
             toggleAll={toggleAll}
