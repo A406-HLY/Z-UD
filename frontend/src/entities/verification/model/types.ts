@@ -77,6 +77,8 @@ export interface ServerDocItem {
   extraction: {
     content: Record<string, any>; // 실제 응답은 중첩 구조이므로 any 허용(Mapper에서 처리)
   };
+  // TODO: 백엔드 협의 필요 - 문서별 원본 해상도(width, height) 전달 방식 확정 후 반영 예정
+  resolution?: { width: number; height: number };
   reviewItems?: Array<{ reviewCode: string; reviewMessage: string }>;
 }
 

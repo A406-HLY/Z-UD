@@ -1,4 +1,4 @@
-import { Check, Save, AlertCircle, Info } from 'lucide-react';
+import { Check, AlertCircle, Info } from 'lucide-react';
 import { ExtractedField, DocumentStatus } from '@/entities/verification/model/types';
 
 interface Props {
@@ -6,6 +6,7 @@ interface Props {
   status: DocumentStatus;
   isRisk?: boolean;
   onFieldChange?: (key: string, value: string) => void;
+  onFocus?: (key: string) => void;
 }
 
 /**
@@ -13,7 +14,7 @@ interface Props {
  * OCR로 추출된 데이터 필드를 편집하며 정합성 상태(오류/경고/통과)에 따른 제어 로직을 제공합니다.
  * (Why: 정합성이 통과된 데이터는 수정을 막아 데이터 무결성을 보장하고, 오류가 있는 데이터만 집중 검수 유도)
  */
-export const OcrFieldEditor = ({ fields, status, isRisk, onFieldChange }: Props) => {
+export const OcrFieldEditor = ({ fields, status, isRisk, onFieldChange, onFocus }: Props) => {
   // 문서 자체가 정합성 오류 상태인지 확인
   const isReviewNeeded = status === 'REVIEW_NEEDED';
   
@@ -68,6 +69,8 @@ export const OcrFieldEditor = ({ fields, status, isRisk, onFieldChange }: Props)
                     type="text" 
                     defaultValue={String(field.value ?? '')}
                     disabled={!canEdit}
+                    onClick={() => onFocus?.(field.key)} // 클릭 시 포커스
+                    onFocus={() => onFocus?.(field.key)}
                     onChange={(e) => onFieldChange?.(field.key, e.target.value)}
                     className={`
                       w-full h-8 px-2 pr-8 text-[10px] font-mono border rounded-none shadow-inner transition-all
