@@ -227,7 +227,8 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
         { documentType: "SALE_CONTRACT", documentTypeLabel: "매매계약서", fields: ["buyer_name"] } // 평면화된 키 적용
       ],
       risks: [
-        { documentType: "MOVE_IN_HOUSEHOLD_REPORT", documentTypeLabel: "전입세대열람내역서", fields: ["printedAt"] }
+        { documentType: "MOVE_IN_HOUSEHOLD_REPORT", documentTypeLabel: "전입세대열람내역서", fields: ["printedAt"] },
+        { documentType: "SALE_CONTRACT", documentTypeLabel: "매매계약서", fields: ["propertyAddress"] }
       ]
     }
   }
