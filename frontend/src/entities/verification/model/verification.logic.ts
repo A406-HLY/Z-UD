@@ -1,4 +1,4 @@
-import { ExtractedField, DocumentStatus } from '@/entities/verification/model/types';
+import { ExtractedField, DocumentStatus, DocItem } from '@/entities/verification/model/types';
 import { Customer } from '@/entities/customer/model/types';
 
 /**
@@ -92,4 +92,21 @@ export const calculateDocumentStatus = (
   }
 
   return { status: 'APPROVED', isRisk: false };
+};
+
+/**
+ * [Why: 여러 문서(DocItem)들의 상태를 취합하여 해당 카테고리(폴더)의 대표 상태를 결정합니다.]
+ */
+export const calculateCategoryStatus = (
+  itemIds: string[], 
+  documents: Record<string, DocItem>
+): { hasError: boolean; hasRisk: boolean; folderColor: string } => {
+  const catItems = itemIds.map(id => documents[id]).filter(Boolean);
+  const hasError = catItems.some(i => i.status === 'REVIEW_NEEDED');
+  const hasRisk = catItems.some(i => i.status === 'RISK');
+  
+  // (Why: 에러가 최우선 순위이며, 정합성 위반 시 빨간색, 잠재적 위험 시 노란색을 반환합니다.)
+  const folderColor = hasError ? 'text-red-600' : hasRisk ? 'text-yellow-600' : 'text-[#00529B]';
+
+  return { hasError, hasRisk, folderColor };
 };

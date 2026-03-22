@@ -7,7 +7,7 @@ import {
   checkIsResolved, 
   calculateDocumentStatus,
   isCustomerInfoField
-} from './verification-logic';
+} from '@/entities/verification/model/verification.logic';
 
 /**
  * @feature verification
@@ -15,7 +15,7 @@ import {
  * (Why: Page 컴포넌트는 UI 조립에 집중해야 하므로, 데이터 Fetching 및 상태 변경 비즈니스 로직을 이 훅으로 격리합니다.)
  */
 export const useVerificationController = (verificationId: string) => {
-  const [selectedId, setSelectedId] = useState('item-1');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [localResult, setLocalResult] = useState<VerificationResult | null>(null);
   const [focusedFieldKey, setFocusedFieldKey] = useState<string | null>(null);
 
@@ -39,7 +39,7 @@ export const useVerificationController = (verificationId: string) => {
    * (Why: 필드 수정 시 원장 데이터 대조 및 교차 검증을 수행하고, 연관된 모든 문서의 상태를 실시간으로 재계산합니다)
    */
   const handleFieldChange = (key: string, value: string) => {
-    if (!localResult) return;
+    if (!localResult || !selectedId) return;
 
     setLocalResult(prev => {
       if (!prev) return null;
@@ -112,7 +112,7 @@ export const useVerificationController = (verificationId: string) => {
 
   return {
     localResult,
-    selectedId,
+    selectedId: selectedId as string | null,
     isLoading,
     focusedFieldKey,
     setSelectedId,
