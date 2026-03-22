@@ -4,6 +4,7 @@ import { ExtractedField, DocumentStatus } from '@/entities/verification/model/ty
 interface Props {
   fields: ExtractedField[];
   status: DocumentStatus;
+  /** 문서 전체 단위의 위험 여부 플래그 (cf. field.isRiskTarget: 개별 필드 원인 단위) */
   isRisk?: boolean;
   onFieldChange?: (key: string, value: string) => void;
   onFocus?: (key: string) => void;
@@ -61,15 +62,14 @@ export const OcrFieldEditor = ({ fields, status, isRisk, onFieldChange, onFocus 
                   ${isErrorField ? 'text-red-500' : field.isRiskTarget ? 'text-yellow-700' : 'text-gray-400'}
                 `}>
                   {field.label}               
-                  {!isErrorField && !field.isRiskTarget && <Check className="w-2.5 h-2.5 text-green-500" />}
+                  {!isErrorField && !field.isRiskTarget && <Check className="w-2.5 h-2.5 text-gray-400" />}
                 </label>
                 
                 <div className="relative">
                   <input 
                     type="text" 
-                    defaultValue={String(field.value ?? '')}
+                    value={String(field.value ?? '')}
                     disabled={!canEdit}
-                    onClick={() => onFocus?.(field.key)} // 클릭 시 포커스
                     onFocus={() => onFocus?.(field.key)}
                     onChange={(e) => onFieldChange?.(field.key, e.target.value)}
                     className={`
@@ -78,11 +78,12 @@ export const OcrFieldEditor = ({ fields, status, isRisk, onFieldChange, onFocus 
                         ? 'border-red-400 bg-red-50 text-red-700 font-bold focus:border-red-600 focus:bg-white focus:outline-none' 
                         : field.isRiskTarget
                           ? 'border-yellow-400 bg-yellow-50 text-yellow-800 focus:border-yellow-600 focus:bg-white focus:outline-none'
-                          : !canEdit 
-                            ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed' 
-                            : 'border-gray-300 bg-[#fcfcfc] focus:border-[#004b93] focus:bg-white focus:outline-none'
+                          : field.isModified
+                            ? 'border-blue-400 bg-blue-50 text-[#444] font-bold focus:border-blue-600 focus:bg-white focus:outline-none'
+                            : !canEdit 
+                              ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed' 
+                              : 'border-gray-300 bg-[#fcfcfc] focus:border-[#004b93] focus:bg-white focus:outline-none'
                       }
-                      ${field.isModified ? 'border-blue-400 !bg-blue-50' : ''}
                     `}
                   />
                   <div className="absolute right-2 top-2">
@@ -91,7 +92,7 @@ export const OcrFieldEditor = ({ fields, status, isRisk, onFieldChange, onFocus 
                     ) : field.isRiskTarget ? (
                       <Info className="w-3.5 h-3.5 text-yellow-600" />
                     ) : (
-                      <Check className="w-3.5 h-3.5 text-green-500 opacity-60" />
+                      <Check className="w-3.5 h-3.5 text-gray-400 opacity-60" />
                     )}
                   </div>
                 </div>
