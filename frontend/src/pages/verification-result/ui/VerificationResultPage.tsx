@@ -37,7 +37,7 @@ export const VerificationResultPage = () => {
     );
   }
 
-  const selectedDoc = localResult.documents[selectedId];
+  const selectedDoc = selectedId ? localResult.documents[selectedId] : undefined;
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 font-sans">
@@ -63,7 +63,7 @@ export const VerificationResultPage = () => {
           
           {/* 중앙: 실시간 교차 검증 에디터 */}
           <OcrFieldEditor 
-            fields={localResult.documentFields[selectedId] || []} 
+            fields={selectedId ? (localResult.documentFields[selectedId] || []) : []} 
             status={selectedDoc?.status || 'APPROVED'}
             isRisk={selectedDoc?.isRisk}
             onFieldChange={handleFieldChange}
@@ -72,7 +72,7 @@ export const VerificationResultPage = () => {
           
           {/* 우측: 원본 서류 이미지 뷰어 */}
           <DocumentImageViewer 
-            fields={localResult.documentFields[selectedId] || []}
+            fields={selectedId ? (localResult.documentFields[selectedId] || []) : []}
             focusedFieldKey={focusedFieldKey}
             originalWidth={selectedDoc?.resolution?.width}
           />
