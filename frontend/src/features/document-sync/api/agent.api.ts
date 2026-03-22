@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { env } from '@/shared/config/env';
+import { AgentFile } from '@/entities/loan-document/api/agent.dto';
 
 /**
  * @feature DocumentSync
@@ -13,12 +14,7 @@ const agentClient = axios.create({
 
 
 /** 에이전트 파일 응답 규격 */
-export interface AgentFile {
-  sequenceId: number;
-  fileName: string;
-  status: 'PENDING' | 'UPLOADING' | 'COMPLETED' | 'FAILED';
-  detectedAt: string;
-}
+// (Moved to entities/loan-document/api/agent.dto.ts)
 
 /**
  * 에이전트로부터 감지된 파일 목록을 조회합니다.
