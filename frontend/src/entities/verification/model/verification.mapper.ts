@@ -49,7 +49,7 @@ export const mapServerResponseToVerificationResult = (
 
   /** 재귀적 평면화 함수 */
   const flattenContent = (content: unknown, prefix = '', labelPrefix = ''): ExtractedField[] => {
-    let fields: ExtractedField[] = [];
+    const fields: ExtractedField[] = [];
     if (!content || typeof content !== 'object') return fields;
 
     const obj = content as Record<string, any>; // (Why: 동적 키 순회를 위해 타입 단언 사용)
@@ -60,7 +60,7 @@ export const mapServerResponseToVerificationResult = (
 
       if (item && typeof item === 'object' && 'value' in item) {
         fields.push({
-          id: `field-${fieldKey}-${Math.random().toString(36).substr(2, 9)}`,
+          id: fieldKey, // (Why: flattened.map에서 doc.fileId와 조합하여 최종 고유 ID 생성)
           key: fieldKey,
           label: displayLabel,
           value: item.value,
@@ -73,10 +73,10 @@ export const mapServerResponseToVerificationResult = (
         });
       } else if (Array.isArray(item)) {
         item.forEach((subItem, index) => {
-          fields = [...fields, ...flattenContent(subItem, `${fieldKey}[${index}]`, `${displayLabel}[${index + 1}]`)];
+          fields.push(...flattenContent(subItem, `${fieldKey}[${index}]`, `${displayLabel}[${index + 1}]`));
         });
       } else if (item && typeof item === 'object') {
-        fields = [...fields, ...flattenContent(item, fieldKey, displayLabel)];
+        fields.push(...flattenContent(item, fieldKey, displayLabel));
       }
     }
     return fields;
@@ -107,6 +107,7 @@ export const mapServerResponseToVerificationResult = (
 
       return {
         ...field,
+        id: `field-${doc.fileId}-${field.id}`,
         isViolationTarget: !!isViolation,
         isRiskTarget: !!isRisk,
         isMatch: !isViolation // 초기 상태: 위반 타겟이면 무조건 false(빨간색), 아니면 true

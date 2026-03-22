@@ -50,7 +50,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
         extraction: {
           content: {
             issueDate: { value: "2026-03-13", confidence: 0.99, evidence: { pageNum: 1, bbox: [415, 118, 558, 149], rawText: "2026.03.13" } },
-            currentAddress: { value: "서울특별시 구로구 디지털로 123, 101동 1001호", confidence: 0.95, evidence: { pageNum: 1, bbox: [145, 260, 640, 300], rawText: "서울특별시 구로구 디지털로 123, 101동 1001호" } }
+            address: { value: "서울특별시 구로구 디지털로 123, 101동 1001호", confidence: 0.95, evidence: { pageNum: 1, bbox: [145, 260, 640, 300], rawText: "서울특별시 구로구 디지털로 123, 101동 1001호" } }
           }
         }
       },
@@ -210,7 +210,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
             buyer: {
               name: { value: "홍길순", confidence: 0.96, evidence: { pageNum: 1, bbox: [430, 430, 510, 460], rawText: "홍길순" } } // 🔴 [정합성 오류]
             },
-            propertyAddress: { value: "서울특별시 구로구 디지털로 123, 101동 1001호", confidence: 0.94, evidence: { pageNum: 1, bbox: [140, 250, 620, 290], rawText: "서울특별시 구로구 디지털로 123, 101동 1001호" } }
+            address: { value: "울특별시 구로구 디지털로 123, 101동 1001호", confidence: 0.94, evidence: { pageNum: 1, bbox: [140, 250, 620, 290], rawText: "서울특별시 구로구 디지털로 123, 101동 1001호" } }
           }
         }
       },
@@ -227,7 +227,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
         extraction: {
           content: {
             printedAt: { value: "2025-12-01T09:42:18+09:00", confidence: 0.97, evidence: { pageNum: 1, bbox: [390, 108, 620, 142], rawText: "2025.12.01 09:42:18" } }, // 🟡 [위험 요소]
-            inspectionAddress: { value: "서울특별시 구로구 디지털로 123, 101동 1001호", confidence: 0.95, evidence: { pageNum: 1, bbox: [150, 220, 640, 255], rawText: "서울특별시 구로구 디지털로 123, 101동 1001호" } }
+            address: { value: "서울특별시 구로구 디지털로 123, 101동 1001호", confidence: 0.95, evidence: { pageNum: 1, bbox: [150, 220, 640, 255], rawText: "서울특별시 구로구 디지털로 123, 101동 1001호" } }
           }
         }
       }
@@ -237,11 +237,13 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
         { documentType: "WITHHOLDING_TAX_CERTIFICATE", documentTypeLabel: "근로소득 원천징수영수증" }
       ],
       violations: [
-        { documentType: "SALE_CONTRACT", documentTypeLabel: "매매계약서", fields: ["buyer_name"] } // 평면화된 키 적용
+        { documentType: "SALE_CONTRACT", documentTypeLabel: "매매계약서", fields: ["buyer_name"] }, 
+        { documentType: "MOVE_IN_HOUSEHOLD_REPORT", documentTypeLabel: "전입세대열람내역서", fields: ["address"] },
+        { documentType: "SALE_CONTRACT", documentTypeLabel: "매매계약서", fields: ["address"] },
+        { documentType: "RESIDENT_REGISTRATION_ABSTRACT", documentTypeLabel: "주민등록초본", fields: ["address"] }
       ],
       risks: [
-        { documentType: "MOVE_IN_HOUSEHOLD_REPORT", documentTypeLabel: "전입세대열람내역서", fields: ["printedAt"] },
-        { documentType: "SALE_CONTRACT", documentTypeLabel: "매매계약서", fields: ["propertyAddress"] }
+        { documentType: "BUILDING_REGISTER", documentTypeLabel: "집합건축물대장", fields: ["mainUsage"] }
       ]
     }
   }

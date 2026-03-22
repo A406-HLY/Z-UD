@@ -1,4 +1,5 @@
 import { ExtractedField, DocumentStatus } from '@/entities/verification/model/types';
+import { Customer } from '@/entities/customer/model/types';
 
 /**
  * @feature verification
@@ -14,26 +15,35 @@ export const getNormalizedKey = (key: string): string => {
 };
 
 /**
+ * [Why: 필드가 원장(고객 정보) 대조용인지 서류 간 상호 대조용인지 판별합니다.]
+ */
+export const isCustomerInfoField = (key: string): boolean => {
+  const baseKey = getNormalizedKey(key);
+  const nameGroup = ['name', 'buyer', 'ownerName', 'headOfHouseholdName', 'incomeRecipientName', 'representativeName'];
+  
+  return nameGroup.includes(baseKey) || key.includes('name') || 
+         baseKey === 'residentRegistrationNumber' || baseKey === 'identifierNumber' || 
+         baseKey === 'phoneNumber';
+};
+
+/**
  * [Why: 입력된 값이 원장(Redux) 데이터 혹은 타 서류 데이터와 일치하는지(정합성) 판정합니다.]
  */
 export const checkIsResolved = (
   key: string,
   value: string,
-  customerInfo: any,
+  customerInfo: Customer,
   errorTargetDict: Record<string, Set<string>>,
   documentFields: Record<string, ExtractedField[]>,
   selectedId: string
 ): boolean => {
   const baseKey = getNormalizedKey(key);
 
-  // 1. 고객 정보(원장) 대조 그룹 정의
-  const nameGroup = ['name', 'buyer', 'ownerName', 'headOfHouseholdName', 'incomeRecipientName', 'representativeName'];
-  const isNameField = nameGroup.includes(baseKey) || key.includes('name'); 
-  const isIdField = baseKey === 'residentRegistrationNumber' || baseKey === 'identifierNumber';
-  const isPhoneField = baseKey === 'phoneNumber';
-
   // 분기 A: 고객 정보와 대조
-  if (isNameField || isIdField || isPhoneField) {
+  if (isCustomerInfoField(key)) {
+    const isIdField = baseKey === 'residentRegistrationNumber' || baseKey === 'identifierNumber';
+    const isNameField = !isIdField && baseKey !== 'phoneNumber';
+
     const customerValue = 
       isNameField ? customerInfo.name : 
       isIdField ? customerInfo.personalId : 
