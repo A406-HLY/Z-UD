@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchAgentFiles, AgentFile } from './agent.api';
+import { fetchAgentFiles } from './agent.api';
+import { AgentFile } from '@/entities/loan-document/api/agent.dto';
 
 /**
  * @feature DocumentSync
