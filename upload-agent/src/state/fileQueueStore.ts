@@ -89,6 +89,8 @@ export class FileQueueStore {
       const fileName = file.fileName;
       this.files = this.files.filter(f => f.sequenceId !== sequenceId);
       logger.info(`File removed from queue: [Seq: ${sequenceId}] ${fileName}`);
+    } else {
+      logger.warn(`Tried to remove non-existent file from queue: [Seq: ${sequenceId}]`);
     }
   }
 }
