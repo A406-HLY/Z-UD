@@ -19,6 +19,16 @@ spring:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092} #ec2 설정으로 변경 필요
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+        spring.json.add.type.headers: false
   jpa:
     open-in-view: false
     defer-datasource-initialization: true
@@ -99,3 +109,8 @@ management:
       enabled: true
     prometheus:
       enabled: true
+
+app:
+  kafka:
+    topic:
+      report-request: report-request
