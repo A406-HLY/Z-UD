@@ -8,10 +8,17 @@
  * 주민등록번호 포맷팅 (9912091234567 -> 991209-1234567)
  * (Why) 사용자가 하이픈 없이 숫자만 입력해도 자동으로 규격에 맞춰 표시하여 입력 편의성을 높입니다.
  * @param value 숫자 문자열
+ * @param prevValue 이전 입력 상태 값 (삭제 감지용)
  */
-export const formatPersonalId = (value: string): string => {
+export const formatPersonalId = (value: string, prevValue?: string): string => {
   const digits = value.replace(/[^\d]/g, '');
-  if (digits.length <= 6) return digits;
+  
+  // (UX) 삭제 중일 때 하이픈 위치(6자리)에 걸리면 하이픈을 강제로 제거 (991209-1 -> 991209)
+  if (prevValue && value.length < prevValue.length) {
+    if (digits.length === 6) return digits;
+  }
+
+  if (digits.length < 6) return digits;
   return `${digits.slice(0, 6)}-${digits.slice(6, 13)}`;
 };
 
@@ -19,9 +26,16 @@ export const formatPersonalId = (value: string): string => {
  * 전화번호 포맷팅 (01012345678 -> 010-1234-5678)
  * (Why) 전화번호 입력 시 표준 규격(010-0000-0000)을 강제하여 데이터 정합성을 확보합니다.
  * @param value 숫자 문자열
+ * @param prevValue 이전 입력 상태 값 (삭제 감지용)
  */
-export const formatPhoneNumber = (value: string): string => {
+export const formatPhoneNumber = (value: string, prevValue?: string): string => {
   const digits = value.replace(/[^\d]/g, '');
+  
+  // (UX) 삭제 중일 때 하이픈 위치(3, 7자리)에 걸리면 하이픈 강제 제거 (010-1 -> 010)
+  if (prevValue && value.length < prevValue.length) {
+    if (digits.length === 3 || digits.length === 7) return digits;
+  }
+
   if (digits.length <= 3) return digits;
   if (digits.length <= 7) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
   return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7, 11)}`;

@@ -11,7 +11,7 @@ import {
   setIsPollingActive, 
   updateCustomerData 
 } from '@/entities/customer/model/slice';
-import { validateCustomer } from '@/entities/customer/model/validation';
+import { validateCustomer, isFieldComplete } from '@/entities/customer/model/validation';
 import { calculateCustomerProgress } from '@/entities/customer/model/utils';
 import { generateUUID } from '@/shared/lib/utils/id-utils';
 import { Customer } from '@/entities/customer/model/types';
@@ -20,7 +20,7 @@ import { Customer } from '@/entities/customer/model/types';
  * (P3) switch 문을 대체하기 위한 필드별 포맷터 매핑 객체입니다. 
  * (Why) 새로운 도메인 필드가 추가되어도 switch 문 확장 없이 매핑 추가만으로 대응이 가능합니다.
  */
-const FIELD_FORMATTERS: Partial<Record<string, (val: string) => string>> = {
+const FIELD_FORMATTERS: Partial<Record<string, (val: string, prev?: string) => string>> = {
   name: formatName,
   personalId: formatPersonalId,
   phoneNumber: formatPhoneNumber,
@@ -42,6 +42,27 @@ export const useCustomerForm = () => {
   const isPollingActive = useAppSelector((state) => state.customer.isPollingActive);
   
   const [errors, setErrors] = useState<Partial<Record<keyof Customer, boolean>>>({});
+  const [touched, setTouched] = useState<Partial<Record<keyof Customer, boolean>>>({});
+
+  const combinedErrors: Partial<Record<keyof Customer, boolean>> = {
+    ...errors, // handleSave 시점에 결정된 명시적 에러들
+  };
+
+  // (P2) 실시간 성공 및 에러 상태 도출
+  const successFields: Partial<Record<keyof Customer, boolean>> = {};
+
+  (Object.keys(form) as Array<keyof Customer>).forEach((field) => {
+    // 1. 에러 판단: 한 번이라도 방문(touched)했던 필드에 대해 실시간 검증 수행
+    // (P2) 값이 불완전한 상태라면 바로 에러 표시 (사용자 피드백 반영)
+    if (touched[field] && !isFieldComplete(field, form[field])) {
+      combinedErrors[field] = true;
+    }
+
+    // 2. 성공 판단: 비즈니스 규칙에 맞게 완성되었는지 체크
+    if (isFieldComplete(field, form[field])) {
+      successFields[field] = true;
+    }
+  });
 
   const { percentage: progressPercentage, firstEmptyField } = calculateCustomerProgress(form);
 
@@ -49,16 +70,22 @@ export const useCustomerForm = () => {
   const handleChange = (field: keyof Customer, value: string, formatType?: string) => {
     let finalValue = value;
     
-    // (P3) 매핑 객체를 활용한 포맷터 호출
+    // (P3) 매핑 객체를 활용한 포맷터 호출 (삭제 감지를 위해 이전 값인 form[field] 전달)
     if (formatType && FIELD_FORMATTERS[formatType]) {
-      finalValue = FIELD_FORMATTERS[formatType]!(value);
+      finalValue = FIELD_FORMATTERS[formatType]!(value, form[field] || '');
     }
 
+    // (P2) 값이 입력되면 해당 필드의 에러 상태 즉시 해제
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: false }));
     }
 
     dispatch(updateCustomerData({ [field]: finalValue }));
+  };
+
+  /** 포커스 아웃(Blur) 핸들러 */
+  const handleBlur = (field: keyof Customer) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
   };
 
   /** 저장/제출 핸들러 */
@@ -80,11 +107,14 @@ export const useCustomerForm = () => {
 
   return {
     form,
-    errors,
+    errors: combinedErrors,
+    successFields,
+    touched,
     isPollingActive,
     progressPercentage,
     firstEmptyField,
     handleChange,
+    handleBlur,
     handleSave,
   };
 };
