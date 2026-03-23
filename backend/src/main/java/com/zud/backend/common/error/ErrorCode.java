@@ -74,6 +74,11 @@ public enum ErrorCode {
 	CONSULTATION_NOT_FOUND(HttpStatus.NOT_FOUND, "CO-001", "상담 정보를 찾을 수 없습니다."),
 
 	/**
+	 * Customer Error (CU-xxx)
+	 */
+	CUSTOMER_NOT_FOUND(HttpStatus.NOT_FOUND, "CU-001", "고객을 찾을 수 없습니다."),
+
+	/**
 	 * Encryption Error (EN-xxx)
 	 */
 	ENCRYPTION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "EN-001", "주민등록번호 암호화 처리에 실패했습니다."),
