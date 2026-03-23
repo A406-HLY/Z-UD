@@ -7,8 +7,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AxiosError } from 'axios';
-import { Button } from '../../../shared/ui/button';
-import { Input } from '../../../shared/ui/input';
+import { Button } from '../../../shared/ui/Button';
+import { Input } from '../../../shared/ui/Input';
 import { useLoginMutation } from '../api/use-login-mutation';
 import { ApiResponse } from '../../../entities/user';
 
@@ -53,7 +53,6 @@ export const LoginForm: React.FC = () => {
     <form onSubmit={handleSubmit} className="flex flex-col gap-6 w-full max-w-sm">
       <div className="flex flex-col gap-4">
         <Input
-          label="행원 사번"
           name="employeeNumber"
           placeholder="사번을 입력하세요 (예: EMP20230001)"
           value={formData.employeeNumber}
@@ -61,7 +60,6 @@ export const LoginForm: React.FC = () => {
           required
         />
         <Input
-          label="비밀번호"
           name="password"
           type="password"
           placeholder="비밀번호를 입력하세요"
