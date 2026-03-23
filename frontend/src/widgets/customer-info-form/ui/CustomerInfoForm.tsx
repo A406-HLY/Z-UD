@@ -64,7 +64,8 @@ export const CustomerInfoForm = () => {
                   ? 'polygon(0 0, 100% 0, 100% 100%, 0 100%, 8px 50%)'
                   : 'polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%, 8px 50%)',
                 marginLeft: idx > 0 ? '-7px' : '0',
-                zIndex: STEPS_CONFIG.length - idx
+                zIndex: STEPS_CONFIG.length - idx,
+                filter: 'drop-shadow(0px 0px 1px rgba(0,0,0,0.08))'
               }}
             >
               <div className="relative z-10 pl-2 flex items-center gap-1.5">
