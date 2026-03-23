@@ -10,4 +10,8 @@ public interface DocumentContentValidator<T extends DocumentContent> {
 	DocumentTag getSupportedTag();
 
 	List<String> validate(T content);
+
+	default List<String> validate(final T content, final ValidationContext context) {
+		return validate(content);
+	}
 }

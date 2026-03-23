@@ -11,7 +11,7 @@ import com.zud.backend.domain.document.enums.DocumentTag;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
-@Schema(description = "지방세세목별과세증명 (FILE_013)")
+@Schema(description = "지방세 세목별 과세증명 (FILE_013)")
 @Builder
 public record LocalTaxItemCertificateContent(
 	@Schema(description = "발급번호")
@@ -47,7 +47,7 @@ public record LocalTaxItemCertificateContent(
 	public Map<CrossField, String> getCrossCheckFields() {
 		Map<CrossField, String> fields = new EnumMap<>(CrossField.class);
 		if (name != null && name.value() != null) {
-			fields.put(CrossField.CUSTOMER_NAME, name.value());
+			fields.put(CrossField.LOAN_APPLICANT_NAME, name.value());
 		}
 		if (identifierNumber != null && identifierNumber.value() != null) {
 			fields.put(CrossField.RESIDENT_REGISTRATION_NUMBER, identifierNumber.value());

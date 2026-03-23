@@ -9,7 +9,6 @@ import com.zud.backend.domain.document.dto.request.content.HealthInsuranceEligib
 import com.zud.backend.domain.document.dto.request.content.IncomeAmountCertificateContent;
 import com.zud.backend.domain.document.dto.request.content.LocalTaxCertificateContent;
 import com.zud.backend.domain.document.dto.request.content.LocalTaxItemCertificateContent;
-import com.zud.backend.domain.document.dto.request.content.MoveInHouseholdReportContent;
 import com.zud.backend.domain.document.dto.request.content.NationalTaxCertificateContent;
 import com.zud.backend.domain.document.dto.request.content.ResidentRegistrationAbstractContent;
 import com.zud.backend.domain.document.dto.request.content.ResidentRegistrationContent;
@@ -90,11 +89,7 @@ public enum DocumentTag {
 
 	@Schema(description = "매매계약서")
 	FILE_016_SALE_OR_LEASE_CONTRACT("SALE_OR_LEASE_CONTRACT", "매매계약서",
-		SaleOrLeaseContractContent.class),
-
-	@Schema(description = "전입세대열람내역서")
-	FILE_017_MOVE_IN_HOUSEHOLD_REPORT("MOVE_IN_HOUSEHOLD_REPORT", "전입세대열람내역서",
-		MoveInHouseholdReportContent.class);
+		SaleOrLeaseContractContent.class);
 
 	private final String documentType;
 	private final String label;

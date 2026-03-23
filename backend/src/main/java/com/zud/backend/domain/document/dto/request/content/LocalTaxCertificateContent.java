@@ -10,7 +10,7 @@ import com.zud.backend.domain.document.enums.DocumentTag;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
-@Schema(description = "지방세납세증명 (FILE_012)")
+@Schema(description = "지방세 납세증명서 (FILE_012)")
 @Builder
 public record LocalTaxCertificateContent(
 	@Schema(description = "발급번호")
@@ -32,7 +32,7 @@ public record LocalTaxCertificateContent(
 	public Map<CrossField, String> getCrossCheckFields() {
 		Map<CrossField, String> fields = new EnumMap<>(CrossField.class);
 		if (name != null && name.value() != null) {
-			fields.put(CrossField.CUSTOMER_NAME, name.value());
+			fields.put(CrossField.LOAN_APPLICANT_NAME, name.value());
 		}
 		if (identifierNumber != null && identifierNumber.value() != null) {
 			fields.put(CrossField.RESIDENT_REGISTRATION_NUMBER, identifierNumber.value());

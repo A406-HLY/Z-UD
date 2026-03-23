@@ -21,11 +21,9 @@ public class BuildingRegisterContentValidator implements DocumentContentValidato
 	@Override
 	public List<String> validate(final BuildingRegisterContent content) {
 		List<String> invalidFields = new ArrayList<>();
-
 		if (isViolationBuilding(content.isViolationBuilding())) {
 			invalidFields.add("isViolationBuilding");
 		}
-
 		return invalidFields;
 	}
 

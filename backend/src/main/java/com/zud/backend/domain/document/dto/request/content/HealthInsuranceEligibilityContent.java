@@ -21,9 +21,9 @@ public record HealthInsuranceEligibilityContent(
 	DataField<String> residentRegistrationNumber,
 	@Schema(description = "가입자구분")
 	DataField<String> subscriberType,
-	@Schema(description = "자격취득일")
+	@Schema(description = "최종 취득일자")
 	DataField<String> latestAcquisitionDate,
-	@Schema(description = "자격상실일")
+	@Schema(description = "최종 상실일자")
 	DataField<String> latestLossDate
 ) implements DocumentContent {
 
@@ -36,7 +36,7 @@ public record HealthInsuranceEligibilityContent(
 	public Map<CrossField, String> getCrossCheckFields() {
 		Map<CrossField, String> fields = new EnumMap<>(CrossField.class);
 		if (name != null && name.value() != null) {
-			fields.put(CrossField.CUSTOMER_NAME, name().value());
+			fields.put(CrossField.LOAN_APPLICANT_NAME, name().value());
 		}
 		if (residentRegistrationNumber != null && residentRegistrationNumber.value() != null) {
 			fields.put(CrossField.RESIDENT_REGISTRATION_NUMBER, residentRegistrationNumber.value());

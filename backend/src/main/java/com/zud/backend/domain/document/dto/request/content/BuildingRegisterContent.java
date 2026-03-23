@@ -11,7 +11,7 @@ import lombok.Builder;
 @Schema(description = "집합건축물대장 (FILE_015)")
 @Builder
 public record BuildingRegisterContent(
-	@Schema(description = "위반건축물 여부")
+	@Schema(description = "위반 건축물 여부")
 	DataField<Boolean> isViolationBuilding,
 	@Schema(description = "주용도")
 	DataField<String> mainUsage,
