@@ -22,8 +22,8 @@ public class TitleDeedContentValidator implements DocumentContentValidator<Title
 	public List<String> validate(final TitleDeedContent content) {
 		List<String> invalidFields = new ArrayList<>();
 
-		if (isTrueField(content.hasProvisionalRegistrationForOwnershipTransferClaim())) {
-			invalidFields.add("hasProvisionalRegistrationForOwnershipTransferClaim");
+		if (isTrueField(content.hasOwnershipTransferClaim())) {
+			invalidFields.add("hasOwnershipTransferClaim");
 		}
 
 		if (isTrueField(content.hasTrustRegistration())) {
