@@ -3,7 +3,12 @@ package com.zud.backend.domain.audit.service.facade;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
 
+import java.util.function.Supplier;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -14,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.zud.backend.domain.audit.dto.request.AuditHouseReqDto;
 import com.zud.backend.domain.audit.dto.response.AuditHouseResDto;
+import com.zud.backend.domain.audit.service.notification.HouseAuditNotificationService;
 import com.zud.backend.domain.branch.dto.response.NearestBranchResDto;
 import com.zud.backend.domain.branch.service.facade.BranchFacadeService;
 import com.zud.backend.domain.houseprice.dto.response.HousePriceResDto;
@@ -34,8 +40,36 @@ class AuditHouseFacadeServiceImplTest {
 	@Mock
 	private HousePriceFacadeService housePriceFacadeService;
 
+	@Mock
+	private HouseAuditNotificationService houseAuditNotificationService;
+
 	@InjectMocks
 	private AuditHouseFacadeServiceImpl auditFacadeService;
+
+	@BeforeEach
+	@SuppressWarnings({"rawtypes", "unchecked"})
+	void setUp() {
+		doAnswer(invocation -> {
+			Runnable action = invocation.getArgument(1);
+			action.run();
+			return null;
+		}).when(houseAuditNotificationService).runIllegalBuildingCheckStep(any(), any(Runnable.class));
+
+		doAnswer(invocation -> {
+			Supplier<?> action = invocation.getArgument(1);
+			return action.get();
+		}).when(houseAuditNotificationService).runNearestBranchCheckStep(any(), any(Supplier.class));
+
+		doAnswer(invocation -> {
+			Long stepUserId = invocation.getArgument(0);
+			Supplier<?> action = invocation.getArgument(1);
+			HouseAuditNotificationService.PriceStepCompletionHandler<?> completionHandler = invocation.getArgument(2);
+			Object result = action.get();
+			((HouseAuditNotificationService.PriceStepCompletionHandler<Object>)completionHandler)
+				.onCompleted(stepUserId, result);
+			return result;
+		}).when(houseAuditNotificationService).runPriceCheckStep(any(), any(Supplier.class), any());
+	}
 
 	@Nested
 	@DisplayName("auditHouse()")
