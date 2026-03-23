@@ -18,6 +18,7 @@ import com.zud.backend.domain.audit.dto.request.MyDataReqDto;
 import com.zud.backend.domain.audit.dto.response.MyDataResDto;
 import com.zud.backend.domain.audit.exception.AuditException;
 import com.zud.backend.domain.audit.service.LoanAnnualRepaymentCalculator;
+import com.zud.backend.domain.audit.service.notification.MyDataAuditNotificationService;
 import com.zud.backend.domain.customer.service.query.CustomerQueryService;
 
 import lombok.AccessLevel;
@@ -31,14 +32,36 @@ public class AuditMyDataFacadeServiceImpl implements AuditMyDataFacadeService {
 	private final SsafyMyDataClient ssafyMyDataClient;
 	private final LoanAnnualRepaymentCalculator loanAnnualRepaymentCalculator;
 	private final CustomerQueryService customerQueryService;
+	private final MyDataAuditNotificationService myDataAuditNotificationService;
 
 	@Override
-	public MyDataResDto getMyData(final MyDataReqDto reqDto) {
-		String customerEmail = customerQueryService.findCustomerEmailByCustomerName(reqDto.customerName());
-		ExternalMemberSearchResDto member = findMemberOrThrow(customerEmail);
-		String ratingName = fetchRatingName(member.userKey());
-		List<MyDataResDto.LoanProductResDto> loanProducts = fetchLoanProducts(member.userKey());
-		return MyDataConverter.toMyDataResDto(member.userId(), ratingName, loanProducts);
+	public MyDataResDto getMyData(final Long userId, final MyDataReqDto reqDto) {
+		myDataAuditNotificationService.notifyMyDataAuditStarted(userId, reqDto);
+		try {
+			String customerEmail = customerQueryService.findCustomerEmailByCustomerName(reqDto.customerName());
+			ExternalMemberSearchResDto member = myDataAuditNotificationService.runMemberLookupStep(
+				userId,
+				() -> findMemberOrThrow(customerEmail)
+			);
+			String ratingName = myDataAuditNotificationService.runCreditRatingLookupStep(
+				userId,
+				() -> fetchRatingName(member.userKey())
+			);
+			List<MyDataResDto.LoanProductResDto> loanProducts =
+				myDataAuditNotificationService.runLoanProductsLookupStep(
+					userId,
+					() -> fetchLoanProducts(member.userKey())
+				);
+			MyDataResDto result = MyDataConverter.toMyDataResDto(member.userId(), ratingName, loanProducts);
+			myDataAuditNotificationService.notifyMyDataAuditCompleted(userId, result);
+			return result;
+		} catch (AuditException e) {
+			myDataAuditNotificationService.notifyMyDataAuditFailed(userId, e.getErrorCode());
+			throw e;
+		} catch (Exception e) {
+			myDataAuditNotificationService.notifyMyDataAuditFailed(userId, e);
+			throw e;
+		}
 	}
 
 	private ExternalMemberSearchResDto findMemberOrThrow(final String email) {
