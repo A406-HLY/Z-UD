@@ -36,7 +36,7 @@ class TitleDeedContentValidatorTest {
 		void 소유권이전청구_가등기_있으면_위반사항_반환() {
 			// given
 			TitleDeedContent content = TitleDeedContent.builder()
-				.hasProvisionalRegistrationForOwnershipTransferClaim(boolField(true))
+				.hasOwnershipTransferClaim(boolField(true))
 				.hasTrustRegistration(boolField(false))
 				.build();
 
@@ -44,7 +44,7 @@ class TitleDeedContentValidatorTest {
 			List<String> result = validator.validate(content);
 
 			// then
-			assertThat(result).containsExactly("hasProvisionalRegistrationForOwnershipTransferClaim");
+			assertThat(result).containsExactly("hasOwnershipTransferClaim");
 		}
 
 		@Test
@@ -52,7 +52,7 @@ class TitleDeedContentValidatorTest {
 		void 신탁등기_있으면_위반사항_반환() {
 			// given
 			TitleDeedContent content = TitleDeedContent.builder()
-				.hasProvisionalRegistrationForOwnershipTransferClaim(boolField(false))
+				.hasOwnershipTransferClaim(boolField(false))
 				.hasTrustRegistration(boolField(true))
 				.build();
 
@@ -68,7 +68,7 @@ class TitleDeedContentValidatorTest {
 		void 둘다_있으면_violation_위반사항_2개_반환() {
 			// given
 			TitleDeedContent content = TitleDeedContent.builder()
-				.hasProvisionalRegistrationForOwnershipTransferClaim(boolField(true))
+				.hasOwnershipTransferClaim(boolField(true))
 				.hasTrustRegistration(boolField(true))
 				.build();
 
@@ -77,7 +77,7 @@ class TitleDeedContentValidatorTest {
 
 			// then
 			assertThat(result).containsExactly(
-				"hasProvisionalRegistrationForOwnershipTransferClaim",
+				"hasOwnershipTransferClaim",
 				"hasTrustRegistration"
 			);
 		}
@@ -87,7 +87,7 @@ class TitleDeedContentValidatorTest {
 		void 문제없으면_빈_리스트_반환() {
 			// given
 			TitleDeedContent content = TitleDeedContent.builder()
-				.hasProvisionalRegistrationForOwnershipTransferClaim(boolField(false))
+				.hasOwnershipTransferClaim(boolField(false))
 				.hasTrustRegistration(boolField(false))
 				.build();
 
