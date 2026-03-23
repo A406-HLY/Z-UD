@@ -49,7 +49,7 @@ public class DocumentValidator {
 		List<DocumentMissing> documentMissings = validateRequiredDocuments(documents, consultation);
 
 		List<DocumentViolation> violations = Stream.of(
-			validateEach(documents),
+			validateEach(documents, consultation),
 			validateCrossDocuments(documents, consultation)
 		).flatMap(List::stream).toList();
 
@@ -82,14 +82,17 @@ public class DocumentValidator {
 			.toList();
 	}
 
-	private List<DocumentViolation> validateEach(final List<DocumentDto> documents) {
+	private List<DocumentViolation> validateEach(
+		final List<DocumentDto> documents,
+		final Consultation consultation
+	) {
 		return documents.stream()
-			.map(this::validateDocument)
+			.map(doc -> validateDocument(doc, consultation))
 			.filter(Objects::nonNull)
 			.toList();
 	}
 
-	private DocumentViolation validateDocument(final DocumentDto doc) {
+	private DocumentViolation validateDocument(final DocumentDto doc, final Consultation consultation) {
 		DocumentContent content = doc.extraction().content();
 		DocumentTag tag = content.getDocumentTag();
 
@@ -99,7 +102,11 @@ public class DocumentValidator {
 			return null;
 		}
 
-		List<String> fields = invokeValidator(validator, content);
+		ValidationContext context = new ValidationContext(
+			consultation.getName(),
+			consultation.getResidentRegistrationNumber()
+		);
+		List<String> fields = invokeValidator(validator, content, context);
 
 		if (CollectionUtils.isEmpty(fields)) {
 			return null;
@@ -179,8 +186,9 @@ public class DocumentValidator {
 	@SuppressWarnings("unchecked")
 	private <T extends DocumentContent> List<String> invokeValidator(
 		final DocumentContentValidator<T> validator,
-		final DocumentContent content
+		final DocumentContent content,
+		final ValidationContext context
 	) {
-		return validator.validate((T)content);
+		return validator.validate((T)content, context);
 	}
 }
