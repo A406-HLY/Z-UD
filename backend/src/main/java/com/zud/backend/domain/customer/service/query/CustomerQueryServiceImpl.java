@@ -21,7 +21,7 @@ public class CustomerQueryServiceImpl implements CustomerQueryService {
 	@Override
 	public String findCustomerEmailByCustomerName(final String customerName) {
 		Customer customer = customerRepository.findTopByCustomerNameOrderByIdDesc(customerName)
-			.orElseThrow(() -> new AuditException(ErrorCode.USER_NOT_FOUND));
+			.orElseThrow(() -> new AuditException(ErrorCode.CUSTOMER_NOT_FOUND));
 		return customer.getCustomerEmail();
 	}
 }
