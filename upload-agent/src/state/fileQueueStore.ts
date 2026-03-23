@@ -1,3 +1,4 @@
+import fs from 'fs';
 import { logger } from '../utils/logger';
 
 export type FileStatus = 'PENDING' | 'UPLOADING' | 'COMPLETED' | 'FAILED';
@@ -45,6 +46,12 @@ export class FileQueueStore {
   }
 
   public static getFiles(): FileResponseDto[] {
+    // (Why) 물리적 파일이 삭제되었는데 메모리에만 남아있는 '유령 서류'를 방지하기 위해 실시간 싱크를 수행합니다.
+    this.files = this.files.filter(f => {
+      if (f.status === 'COMPLETED') return false; // 이미 보낸 파일은 즉시 제거 (사용자 요청 반영)
+      return fs.existsSync(f.storedPath);
+    });
+
     return this.files
       .map(f => ({
         sequenceId: f.sequenceId,
@@ -73,6 +80,15 @@ export class FileQueueStore {
       if (status === 'COMPLETED') file.uploadedAt = new Date();
       if (error) file.error = error;
       logger.info(`File status updated: [Seq: ${sequenceId}] -> ${status}`);
+    }
+  }
+
+  public static removeFile(sequenceId: number): void {
+    const file = this.files.find(f => f.sequenceId === sequenceId);
+    if (file) {
+      const fileName = file.fileName;
+      this.files = this.files.filter(f => f.sequenceId !== sequenceId);
+      logger.info(`File removed from queue: [Seq: ${sequenceId}] ${fileName}`);
     }
   }
 }

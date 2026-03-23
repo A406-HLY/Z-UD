@@ -1,4 +1,4 @@
-import { AgentFile } from '@/features/document-sync/api/agent.api';
+import { AgentFile } from '../api/agent.dto';
 import { Document } from './types';
 
 /**
