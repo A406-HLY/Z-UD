@@ -58,7 +58,8 @@ public class SsafyMyDataClient {
 	public ExternalInquireLoanAccountListResDto inquireLoanAccountList(final String userKey) {
 		return restClient.post()
 			.uri(ssafyApiProperties.inquireLoanAccountListPath())
-			.body(new ExternalInquireLoanAccountListReqDto(createHeader(ssafyApiProperties.inquireLoanAccountListPath(), userKey)))
+			.body(new ExternalInquireLoanAccountListReqDto(
+				createHeader(ssafyApiProperties.inquireLoanAccountListPath(), userKey)))
 			.retrieve()
 			.body(ExternalInquireLoanAccountListResDto.class);
 	}
