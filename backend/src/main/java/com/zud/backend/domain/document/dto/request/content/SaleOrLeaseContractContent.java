@@ -41,11 +41,11 @@ public record SaleOrLeaseContractContent(
 	@Override
 	public Map<CrossField, String> getCrossCheckFields() {
 		Map<CrossField, String> fields = new EnumMap<>(CrossField.class);
-		if (seller.name != null && seller.name.value() != null) {
+		if (seller != null && seller.name != null && seller.name.value() != null) {
 			fields.put(CrossField.TARGET_PROPERTY_OWNER_NAME, seller.name.value());
 		}
 
-		if (buyer.name != null && buyer.name.value() != null) {
+		if (buyer != null && buyer.name != null && buyer.name.value() != null) {
 			fields.put(CrossField.LOAN_APPLICANT_NAME, buyer.name.value());
 		}
 		return fields;
