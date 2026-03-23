@@ -17,6 +17,8 @@ import com.zud.backend.domain.audit.dto.external.response.ExternalMemberSearchRe
 import com.zud.backend.domain.audit.dto.request.MyDataReqDto;
 import com.zud.backend.domain.audit.dto.response.MyDataResDto;
 import com.zud.backend.domain.audit.exception.AuditException;
+import com.zud.backend.domain.audit.service.LoanAnnualRepaymentCalculator;
+import com.zud.backend.domain.customer.service.query.CustomerQueryService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -27,10 +29,13 @@ import lombok.RequiredArgsConstructor;
 public class AuditMyDataFacadeServiceImpl implements AuditMyDataFacadeService {
 
 	private final SsafyMyDataClient ssafyMyDataClient;
+	private final LoanAnnualRepaymentCalculator loanAnnualRepaymentCalculator;
+	private final CustomerQueryService customerQueryService;
 
 	@Override
 	public MyDataResDto getMyData(final MyDataReqDto reqDto) {
-		ExternalMemberSearchResDto member = findMemberOrThrow(reqDto.email());
+		String customerEmail = customerQueryService.findCustomerEmailByCustomerName(reqDto.customerName());
+		ExternalMemberSearchResDto member = findMemberOrThrow(customerEmail);
 		String ratingName = fetchRatingName(member.userKey());
 		List<MyDataResDto.LoanProductResDto> loanProducts = fetchLoanProducts(member.userKey());
 		return MyDataConverter.toMyDataResDto(member.userId(), ratingName, loanProducts);
@@ -64,7 +69,15 @@ public class AuditMyDataFacadeServiceImpl implements AuditMyDataFacadeService {
 				userKey,
 				account.accountNo()
 			);
-			loanProducts.add(LoanProductConverter.toLoanProductResDto(account, repaymentRecords));
+			long annualPrincipalAndInterestRepayment = loanAnnualRepaymentCalculator
+				.calculateAnnualPrincipalAndInterestRepayment(account, repaymentRecords);
+			loanProducts.add(
+				LoanProductConverter.toLoanProductResDto(
+					account,
+					repaymentRecords,
+					annualPrincipalAndInterestRepayment
+				)
+			);
 		}
 		return loanProducts;
 	}
