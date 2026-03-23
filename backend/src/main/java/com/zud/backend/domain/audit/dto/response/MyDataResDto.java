@@ -7,8 +7,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public record MyDataResDto(
 	String userId,
 	String ratingName,
-	String totalLoanBalance,
-	String totalRemainingLaonBalance,
+	long totalLoanBalance,
+	long totalRemainingLaonBalance,
+	long totalAnnualPrincipalAndInterestRepayment,
 
 	@JsonProperty("loanProducts")
 	List<LoanProductResDto> loanProducts
@@ -16,8 +17,9 @@ public record MyDataResDto(
 	public record LoanProductResDto(
 		String accountNo,
 		String accountName,
-		String loanBalance,
-		String remainingLoanBalance
+		long loanBalance,
+		long remainingLoanBalance,
+		long annualPrincipalAndInterestRepayment
 	) {
 	}
 }

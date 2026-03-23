@@ -4,8 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 
 public record MyDataReqDto(
-	@Schema(description = "고객 이메일 주소", example = "zud@ssafy.co.kr")
-	@NotBlank(message = "email 값은 필수입니다.")
-	String email
+	@Schema(description = "고객명", example = "홍길동")
+	@NotBlank(message = "customerName 값은 필수입니다.")
+	String customerName
 ) {
 }
