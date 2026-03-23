@@ -5,7 +5,6 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -18,10 +17,7 @@ import com.zud.backend.domain.consultation.entity.Consultation;
 import com.zud.backend.domain.document.converter.DocumentConverter;
 import com.zud.backend.domain.document.dto.request.DocumentDto;
 import com.zud.backend.domain.document.dto.request.content.DocumentContent;
-import com.zud.backend.domain.document.dto.request.content.MoveInHouseholdReportContent;
-import com.zud.backend.domain.document.dto.request.content.TitleDeedContent;
 import com.zud.backend.domain.document.dto.response.DocumentMissing;
-import com.zud.backend.domain.document.dto.response.DocumentRisk;
 import com.zud.backend.domain.document.dto.response.DocumentValidationResult;
 import com.zud.backend.domain.document.dto.response.DocumentViolation;
 import com.zud.backend.domain.document.enums.CrossField;
@@ -35,8 +31,6 @@ public class DocumentValidator {
 		DocumentTag.FILE_014_TITLE_DEED,
 		DocumentTag.FILE_015_BUILDING_REGISTER
 	);
-
-	private static final long MOVE_IN_REPORT_VALID_DAYS = 30;
 
 	private final Map<DocumentTag, DocumentContentValidator<?>> validatorMap;
 
@@ -56,16 +50,12 @@ public class DocumentValidator {
 
 		List<DocumentViolation> violations = Stream.of(
 			validateEach(documents),
-			validateCrossDocuments(documents, consultation),
-			validateHeadOfHouseholdOwnership(documents)
+			validateCrossDocuments(documents, consultation)
 		).flatMap(List::stream).toList();
-
-		List<DocumentRisk> risks = validateRisks(documents);
 
 		return DocumentValidationResult.builder()
 			.documentMissings(documentMissings)
 			.violations(violations)
-			.risks(risks)
 			.build();
 	}
 
@@ -90,70 +80,6 @@ public class DocumentValidator {
 			.filter(tag -> !submittedTags.contains(tag))
 			.map(DocumentConverter::toDocumentMissingDocument)
 			.toList();
-	}
-
-	private List<DocumentRisk> validateRisks(final List<DocumentDto> documents) {
-		Optional<MoveInHouseholdReportContent> moveInReportOpt = findContentByTag(
-			documents, DocumentTag.FILE_017_MOVE_IN_HOUSEHOLD_REPORT
-		);
-
-		if (moveInReportOpt.isEmpty()) {
-			return List.of();
-		}
-
-		List<DocumentRisk> risks = new ArrayList<>();
-		validatePrintedAt(moveInReportOpt.get(), risks);
-		return risks;
-	}
-
-	private void validatePrintedAt(
-		final MoveInHouseholdReportContent moveInReport,
-		final List<DocumentRisk> risks
-	) {
-		if (DateValidator.isWithinDays(moveInReport.printedAt(), MOVE_IN_REPORT_VALID_DAYS)) {
-			risks.add(DocumentConverter.toDocumentRisk(
-				DocumentTag.FILE_017_MOVE_IN_HOUSEHOLD_REPORT, List.of("printedAt")
-			));
-		}
-	}
-
-	private List<DocumentViolation> validateHeadOfHouseholdOwnership(final List<DocumentDto> documents) {
-		Optional<MoveInHouseholdReportContent> moveInReportOpt = findContentByTag(
-			documents, DocumentTag.FILE_017_MOVE_IN_HOUSEHOLD_REPORT
-		);
-
-		if (moveInReportOpt.isEmpty()) {
-			return List.of();
-		}
-
-		MoveInHouseholdReportContent moveInReport = moveInReportOpt.get();
-		String headOfHouseholdName = extractHeadOfHouseholdName(moveInReport);
-		if (headOfHouseholdName == null) {
-			return List.of();
-		}
-
-		Optional<TitleDeedContent> titleDeedOpt = findContentByTag(
-			documents, DocumentTag.FILE_014_TITLE_DEED
-		);
-
-		String ownerName = titleDeedOpt.map(this::extractOwnerName).orElse(null);
-
-		if (ownerName != null && ownerName.equals(headOfHouseholdName)) {
-			return List.of();
-		}
-
-		boolean hasLeaseContract = findContentByTag(
-			documents, DocumentTag.FILE_016_SALE_OR_LEASE_CONTRACT
-		).isPresent();
-
-		if (!hasLeaseContract) {
-			return List.of(DocumentConverter.toDocumentViolation(
-				DocumentTag.FILE_017_MOVE_IN_HOUSEHOLD_REPORT,
-				List.of("headOfHouseholdName")
-			));
-		}
-
-		return List.of();
 	}
 
 	private List<DocumentViolation> validateEach(final List<DocumentDto> documents) {
@@ -213,29 +139,10 @@ public class DocumentValidator {
 		return violations;
 	}
 
-	private String extractHeadOfHouseholdName(final MoveInHouseholdReportContent content) {
-		if (CollectionUtils.isEmpty(content.moveInHouseholds())) {
-			return null;
-		}
-
-		MoveInHouseholdReportContent.MoveInHousehold first = content.moveInHouseholds().getFirst();
-		if (first.headOfHouseholdName() == null) {
-			return null;
-		}
-		return first.headOfHouseholdName().value();
-	}
-
-	private String extractOwnerName(final TitleDeedContent titleDeed) {
-		if (titleDeed == null || titleDeed.ownerName() == null) {
-			return null;
-		}
-		return titleDeed.ownerName().value();
-	}
-
 	private Map<CrossField, String> buildBaselines(final Consultation consultation) {
 		Map<CrossField, String> baselines = new EnumMap<>(CrossField.class);
 		if (consultation.getName() != null) {
-			baselines.put(CrossField.CUSTOMER_NAME, consultation.getName());
+			baselines.put(CrossField.LOAN_APPLICANT_NAME, consultation.getName());
 		}
 		if (consultation.getResidentRegistrationNumber() != null) {
 			baselines.put(CrossField.RESIDENT_REGISTRATION_NUMBER,
@@ -267,19 +174,6 @@ public class DocumentValidator {
 
 	private boolean isConsistent(final Map<DocumentTag, String> valuesByDoc) {
 		return valuesByDoc.size() <= 1 || valuesByDoc.values().stream().distinct().count() == 1;
-	}
-
-	@SuppressWarnings("unchecked")
-	private <T extends DocumentContent> Optional<T> findContentByTag(
-		final List<DocumentDto> documents,
-		final DocumentTag tag
-	) {
-		return documents.stream()
-			.map(DocumentDto::extraction)
-			.filter(Objects::nonNull)
-			.filter(extraction -> extraction.content().getDocumentTag() == tag)
-			.map(extraction -> (T)extraction.content())
-			.findFirst();
 	}
 
 	@SuppressWarnings("unchecked")
