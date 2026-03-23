@@ -13,9 +13,9 @@ import lombok.Builder;
 @Schema(description = "매매/임대차계약서 (FILE_016)")
 @Builder
 public record SaleOrLeaseContractContent(
-	@Schema(description = "소재지")
+	@Schema(description = "부동산 소재지")
 	DataField<String> propertyAddress,
-	@Schema(description = "매매대금/보증금")
+	@Schema(description = "매매금액")
 	DataField<Long> salePrice,
 	@Schema(description = "특약사항")
 	DataField<String> specialTerms,
@@ -41,8 +41,12 @@ public record SaleOrLeaseContractContent(
 	@Override
 	public Map<CrossField, String> getCrossCheckFields() {
 		Map<CrossField, String> fields = new EnumMap<>(CrossField.class);
+		if (seller.name != null && seller.name.value() != null) {
+			fields.put(CrossField.TARGET_PROPERTY_OWNER_NAME, seller.name.value());
+		}
+
 		if (buyer.name != null && buyer.name.value() != null) {
-			fields.put(CrossField.CUSTOMER_NAME, buyer.name.value());
+			fields.put(CrossField.LOAN_APPLICANT_NAME, buyer.name.value());
 		}
 		return fields;
 	}

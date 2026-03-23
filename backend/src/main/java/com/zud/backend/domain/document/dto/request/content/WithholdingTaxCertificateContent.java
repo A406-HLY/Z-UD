@@ -14,9 +14,9 @@ import lombok.Builder;
 @Builder
 public record WithholdingTaxCertificateContent(
 	@Schema(description = "소득자 성명")
-	DataField<String> incomeRecipientName,
+	DataField<String> name,
 	@Schema(description = "소득자 주민등록번호")
-	DataField<String> incomeRecipientResidentRegistrationNumber,
+	DataField<String> residentRegistrationNumber,
 	@Schema(description = "근무기간")
 	DataField<String> workPeriod,
 	@Schema(description = "연간 총 급여액")
@@ -31,12 +31,12 @@ public record WithholdingTaxCertificateContent(
 	@Override
 	public Map<CrossField, String> getCrossCheckFields() {
 		Map<CrossField, String> fields = new EnumMap<>(CrossField.class);
-		if (incomeRecipientName != null && incomeRecipientName.value() != null) {
-			fields.put(CrossField.CUSTOMER_NAME, incomeRecipientName.value());
+		if (name != null && name.value() != null) {
+			fields.put(CrossField.LOAN_APPLICANT_NAME, name.value());
 		}
-		if (incomeRecipientResidentRegistrationNumber != null
-			&& incomeRecipientResidentRegistrationNumber.value() != null) {
-			fields.put(CrossField.RESIDENT_REGISTRATION_NUMBER, incomeRecipientResidentRegistrationNumber.value());
+		if (residentRegistrationNumber != null
+			&& residentRegistrationNumber.value() != null) {
+			fields.put(CrossField.RESIDENT_REGISTRATION_NUMBER, residentRegistrationNumber.value());
 		}
 		return fields;
 	}

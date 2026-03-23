@@ -19,10 +19,10 @@ public record BusinessRegistrationCertificateContent(
 	DataField<String> businessName,
 	@Schema(description = "사업자등록번호")
 	DataField<String> businessRegistrationNumber,
-	@Schema(description = "대표자성명")
-	DataField<String> representativeName,
-	@Schema(description = "법인등록번호")
-	DataField<String> corporateRegistrationNumber,
+	@Schema(description = "대표자 성명")
+	DataField<String> name,
+	@Schema(description = "주민등록번호")
+	DataField<String> residentRegistrationNumber,
 	@Schema(description = "발급일자")
 	DataField<String> issueDate
 ) implements DocumentContent {
@@ -35,16 +35,18 @@ public record BusinessRegistrationCertificateContent(
 	@Override
 	public Map<CrossField, String> getCrossCheckFields() {
 		Map<CrossField, String> fields = new EnumMap<>(CrossField.class);
-		if (representativeName != null && representativeName.value() != null) {
-			fields.put(CrossField.CUSTOMER_NAME, representativeName.value());
+		if (name != null && name.value() != null) {
+			fields.put(CrossField.LOAN_APPLICANT_NAME, name.value());
+		}
+		if (residentRegistrationNumber != null && residentRegistrationNumber.value() != null) {
+			fields.put(CrossField.RESIDENT_REGISTRATION_NUMBER, residentRegistrationNumber.value());
 		}
 		if (businessName != null && businessName.value() != null) {
 			fields.put(CrossField.BUSINESS_NAME, businessName.value());
 		}
 		if (businessRegistrationNumber != null && businessRegistrationNumber.value() != null) {
-			fields.put(CrossField.BUSINESS_REGISTRATION_NUMBER, businessRegistrationNumber().value());
+			fields.put(CrossField.BUSINESS_REGISTRATION_NUMBER, businessRegistrationNumber.value());
 		}
-
 		return fields;
 	}
 }

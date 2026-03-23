@@ -19,11 +19,11 @@ public record IncomeAmountCertificateContent(
 	DataField<String> name,
 	@Schema(description = "주민등록번호")
 	DataField<String> residentRegistrationNumber,
-	@Schema(description = "상호명")
+	@Schema(description = "상호")
 	DataField<String> businessName,
 	@Schema(description = "사업자등록번호")
 	DataField<String> businessRegistrationNumber,
-	@Schema(description = "발급일자")
+	@Schema(description = "발행일자")
 	DataField<String> issueDate,
 	@Schema(description = "귀속연도")
 	DataField<String> incomeYear,
@@ -42,7 +42,7 @@ public record IncomeAmountCertificateContent(
 	public Map<CrossField, String> getCrossCheckFields() {
 		Map<CrossField, String> fields = new EnumMap<>(CrossField.class);
 		if (name != null && name.value() != null) {
-			fields.put(CrossField.CUSTOMER_NAME, name.value());
+			fields.put(CrossField.LOAN_APPLICANT_NAME, name.value());
 		}
 		if (residentRegistrationNumber != null && residentRegistrationNumber.value() != null) {
 			fields.put(CrossField.RESIDENT_REGISTRATION_NUMBER, residentRegistrationNumber.value());

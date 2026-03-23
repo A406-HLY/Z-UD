@@ -16,9 +16,9 @@ public record VatTaxBaseCertificateContent(
 	@Schema(description = "발급번호")
 	DataField<String> issueNumber,
 	@Schema(description = "대표자성명")
-	DataField<String> representativeName,
+	DataField<String> name,
 	@Schema(description = "법인등록번호")
-	DataField<String> corporateRegistrationNumber,
+	DataField<String> residentRegistrationNumber,
 	@Schema(description = "상호(법인명)")
 	DataField<String> businessName,
 	@Schema(description = "사업자등록번호")
@@ -37,11 +37,17 @@ public record VatTaxBaseCertificateContent(
 	@Override
 	public Map<CrossField, String> getCrossCheckFields() {
 		Map<CrossField, String> fields = new EnumMap<>(CrossField.class);
-		if (representativeName() != null && representativeName.value() != null) {
-			fields.put(CrossField.CUSTOMER_NAME, representativeName.value());
+		if (name != null && name.value() != null) {
+			fields.put(CrossField.LOAN_APPLICANT_NAME, name.value());
+		}
+		if (residentRegistrationNumber != null && residentRegistrationNumber.value() != null) {
+			fields.put(CrossField.RESIDENT_REGISTRATION_NUMBER, residentRegistrationNumber.value());
 		}
 		if (businessName != null && businessName.value() != null) {
 			fields.put(CrossField.BUSINESS_NAME, businessName.value());
+		}
+		if (businessRegistrationNumber != null && businessRegistrationNumber.value() != null) {
+			fields.put(CrossField.BUSINESS_REGISTRATION_NUMBER, businessRegistrationNumber.value());
 		}
 		return fields;
 	}

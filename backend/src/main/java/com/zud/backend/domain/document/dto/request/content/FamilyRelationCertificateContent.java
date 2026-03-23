@@ -44,7 +44,7 @@ public record FamilyRelationCertificateContent(
 	public Map<CrossField, String> getCrossCheckFields() {
 		Map<CrossField, String> fields = new EnumMap<>(CrossField.class);
 		if (name != null && name.value() != null) {
-			fields.put(CrossField.CUSTOMER_NAME, name.value());
+			fields.put(CrossField.LOAN_APPLICANT_NAME, name.value());
 		}
 		if (residentRegistrationNumber != null && residentRegistrationNumber.value() != null) {
 			fields.put(CrossField.RESIDENT_REGISTRATION_NUMBER, residentRegistrationNumber().value());
