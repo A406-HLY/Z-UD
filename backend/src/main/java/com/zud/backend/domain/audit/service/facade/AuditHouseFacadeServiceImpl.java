@@ -8,6 +8,7 @@ import com.zud.backend.domain.audit.converter.AuditConverter;
 import com.zud.backend.domain.audit.dto.request.AuditHouseReqDto;
 import com.zud.backend.domain.audit.dto.response.AuditHouseResDto;
 import com.zud.backend.domain.audit.exception.AuditException;
+import com.zud.backend.domain.audit.service.notification.HouseAuditNotificationService;
 import com.zud.backend.domain.branch.dto.response.NearestBranchResDto;
 import com.zud.backend.domain.branch.service.facade.BranchFacadeService;
 import com.zud.backend.domain.houseprice.dto.response.HousePriceResDto;
@@ -29,23 +30,48 @@ public class AuditHouseFacadeServiceImpl implements AuditHouseFacadeService {
 
 	private final BranchFacadeService branchFacadeService;
 	private final HousePriceFacadeService housePriceFacadeService;
+	private final HouseAuditNotificationService houseAuditNotificationService;
 
 	@Override
 	public AuditHouseResDto auditHouse(final Long userId, final AuditHouseReqDto reqDto) {
-		validateIllegalBuilding(reqDto);
+		houseAuditNotificationService.notifyAuditStarted(userId, reqDto);
 
-		final String propertyAddress = reqDto.propertyAddress();
-		final String houseType = reqDto.houseType();
+		try {
+			houseAuditNotificationService.runIllegalBuildingCheckStep(userId, () -> validateIllegalBuilding(reqDto));
 
-		NearestBranchResDto nearestBranch = findNearestBranch(userId, propertyAddress);
-		HousePriceAuditResult housePriceResult = evaluateHousePrice(houseType, propertyAddress);
+			final String propertyAddress = reqDto.propertyAddress();
+			final String houseType = reqDto.houseType();
 
-		return AuditConverter.toAuditResDto(
-			false,
-			nearestBranch,
-			housePriceResult.supportedHouseType(),
-			housePriceResult.housePrice()
-		);
+			NearestBranchResDto nearestBranch = houseAuditNotificationService.runNearestBranchCheckStep(
+				userId,
+				() -> findNearestBranch(userId, propertyAddress)
+			);
+
+			HousePriceAuditResult housePriceResult = houseAuditNotificationService.runPriceCheckStep(
+				userId,
+				() -> evaluateHousePrice(houseType, propertyAddress),
+				(stepUserId, result) -> houseAuditNotificationService.notifyPriceCheckCompleted(
+					stepUserId,
+					result.supportedHouseType(),
+					result.housePrice()
+				)
+			);
+
+			AuditHouseResDto result = AuditConverter.toAuditResDto(
+				false,
+				nearestBranch,
+				housePriceResult.supportedHouseType(),
+				housePriceResult.housePrice()
+			);
+			houseAuditNotificationService.notifyAuditCompleted(userId, result);
+			return result;
+		} catch (AuditException e) {
+			houseAuditNotificationService.notifyAuditFailed(userId, e.getErrorCode());
+			throw e;
+		} catch (Exception e) {
+			houseAuditNotificationService.notifyAuditFailed(userId, e);
+			throw e;
+		}
 	}
 
 	private void validateIllegalBuilding(final AuditHouseReqDto reqDto) {
@@ -61,22 +87,20 @@ public class AuditHouseFacadeServiceImpl implements AuditHouseFacadeService {
 	private HousePriceAuditResult evaluateHousePrice(final String houseType, final String propertyAddress) {
 		boolean supportedHouseType = HouseType.isSupportedDisplayName(houseType);
 		if (!supportedHouseType) {
-			return new HousePriceAuditResult(false, createNullHousePrice(UNSUPPORTED_HOUSE_TYPE_MESSAGE));
+			return new HousePriceAuditResult(
+				false,
+				AuditConverter.toUnavailableHousePrice(UNSUPPORTED_HOUSE_TYPE_MESSAGE)
+			);
 		}
 
 		HousePriceResDto housePrice = housePriceFacadeService.findHousePrice(houseType, propertyAddress);
 		if (housePrice == null) {
-			return new HousePriceAuditResult(true, createNullHousePrice(HOUSE_PRICE_MANUAL_INPUT_MESSAGE));
+			return new HousePriceAuditResult(
+				true,
+				AuditConverter.toUnavailableHousePrice(HOUSE_PRICE_MANUAL_INPUT_MESSAGE)
+			);
 		}
 		return new HousePriceAuditResult(true, housePrice);
-	}
-
-	private HousePriceResDto createNullHousePrice(final String message) {
-		return HousePriceResDto.builder()
-			.price(null)
-			.priceType(null)
-			.message(message)
-			.build();
 	}
 
 	private record HousePriceAuditResult(
