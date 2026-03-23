@@ -36,3 +36,8 @@ input::-webkit-inner-spin-button {
 input[type=number] {
   -moz-appearance: textfield;
 }
+
+html {
+  font-family: 'Inter', sans-serif;
+  scrollbar-gutter: stable;
+}
