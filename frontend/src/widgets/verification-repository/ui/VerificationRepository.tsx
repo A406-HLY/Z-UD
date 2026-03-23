@@ -59,7 +59,7 @@ export const VerificationRepository = ({ categories, documents, selectedId, onSe
         className="bg-gray-200 border-b border-gray-300 flex items-center px-3 shrink-0"
         style={{ height: LAYOUT.HEADER_HEIGHT }}
       >
-        <span className="text-[10px] font-bold text-[#444] uppercase tracking-wider">Repository Tree</span>
+        <span className="text-[11px] font-bold text-[#444] uppercase tracking-wider">Repository Tree</span>
       </div>
       <div className="flex-1 overflow-auto py-2">
         {categories.map(cat => {
@@ -76,7 +76,7 @@ export const VerificationRepository = ({ categories, documents, selectedId, onSe
               >
                 {isExpanded ? <ChevronDown className="w-3.5 h-3.5 mr-1" /> : <ChevronRight className="w-3.5 h-3.5 mr-1" />}
                 <Folder className={`w-3.5 h-3.5 mr-2 ${folderColor}`} />
-                <span className="text-[10px] font-black text-[#333] uppercase truncate flex-1">{cat.name}</span>
+                <span className="text-[11px] font-black text-[#333] uppercase truncate flex-1">{cat.name}</span>
                 {hasError && <AlertTriangle className="w-3 h-3 text-red-600 mr-1 animate-pulse" />}
                 {!hasError && hasRisk && <Info className="w-3 h-3 text-yellow-600 mr-1" />}
               </button>
@@ -106,7 +106,7 @@ export const VerificationRepository = ({ categories, documents, selectedId, onSe
                         style={{ height: LAYOUT.ITEM_HEIGHT }}
                       >
                         <FileText className={`w-3 h-3 mr-2 ${isSelected ? 'text-white' : 'text-gray-400'}`} />
-                        <span className="text-[9px] font-medium truncate flex-1 leading-none">
+                        <span className="text-[10px] font-medium truncate flex-1 leading-none">
                           {item.fileName} {item.status === 'MISSING' && '(누락)'}
                         </span>
                         {renderStatusIcon(iconType, isSelected)}

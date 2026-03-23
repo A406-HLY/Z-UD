@@ -58,3 +58,27 @@ export const validateCustomer = (data: Customer): Partial<Record<keyof Customer,
 
   return errors;
 };
+
+/**
+ * 개별 필드가 '완성(Complete)' 상태인지 확인합니다.
+ * (Why) 단순히 값이 있는지를 넘어, 진행률에 반영될 수 있는 최소한의 품질을 충족했는지 판단합니다.
+ * 
+ * @param field 필드 이름
+ * @param value 필드 값
+ */
+export const isFieldComplete = (field: keyof Customer, value: string): boolean => {
+  if (!value || !value.trim()) return false;
+
+  switch (field) {
+    case 'name':
+      return value.trim().length >= 2;
+    case 'personalId':
+      return isValidPersonalId(value);
+    case 'phoneNumber':
+      return isValidPhoneNumber(value);
+    case 'desiredAmount':
+      return value.replace(/[^\d]/g, '') !== '0' && value.length > 0;
+    default:
+      return value.trim().length > 0;
+  }
+};

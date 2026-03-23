@@ -1,5 +1,6 @@
 import { Check, AlertCircle, Info } from 'lucide-react';
 import { ExtractedField, DocumentStatus } from '@/entities/verification/model/types';
+import { Input } from '@/shared/ui';
 
 interface Props {
   fields: ExtractedField[];
@@ -24,7 +25,7 @@ export const OcrFieldEditor = ({ fields, status, isRisk, onFieldChange, onFocus 
       {/* Header with Dynamic Judgment Badge */}
       <div className={`h-[36px] border-b border-gray-300 flex items-center px-4 justify-between shrink-0 transition-colors ${isReviewNeeded ? 'bg-red-50' : isRisk ? 'bg-yellow-50' : 'bg-gray-100'}`}>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold text-[#444] uppercase tracking-wider">OCR Data Correction</span>        </div>
+          <span className="text-[11px] font-bold text-[#444] uppercase tracking-wider">OCR Data Correction</span>        </div>
       </div>
 
       {/* Risk & Error Alert Banner (Priority: Error > Risk) */}
@@ -32,10 +33,10 @@ export const OcrFieldEditor = ({ fields, status, isRisk, onFieldChange, onFocus 
         <div className={`border-b px-4 py-2 flex items-start gap-3 ${isReviewNeeded ? 'bg-red-100 border-red-200' : 'bg-yellow-100 border-yellow-200'}`}>
           <Info className={`w-4 h-4 mt-0.5 shrink-0 ${isReviewNeeded ? 'text-red-700' : 'text-yellow-700'}`} />
           <div className="space-y-0.5">
-            <p className={`text-[10px] font-bold ${isReviewNeeded ? 'text-red-800' : 'text-yellow-800'}`}>
+            <p className={`text-[11px] font-bold ${isReviewNeeded ? 'text-red-800' : 'text-yellow-800'}`}>
               {isReviewNeeded ? '알림: 데이터 정합성 확인이 필요한 문서입니다.' : '주의: 세밀한 검토가 필요한 위험 문서입니다.'}
             </p>
-            <p className={`text-[9px] leading-tight ${isReviewNeeded ? 'text-red-700' : 'text-yellow-700'}`}>
+            <p className={`text-[10px] leading-tight ${isReviewNeeded ? 'text-red-700' : 'text-yellow-700'}`}>
               {isReviewNeeded 
                 ? '일부 필드에서 원본 데이터와 불일치가 감지되었습니다. 추출된 데이터와 실물 이미지를 대조하여 수정해 주세요.' 
                 : '해당 문서는 백엔드 시스템에서 위험 요소가 탐지되었습니다. 추출된 데이터와 실물 이미지를 대조하여 최종 승인해 주시기 바랍니다.'}
@@ -58,44 +59,42 @@ export const OcrFieldEditor = ({ fields, status, isRisk, onFieldChange, onFocus 
             return (
               <div key={field.id} className="space-y-1.5 group">
                 <label className={`
-                  text-[9px] font-bold uppercase tracking-tighter flex items-center gap-1
+                  text-[10px] font-bold uppercase tracking-tighter flex items-center gap-1
                   ${isErrorField ? 'text-red-500' : field.isRiskTarget ? 'text-yellow-700' : 'text-gray-400'}
                 `}>
                   {field.label}               
                   {!isErrorField && !field.isRiskTarget && <Check className="w-2.5 h-2.5 text-gray-400" />}
                 </label>
                 
-                <div className="relative">
-                  <input 
-                    type="text" 
-                    value={String(field.value ?? '')}
-                    disabled={!canEdit}
-                    onFocus={() => onFocus?.(field.key)}
-                    onChange={(e) => onFieldChange?.(field.key, e.target.value)}
-                    className={`
-                      w-full h-8 px-2 pr-8 text-[10px] font-mono border rounded-none shadow-inner transition-all
-                      ${isErrorField 
-                        ? 'border-red-400 bg-red-50 text-red-700 font-bold focus:border-red-600 focus:bg-white focus:outline-none' 
-                        : field.isRiskTarget
-                          ? 'border-yellow-400 bg-yellow-50 text-yellow-800 focus:border-yellow-600 focus:bg-white focus:outline-none'
-                          : field.isModified
-                            ? 'border-blue-400 bg-blue-50 text-[#444] font-bold focus:border-blue-600 focus:bg-white focus:outline-none'
-                            : !canEdit 
-                              ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed' 
-                              : 'border-gray-300 bg-[#fcfcfc] focus:border-[#004b93] focus:bg-white focus:outline-none'
-                      }
-                    `}
-                  />
-                  <div className="absolute right-2 top-2">
-                    {isErrorField ? (
+                <Input 
+                  value={String(field.value ?? '')}
+                  disabled={!canEdit}
+                  onFocus={() => onFocus?.(field.key)}
+                  onChange={(e) => onFieldChange?.(field.key, e.target.value)}
+                  className={`
+                    h-8 rounded-none transition-all
+                    ${isErrorField 
+                      ? 'border-red-400 bg-red-50 text-red-700 font-bold focus-within:border-red-600 focus-within:bg-white focus-within:ring-red-600' 
+                      : field.isRiskTarget
+                        ? 'border-yellow-400 bg-yellow-50 text-yellow-800 focus-within:border-yellow-600 focus-within:bg-white focus-within:ring-yellow-600'
+                        : field.isModified
+                          ? 'border-blue-400 bg-blue-50 text-[#444] font-bold focus-within:border-blue-600 focus-within:bg-white focus-within:ring-blue-600'
+                          : !canEdit 
+                            ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed' 
+                            : 'border-gray-300 bg-[#fcfcfc] focus-within:border-[#004b93] focus-within:bg-white'
+                    }
+                  `}
+                  inputClassName="!text-[10px] font-mono"
+                  rightElement={
+                    isErrorField ? (
                       <AlertCircle className="w-3.5 h-3.5 text-red-500" />
                     ) : field.isRiskTarget ? (
                       <Info className="w-3.5 h-3.5 text-yellow-600" />
                     ) : (
                       <Check className="w-3.5 h-3.5 text-gray-400 opacity-60" />
-                    )}
-                  </div>
-                </div>
+                    )
+                  }
+                />
               </div>
             );
           })}
