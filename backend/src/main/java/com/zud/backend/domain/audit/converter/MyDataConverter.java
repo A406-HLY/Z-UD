@@ -16,29 +16,21 @@ public class MyDataConverter {
 	) {
 		long totalLoanBalance = 0L;
 		long totalRemainingLoanBalance = 0L;
+		long totalAnnualPrincipalAndInterestRepayment = 0L;
 
 		for (MyDataResDto.LoanProductResDto loanProduct : loanProducts) {
-			totalLoanBalance += parseAmount(loanProduct.loanBalance());
-			totalRemainingLoanBalance += parseAmount(loanProduct.remainingLoanBalance());
+			totalLoanBalance += loanProduct.loanBalance();
+			totalRemainingLoanBalance += loanProduct.remainingLoanBalance();
+			totalAnnualPrincipalAndInterestRepayment += loanProduct.annualPrincipalAndInterestRepayment();
 		}
 
 		return new MyDataResDto(
 			userId,
 			ratingName,
-			String.valueOf(totalLoanBalance),
-			String.valueOf(totalRemainingLoanBalance),
+			totalLoanBalance,
+			totalRemainingLoanBalance,
+			totalAnnualPrincipalAndInterestRepayment,
 			loanProducts
 		);
-	}
-
-	private long parseAmount(final String amount) {
-		if (amount == null || amount.isBlank()) {
-			return 0L;
-		}
-		try {
-			return Long.parseLong(amount);
-		} catch (NumberFormatException e) {
-			return 0L;
-		}
 	}
 }
