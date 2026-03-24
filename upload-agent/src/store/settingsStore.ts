@@ -9,7 +9,11 @@ export interface Settings {
 
 export class SettingsStore {
   private static settings: Settings;
-  private static settingsPath = path.join(__dirname, '../../data/settings.json');
+  // (Why) 패키징 시 실행 파일(.exe)과 동일한 위치의 settings.json을 참조합니다.
+  private static isPkg = typeof (process as any).pkg !== 'undefined';
+  private static settingsPath = SettingsStore.isPkg 
+    ? path.join(path.dirname(process.execPath), 'settings.json')
+    : path.join(__dirname, '../../data/settings.json');
 
   public static load(): void {
     try {

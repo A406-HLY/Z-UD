@@ -2,9 +2,11 @@
   "name": "upload-agent",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "start": "ts-node src/index.ts"
+    "start": "ts-node src/index.ts",
+    "build": "tsc",
+    "build:exe": "npm run build && npx pkg . --targets node18-win-x64 --output dist/upload-agent.exe"
   },
   "keywords": [],
   "author": "",
@@ -23,7 +25,16 @@
     "@types/cors": "^2.8.19",
     "@types/form-data": "^2.2.1",
     "@types/node": "^25.5.0",
+    "pkg": "^5.8.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
+  },
+  "pkg": {
+    "assets": [
+      "dist/**/*"
+    ],
+    "scripts": [
+      "dist/**/*.js"
+    ]
   }
 }

@@ -17,8 +17,11 @@ async function bootstrap() {
     // 환경 변수가 제대로 로드되었는지 확인하기 위해 URL 로그 추가
     logger.info(`Backend API URL configured as: ${config.backendApiUrl}`);
 
-    // Ensure the watch directory exists before starting watcher
-    const watchDir = path.resolve(__dirname, '../', settings.watchPath);
+    // (Why) 패키징 시 실행 파일(.exe) 위치를 기준으로 감시 폴더 상위 경로를 결정합니다.
+    const isPkg = typeof (process as any).pkg !== 'undefined';
+    const baseDir = isPkg ? path.dirname(process.execPath) : path.join(__dirname, '../');
+    const watchDir = path.resolve(baseDir, settings.watchPath);
+    
     if (!fs.existsSync(watchDir)) {
       logger.warn(`Watch directory does not exist. Creating it: ${watchDir}`);
       fs.mkdirSync(watchDir, { recursive: true });
