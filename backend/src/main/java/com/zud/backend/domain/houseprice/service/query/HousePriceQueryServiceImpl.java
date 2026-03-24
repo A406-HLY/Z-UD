@@ -11,6 +11,7 @@ import com.zud.backend.domain.houseprice.entity.HouseTradePrice;
 import com.zud.backend.domain.houseprice.repository.HouseOfficialPriceRepository;
 import com.zud.backend.domain.houseprice.repository.HouseTradePriceRepository;
 import com.zud.backend.domain.houseprice.util.ParsedAddress;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
