@@ -22,8 +22,8 @@ public class ReportFacadeServiceImpl implements ReportFacadeService {
 
 	@Override
 	@Transactional
-	public LoanReportGenerateRes generateLoanReport(LoanReportReqDto request) {
-		return reportRequestService.requestReport(request);
+	public LoanReportGenerateRes generateLoanReport(Long userId, LoanReportReqDto request) {
+		return reportRequestService.requestReport(userId, request);
 	}
 
 	@Override

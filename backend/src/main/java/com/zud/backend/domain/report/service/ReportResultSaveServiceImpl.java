@@ -6,12 +6,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zud.backend.common.error.ErrorCode;
-import com.zud.backend.domain.report.converter.ReportConverter;
 import com.zud.backend.domain.report.dto.message.LoanReportResMessage;
-import com.zud.backend.domain.report.dto.response.LoanReportResultResDto;
 import com.zud.backend.domain.report.exception.ReportException;
 import com.zud.backend.domain.report.redis.LoanReportResultCache;
 import com.zud.backend.domain.report.repository.ReportRedisRepository;
+import com.zud.backend.domain.report.service.notification.ReportNotificationService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,8 +20,8 @@ import lombok.RequiredArgsConstructor;
 public class ReportResultSaveServiceImpl implements ReportResultSaveService {
 
 	private final ReportRedisRepository reportRedisRepository;
-	private final ReportConverter reportConverter;
 	private final ObjectMapper objectMapper;
+	private final ReportNotificationService reportNotificationService;
 
 	@Override
 	@Transactional
@@ -50,6 +49,7 @@ public class ReportResultSaveServiceImpl implements ReportResultSaveService {
 			reportRedisRepository.save(
 				existing.completed(messageBody, message.completedAt())
 			);
+			reportNotificationService.notifyReportCompleted(existing.userId(), uuid);
 		} catch (ReportException ex) {
 			throw ex;
 		} catch (Exception ex) {

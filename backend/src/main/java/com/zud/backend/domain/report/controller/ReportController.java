@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.zud.backend.common.annotation.Authentication;
 import com.zud.backend.domain.report.dto.request.LoanReportReqDto;
 import com.zud.backend.domain.report.dto.response.LoanReportGenerateRes;
 import com.zud.backend.domain.report.dto.response.LoanReportResultResDto;
@@ -28,9 +29,10 @@ public class ReportController {
 
 	@PostMapping
 	public ResponseEntity<LoanReportGenerateRes> generateReport(
+		@Authentication Long userId,
 		@Valid @RequestBody LoanReportReqDto request
 	) {
-		return ResponseEntity.ok(reportFacadeService.generateLoanReport(request));
+		return ResponseEntity.ok(reportFacadeService.generateLoanReport(userId, request));
 	}
 
 	@GetMapping("/{uuid}")

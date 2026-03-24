@@ -26,16 +26,16 @@ public class ReportRequestServiceImpl implements ReportRequestService {
 
 	@Override
 	@Transactional
-	public LoanReportGenerateRes requestReport(LoanReportReqDto request) {
+	public LoanReportGenerateRes requestReport(Long userId, LoanReportReqDto request) {
 		String uuid = request.uuid().toString();
 
 		reportRedisRepository.save(
-			LoanReportResultCache.requested(uuid, LocalDateTime.now())
+			LoanReportResultCache.requested(uuid, userId, LocalDateTime.now())
 		);
 
 		LoanReportReqMessage message = reportConverter.toMessage(request);
 		reportKafkaProducer.send(uuid, message);
 
-		return null;
+		return reportConverter.toGenerateResponse(uuid);
 	}
 }

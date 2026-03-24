@@ -17,7 +17,7 @@ public class ReportKafkaConsumer {
 
 	@KafkaListener(
 		topics = REPORT_RESPONSE,
-		containerFactory = "laonReportKafkaListenerContainerFactory"
+		containerFactory = "loanReportKafkaListenerContainerFactory"
 	)
 	public void consume(String messageBody) {
 		reportResultSaveService.saveReportResult(messageBody);
