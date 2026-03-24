@@ -59,6 +59,7 @@ public enum ErrorCode {
 	FILE_SIGNATURE_MISMATCH(HttpStatus.BAD_REQUEST, "F-007", "파일 시그니처가 일치하지 않습니다."),
 	FILE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "F-008", "파일 크기가 제한을 초과했습니다."),
 	FILE_NAME_TOO_LONG(HttpStatus.BAD_REQUEST, "F-009", "파일명이 너무 깁니다."),
+	PRESIGNED_URL_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "F-010", "Presigned URL 생성에 실패했습니다."),
 
 	/**
 	 * House Price Error (HP-xxx)
