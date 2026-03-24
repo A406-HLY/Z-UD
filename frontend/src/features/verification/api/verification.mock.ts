@@ -11,6 +11,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
       {
         fileId: "FILE_001",
         fileName: "주민등록등본_01.pdf",
+        fileUrl: "/test-docs/이선휘 주민등록 초 본.pdf",
         // TODO: 백엔드 협의 결과에 따라 실제 해상도 수치로 교체 필요
         resolution: { width: 1240, height: 1754 },
         status: "SUCCESS",
@@ -40,6 +41,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
       {
         fileId: "FILE_002",
         fileName: "주민등록초본_01.pdf",
+        fileUrl: "/test-docs/이선휘 주민등록 초 본.pdf",
         resolution: { width: 1240, height: 1754 },
         status: "SUCCESS",
         documentClassification: {
@@ -57,6 +59,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
       {
         fileId: "FILE_003",
         fileName: "가족관계증명서_01.pdf",
+        fileUrl: "/test-docs/(참고) 13기 멘티 활동 일지_금융특화(핀테크).pdf",
         resolution: { width: 1240, height: 1754 },
         status: "SUCCESS",
         documentClassification: {
@@ -79,6 +82,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
       {
         fileId: "FILE_004",
         fileName: "재직증명서_01.pdf",
+        fileUrl: "/test-docs/교육필증 (1).pdf",
         resolution: { width: 1240, height: 1754 },
         status: "SUCCESS",
         documentClassification: {
@@ -96,6 +100,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
       {
         fileId: "FILE_005",
         fileName: "건강보험_자격득실_01.pdf",
+        fileUrl: "/test-docs/교육필증 (2).pdf",
         resolution: { width: 1240, height: 1754 },
         status: "SUCCESS",
         documentClassification: {
@@ -115,6 +120,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
       {
         fileId: "FILE_006",
         fileName: "국세_완납증명서_01.pdf",
+        fileUrl: "/test-docs/명세서.pdf",
         resolution: { width: 1240, height: 1754 },
         status: "SUCCESS",
         documentClassification: {
@@ -131,6 +137,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
       {
         fileId: "FILE_007",
         fileName: "지방세_납세증명서_01.pdf",
+        fileUrl: "/test-docs/A406_GPU_서버_신청서.pdf",
         resolution: { width: 1240, height: 1754 },
         status: "SUCCESS",
         documentClassification: {
@@ -147,6 +154,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
       {
         fileId: "FILE_008",
         fileName: "지방세_세목별_과세증명_01.pdf",
+        fileUrl: "/test-docs/260304_예비군교육필증_이선휘[서울_4반].pdf",
         resolution: { width: 1240, height: 1754 },
         status: "SUCCESS",
         documentClassification: {
@@ -165,6 +173,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
       {
         fileId: "FILE_009",
         fileName: "등기권리증_01.pdf",
+        fileUrl: "/test-docs/[별표 8] 주택관련 담보대출 등에 대한 리스크관리 세부기준(제3조의2관련)(여신전문금융업감독업무시행세칙).pdf",
         resolution: { width: 1240, height: 1754 },
         status: "PARTIAL_SUCCESS",
         documentClassification: {
@@ -182,6 +191,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
       {
         fileId: "FILE_010",
         fileName: "집합건축물대장_01.pdf",
+        fileUrl: "/test-docs/sub01_sub01_02_01_250101.pdf",
         resolution: { width: 1240, height: 1754 },
         status: "SUCCESS",
         documentClassification: {
@@ -198,6 +208,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
       {
         fileId: "FILE_011",
         fileName: "매매계약서_01.pdf",
+        fileUrl: "/test-docs/[삼성화재해상보험]사업보고서(2026.03.12).pdf",
         resolution: { width: 1240, height: 1754 },
         status: "PARTIAL_SUCCESS",
         documentClassification: {
@@ -217,6 +228,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
       {
         fileId: "FILE_012",
         fileName: "전입세대열람내역서_01.pdf",
+        fileUrl: "/test-docs/A403_중간발표자료.pdf",
         resolution: { width: 1240, height: 1754 },
         status: "SUCCESS",
         documentClassification: {

@@ -79,6 +79,7 @@ export interface ServerDocItem {
   };
   // TODO: 백엔드 협의 필요 - 문서별 원본 해상도(width, height) 전달 방식 확정 후 반영 예정
   resolution?: { width: number; height: number };
+  fileUrl?: string; // 백엔드에서 전달할 실제 PDF 주소
   reviewItems?: Array<{ reviewCode: string; reviewMessage: string }>;
 }
 

@@ -41,3 +41,10 @@ html {
   font-family: 'Inter', sans-serif;
   scrollbar-gutter: stable;
 }
+
+/* (Security): 금융권 보안 정책 - 무단 인쇄 방지 */
+@media print {
+  body {
+    display: none !important;
+  }
+}
