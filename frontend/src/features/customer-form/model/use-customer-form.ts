@@ -15,6 +15,7 @@ import { validateCustomer, isFieldComplete } from '@/entities/customer/model/val
 import { calculateCustomerProgress } from '@/entities/customer/model/utils';
 import { generateUUID } from '@/shared/lib/utils/id-utils';
 import { Customer } from '@/entities/customer/model/types';
+import { createConsultation } from '@/entities/customer/api/customer.api';
 
 /** 
  * (P3) switch 문을 대체하기 위한 필드별 포맷터 매핑 객체입니다. 
@@ -88,8 +89,8 @@ export const useCustomerForm = () => {
     setTouched(prev => ({ ...prev, [field]: true }));
   };
 
-  /** 저장/제출 핸들러 */
-  const handleSave = () => {
+  /** 저장/제출 핸들러 (상담 등록 API 연동) */
+  const handleSave = async () => {
     const validationErrors = validateCustomer(form);
     
     if (Object.keys(validationErrors).length > 0) {
@@ -98,11 +99,28 @@ export const useCustomerForm = () => {
       return;
     }
 
-    if (!form.counselId) {
-      dispatch(setCounselId(generateUUID()));
+    // (Why) 상담 ID가 없는 경우 새로 생성하고, 즉시 백엔드 서버에 등록을 시도합니다.
+    let currentCounselId = form.counselId;
+    if (!currentCounselId) {
+      currentCounselId = generateUUID();
+      dispatch(setCounselId(currentCounselId));
     }
-    
-    dispatch(setIsPollingActive(!isPollingActive));
+
+    try {
+      // (Why) 백엔드 /consultations 엔드포인트에 상담 정보를 저장하여 에이전트 연동의 정합성을 확보합니다.
+      const response = await createConsultation({ ...form, counselId: currentCounselId });
+      
+      if (response.success) {
+        console.log('[System] Consultation registered successfully:', currentCounselId);
+        dispatch(setIsPollingActive(!isPollingActive));
+      } else {
+        console.error('[System] Failed to register consultation:', response.error?.message);
+        alert('상담 등록에 실패했습니다. 다시 시도해 주세요.');
+      }
+    } catch (error) {
+      console.error('[System] Error during consultation registration:', error);
+      alert('서버 통신 중 오류가 발생했습니다.');
+    }
   };
 
   return {
