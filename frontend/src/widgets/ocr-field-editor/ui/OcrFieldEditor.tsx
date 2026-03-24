@@ -49,12 +49,12 @@ export const OcrFieldEditor = ({ fields, status, isRisk, selectedId, onFieldChan
   const getFieldStyles = (field: ExtractedField, canEdit: boolean) => {
     const isError = !field.isMatch;
 
-    if (isError) return 'border-red-400 bg-red-50 text-red-700 font-bold focus-within:border-red-600 focus-within:bg-white focus-within:ring-red-600';
-    if (field.isRiskTarget) return 'border-yellow-400 bg-yellow-50 text-yellow-800 focus-within:border-yellow-600 focus-within:bg-white focus-within:ring-yellow-600';
-    if (field.isModified) return 'border-blue-400 bg-blue-50 text-[#444] font-bold focus-within:border-blue-600 focus-within:bg-white focus-within:ring-blue-600';
-    if (!canEdit) return 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed';
+    if (isError) return 'border-red-400 bg-red-50 text-red-700 font-bold focus-within:border-red-600 focus-within:bg-white focus-within:ring-red-600 cursor-text';
+    if (field.isRiskTarget) return 'border-yellow-400 bg-yellow-50 text-yellow-800 focus-within:border-yellow-600 focus-within:bg-white focus-within:ring-yellow-600 cursor-pointer';
+    if (field.isModified) return 'border-blue-400 bg-blue-50 text-[#444] font-bold focus-within:border-blue-600 focus-within:bg-white focus-within:ring-blue-600 cursor-text';
+    if (!canEdit) return 'bg-gray-50/30 border-gray-100 text-gray-400 cursor-pointer select-none focus-within:border-gray-300';
     
-    return 'border-gray-300 bg-[#fcfcfc] focus-within:border-[#004b93] focus-within:bg-white';
+    return 'border-gray-300 bg-[#fcfcfc] focus-within:border-[#004b93] focus-within:bg-white cursor-text';
   };
   
   return (
@@ -91,7 +91,7 @@ export const OcrFieldEditor = ({ fields, status, isRisk, selectedId, onFieldChan
                 
                 <Input 
                   value={String(field.value ?? '')}
-                  disabled={!canEdit}
+                  readOnly={!canEdit}
                   data-document-id={selectedId}
                   data-nav-error={isErrorField}
                   onFocus={() => onFocus?.(field.key)}
@@ -99,7 +99,7 @@ export const OcrFieldEditor = ({ fields, status, isRisk, selectedId, onFieldChan
                   onBlur={() => {}} // TODO: 필요 시 Blur 처리 추가
                   onKeyDown={(e) => handleInputKeyDown(e, index)}
                   className={`h-8 rounded-none transition-all ${getFieldStyles(field, canEdit)}`}
-                  inputClassName="!text-[10px] font-mono"
+                  inputClassName={`!text-[10px] font-mono ${!canEdit ? '!cursor-pointer' : ''}`}
                   rightElement={
                     isErrorField ? (
                       <AlertCircle className="w-3.5 h-3.5 text-red-500" />

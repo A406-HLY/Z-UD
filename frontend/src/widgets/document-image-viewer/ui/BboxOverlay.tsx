@@ -15,7 +15,6 @@ export const BboxOverlay = ({ bboxes, focusedFieldKey }: Props) => {
       style={{ mixBlendMode: 'multiply' }}
     >
       {bboxes.map((bbox) => {
-         // (Why: 사용자가 에디터에서 선택한 항목은 강한 하이라이트(붉은 테두리 + 노랑 채우기)를 주어 시선을 유도합니다.)
          const isFocused = bbox.key === focusedFieldKey;
          
          return (
@@ -24,8 +23,8 @@ export const BboxOverlay = ({ bboxes, focusedFieldKey }: Props) => {
              points={bbox.points}
              className={`transition-all duration-300 ${
                isFocused 
-                ? 'fill-yellow-300/60 stroke-red-600 stroke-2 drop-shadow-[0_0_8px_rgba(255,0,0,0.8)]' 
-                : 'fill-blue-500/10 stroke-blue-500/80 stroke-1'
+                ? 'fill-blue-500/20 stroke-[#004b93] stroke-[1.5px] drop-shadow-[0_0_12px_rgba(0,75,147,0.8)]' 
+                : 'fill-blue-500/10 stroke-blue-400/70 stroke-1'
              }`}
            />
          );
