@@ -1,9 +1,11 @@
 package com.zud.backend.domain.document.service.facade;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,9 +16,16 @@ import com.zud.backend.domain.consultation.enums.CounselStatus;
 import com.zud.backend.domain.consultation.service.ConsultationStatusService;
 import com.zud.backend.domain.consultation.service.query.ConsultationQueryService;
 import com.zud.backend.domain.document.converter.DocumentConverter;
-import com.zud.backend.domain.document.dto.request.request.DocumentExtractionReqDto;
+import com.zud.backend.domain.document.dto.request.DocumentExtractionReqDto;
+import com.zud.backend.domain.document.dto.request.file.FileMetaDto;
+import com.zud.backend.domain.document.dto.request.file.PresignedUrlReqDto;
+import com.zud.backend.domain.document.dto.request.file.UploadCompletionReqDto;
+import com.zud.backend.domain.document.dto.request.file.UploadResultDto;
 import com.zud.backend.domain.document.dto.response.DocumentExtractionDesDto;
 import com.zud.backend.domain.document.dto.response.DocumentValidationResult;
+import com.zud.backend.domain.document.dto.response.file.PresignedFileDto;
+import com.zud.backend.domain.document.dto.response.file.PresignedUrlResDto;
+import com.zud.backend.domain.document.dto.response.file.UploadCompletionResDto;
 import com.zud.backend.domain.document.service.cloudflare.CloudflareService;
 import com.zud.backend.domain.document.validator.DocumentValidator;
 import com.zud.backend.domain.document.validator.FileValidator;
@@ -31,6 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 public class DocumentFacadeServiceImpl implements DocumentFacadeService {
 
 	private static final long UPLOAD_TIMEOUT_SECONDS = 60;
+	public static final int DEFAULT_EXPIRES_IN = 600;
 	private final Executor applicationTaskExecutor;
 
 	private final ConsultationStatusService consultationStatusService;
@@ -75,6 +85,62 @@ public class DocumentFacadeServiceImpl implements DocumentFacadeService {
 		Consultation consultation = consultationQueryService.findByUuid(reqDto.caseId());
 		DocumentValidationResult validationResult = documentValidator.validateAll(reqDto.documents(), consultation);
 		return DocumentConverter.toDocumentExtractionDesDto(validationResult, reqDto.documents());
+	}
+
+	@Override
+	public PresignedUrlResDto issuePresignedUrls(final PresignedUrlReqDto reqDto) {
+		consultationQueryService.findByUuid(reqDto.consultationId());
+
+		List<PresignedFileDto> presignedFiles = reqDto.files().stream()
+			.map(fileMeta -> generatePresignedFile(reqDto.consultationId(), fileMeta))
+			.toList();
+
+		log.info("[Document] Presigned URL 발급 완료: consultationId={}, count={}",
+			reqDto.consultationId(), presignedFiles.size());
+
+		return DocumentConverter.toPresignedUrlResDto(presignedFiles);
+	}
+
+	@Override
+	public UploadCompletionResDto completeUpload(final String consultationId, final UploadCompletionReqDto reqDto) {
+		consultationQueryService.findByUuid(consultationId);
+
+		Map<Boolean, List<UploadResultDto>> partitioned = reqDto.uploadedFiles().stream()
+			.collect(Collectors.partitioningBy(UploadResultDto::success));
+
+		List<String> successFileNames = partitioned.get(true).stream()
+			.map(UploadResultDto::fileName)
+			.toList();
+
+		List<String> failedFileNames = partitioned.get(false).stream()
+			.map(UploadResultDto::fileName)
+			.toList();
+
+		CounselStatus status;
+		if (successFileNames.isEmpty()) {
+			status = CounselStatus.FAILED;
+			consultationStatusService.updateDocumentVerificationStatus(consultationId, status, List.of());
+		} else {
+			status = CounselStatus.OCR_QUEUED;
+			consultationStatusService.updateDocumentVerificationStatus(consultationId, status, successFileNames);
+		}
+
+		log.info("[Document] 업로드 완료 처리: consultationId={}, success={}, failed={}",
+			consultationId, successFileNames.size(), failedFileNames.size());
+
+		return DocumentConverter.toUploadCompletionResDto(
+			consultationId,
+			status,
+			successFileNames.size(),
+			failedFileNames);
+	}
+
+	private PresignedFileDto generatePresignedFile(final String consultationId, final FileMetaDto fileMeta) {
+		fileValidator.validateMeta(fileMeta);
+
+		String presignedUrl = cloudflareService.generatePutPresignedUrl(consultationId, fileMeta);
+
+		return DocumentConverter.toPresignedFileDto(fileMeta.fileName(), presignedUrl, DEFAULT_EXPIRES_IN);
 	}
 
 	private CompletableFuture<String> uploadSingleFile(final MultipartFile file, final String dirName) {
