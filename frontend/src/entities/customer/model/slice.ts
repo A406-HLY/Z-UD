@@ -16,7 +16,7 @@ const initialState: CustomerState = {
   data: {
     ...INITIAL_CUSTOMER_STATE,
     // name: '홍길동',
-    // personalId: '900101-1******', // OCR의 주민번호 필드와 대조됨
+    // personalId: '900101-1234567', // (Why) 백엔드 주민번호 정규식(000000-0000000) 통과를 위해 올바른 형식을 사용합니다.
     // phoneNumber: '010-1234-5678',
   },
   isPollingActive: false,

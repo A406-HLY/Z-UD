@@ -15,6 +15,7 @@ export interface LoginResponseData {
     name: string;
   };
   sessionExpiry: string;
+  accessToken?: string; // [NEW] 에이전트 연동을 위한 JWT 토큰 필드 추가
 }
 
 /** 필드별 상세 에러 규격 */

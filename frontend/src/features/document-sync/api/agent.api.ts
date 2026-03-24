@@ -32,10 +32,15 @@ export const fetchAgentFiles = async (): Promise<AgentFile[]> => {
  * @param sequenceIds 선택된 파일의 sequenceId 목록 (mode가 'selected'일 때 필드 필수)
  */
 export const startAgentUpload = async (counselId: string, mode: 'all' | 'selected' = 'all', sequenceIds?: number[]): Promise<void> => {
+  // (Why) 에이전트는 독립 프로세스이므로 브라우저의 인증 세션을 공유하지 못합니다. 
+  // 따라서 호출 시점에 sessionStorage에 저장된 인증 토큰을 전달합니다. (세션 기반 저장소 권장)
+  const accessToken = sessionStorage.getItem('access_token') || '';
+
   await agentClient.post('/api/upload/start', {
     mode,
     sequenceIds,
     counselId,
+    accessToken,
   });
 };
 

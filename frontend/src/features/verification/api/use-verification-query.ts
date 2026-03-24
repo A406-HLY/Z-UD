@@ -14,7 +14,7 @@ export const useVerificationQuery = (id: string) => {
       // (Why: 실제 네트워크 지연 시뮬레이션으로 UX 테스트)
       await new Promise(resolve => setTimeout(resolve, 800));
 
-      // 실제 환경에서는 여기서 apiClient.get(`/api/v1/verification/${id}`)를 호출합니다.
+      // 실제 환경에서는 여기서 apiClient.get(`/verification/${id}`)를 호출합니다.
       return MOCK_VERIFICATION_RESPONSE;
     },
     enabled: !!id,
