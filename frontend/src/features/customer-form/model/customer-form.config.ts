@@ -1,4 +1,4 @@
-import { CUSTOMER_FORM_LABELS, CUSTOMER_FORM_PLACEHOLDERS } from '@/entities/customer/model/customer.constants';
+import { CUSTOMER_FORM_LABELS, CUSTOMER_FORM_PLACEHOLDERS, EMPLOYMENT_TYPES, LOAN_PURPOSE_OPTIONS } from '@/entities/customer/model/customer.constants';
 import { Customer } from '@/entities/customer/model/types';
 
 export interface FieldConfig {
@@ -50,7 +50,7 @@ export const CUSTOMER_FIELDS_CONFIG: FieldConfig[] = [
     label: CUSTOMER_FORM_LABELS.loanPurpose,
     placeholder: CUSTOMER_FORM_PLACEHOLDERS.loanPurpose,
     component: 'select',
-    options: ['주택구입목적', '생활안정자금목적'] as const,
+    options: LOAN_PURPOSE_OPTIONS,
     className: 'h-8 w-full max-w-[200px]',
   },
   {
@@ -58,7 +58,7 @@ export const CUSTOMER_FIELDS_CONFIG: FieldConfig[] = [
     label: CUSTOMER_FORM_LABELS.employmentType,
     placeholder: CUSTOMER_FORM_PLACEHOLDERS.employmentType,
     component: 'select',
-    options: ['직장인', '자영업자', '프리랜서'] as const,
+    options: EMPLOYMENT_TYPES,
     className: 'h-8 w-full max-w-[160px]',
   },
   {

@@ -1,5 +1,6 @@
 import { apiClient } from '@/shared/api/client';
 import { Customer } from '../model/types';
+import { EMPLOYMENT_TYPE_MAP, LOAN_PURPOSE_MAP, EmploymentType, LoanPurposeOption } from '../model/customer.constants';
 import { ApiResponse } from '@/entities/user';
 
 /**
@@ -27,26 +28,15 @@ const mapToBackendRequest = (customer: Customer): CreateConsultationRequest => {
   const amount = parseInt(customer.desiredAmount.replace(/,/g, ''), 10) || 0;
   const houseCount = parseInt(customer.houseCount, 10) || 0;
 
-  // (Why) 프론트엔드 한글 옵션을 백엔드 Enum(영문 대문자)으로 매핑합니다.
-  const employmentMap: Record<string, string> = {
-    '직장인': 'EMPLOYEE',
-    '자영업자': 'SELF_EMPLOYED',
-    '프리랜서': 'FREELANCER',
-  };
-
-  const purposeMap: Record<string, string> = {
-    '주택구입목적': 'HOME_PURCHASE',
-    '생활안정자금목적': 'LIVING_STABILITY',
-  };
-
+  // (Why) 프론트엔드 옵션을 백엔드 Enum(영문 대문자)으로 매핑합니다.
   return {
     consultationId: customer.counselId,
     name: customer.name,
     residentRegistrationNumber: customer.personalId,
     phoneNumber: customer.phoneNumber,
-    employmentType: employmentMap[customer.employmentType] || 'EMPLOYEE',
+    employmentType: EMPLOYMENT_TYPE_MAP[customer.employmentType as EmploymentType] || 'EMPLOYEE',
     targetLoanAmount: amount,
-    loanPurpose: purposeMap[customer.loanPurpose] || 'HOME_PURCHASE',
+    loanPurpose: LOAN_PURPOSE_MAP[customer.loanPurpose as LoanPurposeOption] || 'HOME_PURCHASE',
     ownedHouseCount: houseCount,
   };
 };
