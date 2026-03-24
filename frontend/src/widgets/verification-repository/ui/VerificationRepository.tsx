@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Folder, FileText, ChevronDown, ChevronRight, AlertTriangle, Info } from 'lucide-react';
 import { DocCategory, DocumentStatus, DocItem } from '@/entities/verification/model/types';
 import { calculateCategoryStatus } from '@/entities/verification/model/verification.logic';
+import { useRepositoryKeyboard } from '../model/use-repository-keyboard';
 
 interface Props {
   categories: DocCategory[];
@@ -62,6 +63,11 @@ export const VerificationRepository = ({ categories, documents, selectedId, onSe
     return null;
   };
 
+  const { handleItemKeyDown } = useRepositoryKeyboard({
+    onRequestNextDocument,
+    onRequestPrevDocument
+  });
+
   return (
     <div 
       className="h-full border-r border-gray-300 flex flex-col bg-[#F8F9FA] shrink-0"
@@ -112,29 +118,7 @@ export const VerificationRepository = ({ categories, documents, selectedId, onSe
                         data-doc-id={item.id}
                         disabled={disabled}
                         onClick={() => onSelect(item.id)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Tab') {
-                            if (!e.shiftKey) {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              if (item.status === 'REVIEW_NEEDED') {
-                                const firstErrorInput = document.querySelector(`input[data-document-id="${item.id}"][data-nav-error="true"]`) as HTMLInputElement;
-                                if (firstErrorInput) {
-                                  firstErrorInput.focus();
-                                } else {
-                                  onRequestNextDocument();
-                                }
-                              } else {
-                                onRequestNextDocument();
-                              }
-                            } else {
-                              // [Point: Shift + Tab은 에디터로 들어가지 않고 문서 간 역방향 이동만 수행]
-                              e.preventDefault();
-                              e.stopPropagation();
-                              onRequestPrevDocument();
-                            }
-                          }
-                        }}
+                        onKeyDown={(e) => handleItemKeyDown(e, item)}
                         className={`
                           w-full text-left flex items-center px-8 border-b border-[#F0F0F0] transition-all
                           ${disabled ? 'cursor-not-allowed opacity-60' : isSelected ? 'bg-[#004b93] text-white' : `cursor-pointer hover:bg-[#E9EEF3] ${text} ${bg}`}
