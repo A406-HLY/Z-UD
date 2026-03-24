@@ -9,7 +9,7 @@ import lombok.Builder;
 public record DocumentExtractionReqDto(
 	String schemaVersion,
 	String jobId,
-	String caseId,
+	String consultationId,
 	ProcessedAt processedAt,
 	@NotNull
 	List<DocumentDto> documents
