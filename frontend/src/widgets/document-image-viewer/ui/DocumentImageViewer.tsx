@@ -28,8 +28,8 @@ export const DocumentImageViewer = ({ fields = [], focusedFieldKey = null, fileU
   } = usePdfController(fields, focusedFieldKey, originalWidth);
 
   return (
-    <div className="flex-[1.3] h-full flex flex-col bg-[#808080] overflow-hidden relative border-l border-gray-300">
-      {/* 1. 뷰어 컨트롤 헤더 */}
+    <div className="flex-[1.3] h-full flex flex-col bg-[#808080] overflow-hidden relative">
+      {/* 1. 뷰어 컨트롤 헤더 (중복 테두리 제거 및 높이 통일) */}
       <div className="h-[40px] bg-gray-200 border-b border-gray-300 flex items-center px-4 justify-between shrink-0 z-20">
         <span className="text-[11px] font-bold text-[#444] uppercase tracking-wider font-mono">
           Page {pageNumber}

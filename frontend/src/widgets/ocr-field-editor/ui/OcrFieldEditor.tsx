@@ -58,9 +58,9 @@ export const OcrFieldEditor = ({ fields, status, isRisk, selectedId, onFieldChan
   };
   
   return (
-    <div className="flex-1 h-full border-r border-gray-300 flex flex-col bg-white overflow-hidden">
+    <div className="flex-1 h-full min-h-0 border-r border-gray-300 flex flex-col bg-white overflow-hidden">
       {/* Header with Dynamic Judgment Badge */}
-      <div className={`h-[36px] border-b border-gray-300 flex items-center px-4 justify-between shrink-0 transition-colors ${isReviewNeeded ? 'bg-red-50' : isRisk ? 'bg-yellow-50' : 'bg-gray-100'}`}>
+      <div className={`h-[40px] border-b border-gray-300 flex items-center px-4 justify-between shrink-0 transition-colors ${isReviewNeeded ? 'bg-red-50' : isRisk ? 'bg-yellow-50' : 'bg-gray-100'}`}>
         <div className="flex items-center gap-2">
           <span className="text-[11px] font-bold text-[#444] uppercase tracking-wider">OCR Data Correction</span>        </div>
       </div>
