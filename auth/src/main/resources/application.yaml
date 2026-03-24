@@ -1,0 +1,79 @@
+spring:
+  application:
+    name: zud-auth
+  web:
+    resources:
+      add-mappings: false
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 10
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      auto-commit: false
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+  jpa:
+    open-in-view: false
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        show_sql: false
+        format_sql: false
+        use_sql_comments: false
+        criteria:
+          literal_handling_mode: bind
+        query:
+          in_clause_parameter_padding: true
+        connection:
+          provider_disables_autocommit: true
+  threads:
+    virtual:
+      enabled: on
+  jmx:
+    enabled: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 100MB
+
+server:
+  servlet:
+    session:
+      timeout: 9h
+  port: 9000
+
+springdoc:
+  swagger-ui:
+    display-request-duration: true
+    operations-sorter: alpha
+    try-it-out-enabled: true
+    tags-sorter: alpha
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
+
+logging:
+  level:
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: ERROR
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: [ health, prometheus ]
+  endpoint:
+    health:
+      enabled: true
+      show-details: when_authorized
+    prometheus:
+      enabled: true
