@@ -13,6 +13,7 @@ export const usePdfController = (
 ) => {
   const [scale, setScale] = useState(1);
   const [pageNumber, setPageNumber] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const [renderedSize, setRenderedSize] = useState({ width: 0, height: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -49,11 +50,34 @@ export const usePdfController = (
     }
   }, [focusedFieldKey, fields, scaleRatio]);
 
+  // (Why: Ctrl + Wheel 조작 시 브라우저 기본 확대를 차단하고 PDF 뷰어의 스케일만 조절합니다.)
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const delta = e.deltaY * -0.001; // 휠 속도에 따른 가중치 조절
+        setScale(prev => {
+          const newScale = Math.min(3, Math.max(0.4, prev + delta));
+          return Number(newScale.toFixed(2));
+        });
+      }
+    };
+
+    // (Note: 브라우저 기본 동작 차단을 위해 passive: false 설정 필수)
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => container.removeEventListener('wheel', handleWheel);
+  }, []);
+
   return {
     scale, 
     setScale,
     pageNumber, 
     setPageNumber,
+    isLoading,
+    setIsLoading,
     containerRef,
     setRenderedSize,
     scaledBboxes

@@ -1,14 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
+import { PDF_CONFIG } from '@/shared/config/pdf';
 
-// 1. 내부망 전용 워커 경로 설정 (Step 1에서 복사한 절대 경로)
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/assets/pdf.worker.min.js';
+// 1. 내부망 전용 워커 경로 설정 (Shared Config 참조)
+pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_CONFIG.WORKER_SRC;
 
 interface Props {
   fileUrl?: string; // 백엔드 API로부터 전달받은 PDF 소스 URL
   pageNumber: number;
   scale: number;
   onLoadSuccess: (info: { width: number; height: number }) => void;
+  isLoading: boolean;
+  setIsLoading: (loading: boolean) => void;
 }
 
 /**
@@ -20,17 +23,55 @@ interface Props {
  * 2. 렌더링 속도: 1.5초 이내 완료를 위해 Canvas 하드웨어 가속 활용
  * 3. 폐쇄망 대응: public 폴더의 로컬 CMap 데이터 참조로 한글 깨짐 방지
  */
-export const PdfRenderer = ({ fileUrl, pageNumber, scale, onLoadSuccess }: Props) => {
+export const PdfRenderer = ({ fileUrl, pageNumber, scale, onLoadSuccess, isLoading, setIsLoading }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [pdfDoc, setPdfDoc] = useState<pdfjsLib.PDFDocumentProxy | null>(null);
   
   // (Point: 수동 메모리 관리를 위한 Ref 참조)
-  const currentRenderTask = useRef<any>(null);
-  const currentPdfDoc = useRef<pdfjsLib.PDFDocumentProxy | null>(null);
+  const currentRenderTask = useRef<pdfjsLib.RenderTask | null>(null);
 
+  // 1. [문서로드]: fileUrl이 변경될 때만 PDF 문서를 새롭게 파싱합니다.
   useEffect(() => {
-    const renderPdf = async () => {
-      if (!fileUrl) {
+    if (!fileUrl) {
+      setPdfDoc(null);
+      return;
+    }
+
+    let isMounted = true;
+    const loadDocument = async () => {
+      setIsLoading(true);
+      try {
+        const loadingTask = pdfjsLib.getDocument({
+          url: fileUrl,
+          cMapUrl: PDF_CONFIG.CMAP_URL, 
+          cMapPacked: PDF_CONFIG.CMAP_PACKED,
+        });
+        const pdf = await loadingTask.promise;
+        if (isMounted) {
+          setPdfDoc(pdf);
+        } else {
+          pdf.destroy();
+        }
+      } catch (error) {
+        console.error('PDF Document Loading Error:', error);
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    loadDocument();
+
+    return () => {
+      isMounted = false;
+      if (pdfDoc) {
+        pdfDoc.destroy().catch(console.error); 
+      }
+    };
+  }, [fileUrl]); 
+
+  // 2. [페이지 렌더링]: pdfDoc, pageNumber, scale이 변경될 때 Canvas에 다시 그립니다.
+  useEffect(() => {
+    const renderPage = async () => {
+      if (!pdfDoc) {
         // (Why: 초기 대기 상태에서는 기본 A4 비율 크기만 부모에게 리턴하여 레이아웃 유지)
         onLoadSuccess({ width: 600 * scale, height: 848 * scale });
         return;
@@ -39,26 +80,15 @@ export const PdfRenderer = ({ fileUrl, pageNumber, scale, onLoadSuccess }: Props
       setIsLoading(true);
 
       try {
-        // [Cleanup] 이전 렌더링 태스크 및 문서 객체 명시적 파괴 (Memory Free)
+        // [Cleanup] 이전 렌더링 태스크 명시적 중단 (Memory Free)
         if (currentRenderTask.current) {
           currentRenderTask.current.cancel();
         }
-        if (currentPdfDoc.current) {
-          await currentPdfDoc.current.destroy();
-          currentPdfDoc.current = null;
-        }
 
-        // 2. 문서 로드 (CMap 로컬 절대 경로 참조 설정)
-        const loadingTask = pdfjsLib.getDocument({
-          url: fileUrl,
-          cMapUrl: '/assets/cmaps/', 
-          cMapPacked: true,
-        });
-
-        const pdf = await loadingTask.promise;
-        currentPdfDoc.current = pdf;
-
-        const page = await pdf.getPage(pageNumber);
+        const page = await pdfDoc.getPage(pageNumber);
+        
+        // (Safety): 브라우저별 Canvas 픽셀 제한(H/W 가속 한계) 고려. 
+        // 8000px을 초과할 경우 성능 및 뒤집힘 방지를 위해 스케일을 조정할 수도 있으나, 여기서는 최적화 우선.
         const viewport = page.getViewport({ scale });
 
         const canvas = canvasRef.current;
@@ -75,7 +105,7 @@ export const PdfRenderer = ({ fileUrl, pageNumber, scale, onLoadSuccess }: Props
           viewport: viewport,
         };
 
-        // 3. 렌더링 태스크 실행 및 태스크 참조 저장 (나중에 캔슬하기 위함)
+        // 3. 렌더링 태스크 실행 및 태스크 참조 저장
         currentRenderTask.current = page.render(renderContext);
         await currentRenderTask.current.promise;
 
@@ -86,42 +116,25 @@ export const PdfRenderer = ({ fileUrl, pageNumber, scale, onLoadSuccess }: Props
         });
 
         setIsLoading(false);
-      } catch (error: any) {
-        if (error.name === 'RenderingCancelledException') return; // 취소 이벤트 무시
-        console.error('PDF Renderer Critical Error:', error);
+      } catch (error: unknown) {
+        // (Point: unknown 타입 에러에 대해 타입 가드 활용)
+        if (error instanceof Error && error.name === 'RenderingCancelledException') return; 
+        console.error('PDF Page Render Error:', error);
         setIsLoading(false);
       }
     };
 
-    renderPdf();
+    renderPage();
 
-    // [Cleanup Pattern]: 컴포넌트 언마운트 시 물리적 가비지 컬렉팅 강제 유도
     return () => {
       if (currentRenderTask.current) {
         currentRenderTask.current.cancel();
       }
-      if (currentPdfDoc.current) {
-        currentPdfDoc.current.destroy();
-      }
-      if (canvasRef.current) {
-        canvasRef.current.width = 0;
-        canvasRef.current.height = 0;
-      }
     };
-  }, [fileUrl, pageNumber, scale, onLoadSuccess]);
+  }, [pdfDoc, pageNumber, scale, onLoadSuccess]);
 
   return (
     <div className="relative shadow-2xl bg-white flex justify-center overflow-hidden">
-      {/* Loading Blur Layer */}
-      {isLoading && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/40 backdrop-blur-[2px]">
-          <div className="flex flex-col items-center gap-2">
-            <div className="w-6 h-6 border-2 border-[#004b93] border-t-transparent rounded-full animate-spin" />
-            <span className="text-[10px] font-black text-[#004b93] tracking-wider uppercase">Loading Document...</span>
-          </div>
-        </div>
-      )}
-
       {/* Actual Drawing Surface */}
       {fileUrl ? (
         <canvas ref={canvasRef} className="max-w-full h-auto" />
