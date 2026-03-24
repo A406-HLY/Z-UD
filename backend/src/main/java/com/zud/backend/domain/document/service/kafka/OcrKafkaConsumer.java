@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zud.backend.common.error.ErrorCode;
 import com.zud.backend.domain.consultation.service.query.ConsultationQueryService;
 import com.zud.backend.domain.document.dto.request.DocumentExtractionReqDto;
-import com.zud.backend.domain.document.dto.response.DocumentExtractionDesDto;
+import com.zud.backend.domain.document.dto.response.DocumentExtractionResDto;
 import com.zud.backend.domain.document.exception.DocumentException;
 import com.zud.backend.domain.document.redis.OcrExtractionResultCache;
 import com.zud.backend.domain.document.repository.OcrResultRedisRepository;
@@ -38,7 +38,7 @@ public class OcrKafkaConsumer {
 	public void consume(final String messageBody) {
 		try {
 			DocumentExtractionReqDto reqDto = objectMapper.readValue(messageBody, DocumentExtractionReqDto.class);
-			DocumentExtractionDesDto result = documentFacadeService.validateDocuments(reqDto);
+			DocumentExtractionResDto result = documentFacadeService.validateDocuments(reqDto);
 			ocrResultRedisRepository.save(OcrExtractionResultCache.of(reqDto.consultationId(), result));
 			Long userId = consultationQueryService.findByUuid(reqDto.consultationId()).getUser().getId();
 			ocrNotificationService.notifyOcrCompleted(userId, reqDto.consultationId());

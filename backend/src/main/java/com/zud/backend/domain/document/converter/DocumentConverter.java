@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.zud.backend.domain.consultation.enums.CounselStatus;
 import com.zud.backend.domain.document.dto.request.DocumentDto;
-import com.zud.backend.domain.document.dto.response.DocumentExtractionDesDto;
+import com.zud.backend.domain.document.dto.response.DocumentExtractionResDto;
 import com.zud.backend.domain.document.dto.response.DocumentMissing;
 import com.zud.backend.domain.document.dto.response.DocumentValidationResult;
 import com.zud.backend.domain.document.dto.response.DocumentViolation;
@@ -32,11 +32,11 @@ public class DocumentConverter {
 			.build();
 	}
 
-	public DocumentExtractionDesDto toDocumentExtractionDesDto(
+	public DocumentExtractionResDto toDocumentExtractionDesDto(
 		final DocumentValidationResult validationResult,
 		final List<DocumentDto> documents
 	) {
-		return DocumentExtractionDesDto.builder()
+		return DocumentExtractionResDto.builder()
 			.documents(documents)
 			.validationResult(validationResult)
 			.build();

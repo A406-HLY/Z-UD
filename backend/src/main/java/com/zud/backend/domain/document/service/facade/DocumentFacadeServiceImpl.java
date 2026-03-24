@@ -23,7 +23,7 @@ import com.zud.backend.domain.document.dto.request.file.FileMetaDto;
 import com.zud.backend.domain.document.dto.request.file.PresignedUrlReqDto;
 import com.zud.backend.domain.document.dto.request.file.UploadCompletionReqDto;
 import com.zud.backend.domain.document.dto.request.file.UploadResultDto;
-import com.zud.backend.domain.document.dto.response.DocumentExtractionDesDto;
+import com.zud.backend.domain.document.dto.response.DocumentExtractionResDto;
 import com.zud.backend.domain.document.dto.response.DocumentValidationResult;
 import com.zud.backend.domain.document.dto.response.file.PresignedFileDto;
 import com.zud.backend.domain.document.dto.response.file.PresignedUrlResDto;
@@ -89,7 +89,7 @@ public class DocumentFacadeServiceImpl implements DocumentFacadeService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public DocumentExtractionDesDto validateDocuments(final DocumentExtractionReqDto reqDto) {
+	public DocumentExtractionResDto validateDocuments(final DocumentExtractionReqDto reqDto) {
 		Consultation consultation = consultationQueryService.findByUuid(reqDto.consultationId());
 		DocumentValidationResult validationResult = documentValidator.validateAll(reqDto.documents(), consultation);
 		return DocumentConverter.toDocumentExtractionDesDto(validationResult, reqDto.documents());
@@ -97,7 +97,7 @@ public class DocumentFacadeServiceImpl implements DocumentFacadeService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public DocumentExtractionDesDto getExtractionResult(final String consultationId) {
+	public DocumentExtractionResDto getExtractionResult(final String consultationId) {
 		return ocrResultRedisRepository.findByConsultationId(consultationId)
 			.map(OcrExtractionResultCache::result)
 			.orElseThrow(() -> new DocumentException(ErrorCode.NOT_FOUND));
