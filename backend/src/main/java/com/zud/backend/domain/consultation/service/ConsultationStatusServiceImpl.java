@@ -27,6 +27,7 @@ public class ConsultationStatusServiceImpl implements ConsultationStatusService 
 
 	@Override
 	public void updateDocumentVerificationStatus(String dirName, CounselStatus status, List<String> uploadedUrls) {
+		//TODO Kafka 기반 시스템으로 변경 필요
 		String statusKey = STATUS_KEY_PREFIX + dirName;
 		stringRedisTemplate.opsForValue().set(statusKey, status.name(), TTL);
 
