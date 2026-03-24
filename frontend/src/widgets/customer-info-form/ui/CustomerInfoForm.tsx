@@ -41,8 +41,8 @@ export const CustomerInfoForm = () => {
 
   return (
     <Card className={clsx(
-      "transition-all ease-in-out border-l-4 rounded-none relative overflow-hidden",
-      isPollingActive ? "bg-white border-l-[#004b93] shadow-sm" : "bg-[#f8f9fa] border-l-transparent shadow-sm"
+      "transition-all ease-in-out rounded-none relative overflow-hidden",
+      isPollingActive ? "bg-white border-l-transparent shadow-sm" : "bg-[#f8f9fa] border-l-transparent shadow-sm"
     )}>
       {/* (P2) 라우트 기반 4단계 화살표형 스테퍼 (Chevron Stepper) */}
       <div className="flex w-full h-7 bg-white">
