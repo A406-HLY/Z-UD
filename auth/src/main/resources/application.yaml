@@ -77,3 +77,13 @@ management:
       show-details: when_authorized
     prometheus:
       enabled: true
+
+auth:
+  oauth:
+    client-id: ${AUTH_OAUTH_CLIENT_ID:zud-client}
+    client-secret: ${AUTH_OAUTH_CLIENT_SECRET:zud-secret}
+    access-token-ttl: ${AUTH_OAUTH_ACCESS_TOKEN_TTL:PT1H}
+    refresh-token-ttl: ${AUTH_OAUTH_REFRESH_TOKEN_TTL:P30D}
+    allowed-origins: ${AUTH_OAUTH_ALLOWED_ORIGINS:http://localhost:3000,http://127.0.0.1:3000}
+  rsa:
+    key-identifier: ${AUTH_RSA_KEY_IDENTIFIER:zud}
