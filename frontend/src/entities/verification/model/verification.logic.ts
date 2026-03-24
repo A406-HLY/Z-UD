@@ -1,10 +1,26 @@
-import { ExtractedField, DocumentStatus, DocItem } from '@/entities/verification/model/types';
+import { ExtractedField, DocumentStatus, DocItem, DocCategory } from '@/entities/verification/model/types';
 import { Customer } from '@/entities/customer/model/types';
 
 /**
  * @feature verification
  * 서류 검증 도메인에서 공통으로 사용되는 비즈니스 연산 로직 모음입니다.
  */
+
+export const getNextDocumentId = (currentId: string | null, categories: DocCategory[]): string | null => {
+  if (!currentId) return null;
+  const allIds = categories.flatMap(cat => cat.itemIds);
+  const currentIndex = allIds.indexOf(currentId);
+  if (currentIndex === -1 || currentIndex === allIds.length - 1) return null;
+  return allIds[currentIndex + 1];
+};
+
+export const getPrevDocumentId = (currentId: string | null, categories: DocCategory[]): string | null => {
+  if (!currentId) return null;
+  const allIds = categories.flatMap(cat => cat.itemIds);
+  const currentIndex = allIds.indexOf(currentId);
+  if (currentIndex <= 0) return null;
+  return allIds[currentIndex - 1];
+};
 
 /**
  * [Why: 배열 형태나 중첩된 키 구조에서도 일관된 필드명을 추출하기 위해 정규화를 수행합니다.]

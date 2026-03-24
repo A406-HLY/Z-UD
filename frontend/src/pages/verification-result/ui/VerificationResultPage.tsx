@@ -1,10 +1,13 @@
+import { useEffect } from 'react';
 import { Header } from '@/widgets/header';
 import { LoanTabs } from '@/widgets/loan-tabs';
 import { CustomerInfoForm } from '@/widgets/customer-info-form';
+import { LoanStepper } from '@/widgets/loan-stepper/ui/LoanStepper';
 import { VerificationRepository } from '@/widgets/verification-repository/ui/VerificationRepository';
 import { OcrFieldEditor } from '@/widgets/ocr-field-editor/ui/OcrFieldEditor';
 import { DocumentImageViewer } from '@/widgets/document-image-viewer/ui/DocumentImageViewer';
 import { useVerificationController } from '@/features/verification/model/use-verification-controller';
+import { useGlobalFocusRecovery } from '@/features/verification/model/use-global-focus-recovery';
 
 /**
  * @page verification-result
@@ -18,8 +21,16 @@ export const VerificationResultPage = () => {
     focusedFieldKey,
     setSelectedId, 
     setFocusedFieldKey,
-    handleFieldChange 
+    handleFieldChange,
+    handleNextDocument,
+    handlePrevDocument
   } = useVerificationController('v-12345');
+
+  // (Why: 전역 포커스 감시 로직을 훅으로 격리하여 페이지(UI) 코드를 조립 역할에 집중시킵니다.)
+  useGlobalFocusRecovery({
+    handleNextDocument,
+    handlePrevDocument
+  });
 
   if (isLoading || !localResult) {
 
@@ -27,6 +38,7 @@ export const VerificationResultPage = () => {
       <div className="min-h-screen flex flex-col bg-gray-50 font-sans">
         <Header />
         <main className="flex-1 p-4 space-y-4">
+          <section><LoanStepper /></section>
           <section><CustomerInfoForm /></section>
           <section><LoanTabs /></section>
           <div className="flex-1 flex items-center justify-center font-black text-gray-300 animate-pulse uppercase tracking-[0.5em] py-20">
@@ -45,6 +57,10 @@ export const VerificationResultPage = () => {
       
       <main className="flex-1 p-4 space-y-4">
         <section>
+          <LoanStepper />
+        </section>
+        
+        <section>
           <CustomerInfoForm />
         </section>
         
@@ -58,7 +74,9 @@ export const VerificationResultPage = () => {
             categories={localResult.categories} 
             documents={localResult.documents}
             selectedId={selectedId} 
-            onSelect={setSelectedId} 
+            onSelect={setSelectedId}
+            onRequestNextDocument={handleNextDocument}
+            onRequestPrevDocument={handlePrevDocument}
           />
           
           {/* 중앙: 실시간 교차 검증 에디터 */}
@@ -66,8 +84,10 @@ export const VerificationResultPage = () => {
             fields={selectedId ? (localResult.documentFields[selectedId] || []) : []} 
             status={selectedDoc?.status || 'APPROVED'}
             isRisk={selectedDoc?.isRisk}
+            selectedId={selectedId}
             onFieldChange={handleFieldChange}
             onFocus={setFocusedFieldKey}
+            onRequestNextDocument={handleNextDocument}
           />
           
           {/* 우측: 원본 서류 이미지 뷰어 */}

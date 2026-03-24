@@ -15,9 +15,9 @@ const initialState: CustomerState = {
   // 테스트를 위해 초기값을 세팅해둡니다. (실제 운영시 INITIAL_CUSTOMER_STATE 사용)
   data: {
     ...INITIAL_CUSTOMER_STATE,
-    name: '홍길동',
-    personalId: '900101-1******', // OCR의 주민번호 필드와 대조됨
-    phoneNumber: '010-1234-5678',
+    // name: '홍길동',
+    // personalId: '900101-1******', // OCR의 주민번호 필드와 대조됨
+    // phoneNumber: '010-1234-5678',
   },
   isPollingActive: false,
 };
