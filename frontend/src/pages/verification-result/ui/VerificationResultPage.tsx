@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Header } from '@/widgets/header';
 import { LoanTabs } from '@/widgets/loan-tabs';
 import { CustomerInfoForm } from '@/widgets/customer-info-form';
@@ -18,8 +19,36 @@ export const VerificationResultPage = () => {
     focusedFieldKey,
     setSelectedId, 
     setFocusedFieldKey,
-    handleFieldChange 
+    handleFieldChange,
+    handleNextDocument,
+    handlePrevDocument
   } = useVerificationController('v-12345');
+
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Tab') {
+        const active = document.activeElement;
+        const isBody = active === document.body;
+        const isManagedInput = active?.hasAttribute('data-document-id');
+        const isSidebarButton = active?.hasAttribute('data-doc-id');
+
+        if (isBody || (!isManagedInput && !isSidebarButton)) {
+          const isInputWork = ['INPUT', 'SELECT', 'TEXTAREA'].includes(active?.tagName || '');
+          if (!isInputWork) {
+            e.preventDefault();
+            if (!e.shiftKey) {
+              handleNextDocument();
+            } else {
+              handlePrevDocument();
+            }
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [handleNextDocument, handlePrevDocument]);
 
   if (isLoading || !localResult) {
 
@@ -58,7 +87,9 @@ export const VerificationResultPage = () => {
             categories={localResult.categories} 
             documents={localResult.documents}
             selectedId={selectedId} 
-            onSelect={setSelectedId} 
+            onSelect={setSelectedId}
+            onRequestNextDocument={handleNextDocument}
+            onRequestPrevDocument={handlePrevDocument}
           />
           
           {/* 중앙: 실시간 교차 검증 에디터 */}
@@ -66,8 +97,10 @@ export const VerificationResultPage = () => {
             fields={selectedId ? (localResult.documentFields[selectedId] || []) : []} 
             status={selectedDoc?.status || 'APPROVED'}
             isRisk={selectedDoc?.isRisk}
+            selectedId={selectedId}
             onFieldChange={handleFieldChange}
             onFocus={setFocusedFieldKey}
+            onRequestNextDocument={handleNextDocument}
           />
           
           {/* 우측: 원본 서류 이미지 뷰어 */}

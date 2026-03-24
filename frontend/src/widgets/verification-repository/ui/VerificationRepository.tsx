@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Folder, FileText, ChevronDown, ChevronRight, AlertTriangle, Info } from 'lucide-react';
 import { DocCategory, DocumentStatus, DocItem } from '@/entities/verification/model/types';
 import { calculateCategoryStatus } from '@/entities/verification/model/verification.logic';
@@ -8,7 +8,9 @@ interface Props {
   documents: Record<string, DocItem>; 
   selectedId: string | null;
   onSelect: (id: string) => void;
-}
+  onRequestNextDocument: () => void;
+  onRequestPrevDocument: () => void;
+};
 
 const LAYOUT = {
   SIDEBAR_WIDTH: '260px',
@@ -23,12 +25,22 @@ const LAYOUT = {
  * 서류 카테고리를 트리 구조로 표시하며 아코디언 기능을 제공합니다.
  * (Why: 대규모 서류 묶음을 카테고리별로 효율적으로 관리하기 위함)
  */
-export const VerificationRepository = ({ categories, documents, selectedId, onSelect }: Props) => {
+export const VerificationRepository = ({ categories, documents, selectedId, onSelect, onRequestNextDocument, onRequestPrevDocument }: Props) => {
   const [expanded, setExpanded] = useState<string[]>(categories.map(c => c.id));
 
   const toggle = (id: string) => {
     setExpanded(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]);
   };
+
+  // (Why: 탭 이동 등으로 선택된 서류가 닫혀있는 폴더 안에 있을 경우, 해당 폴더를 자동으로 엽니다.)
+  useEffect(() => {
+    if (selectedId) {
+      const parentCat = categories.find(c => c.itemIds.includes(selectedId));
+      if (parentCat && !expanded.includes(parentCat.id)) {
+        setExpanded(prev => [...prev, parentCat.id]);
+      }
+    }
+  }, [selectedId, categories, expanded]);
 
   /** 상태별 스타일 및 아이콘 구분 (Point 5: JSX 마크업을 분리하여 데이터만 반환하도록 개선) */
   const getStatusMeta = (status: DocumentStatus) => {
@@ -97,8 +109,32 @@ export const VerificationRepository = ({ categories, documents, selectedId, onSe
                       <button 
                         type="button"
                         key={item.id}
+                        data-doc-id={item.id}
                         disabled={disabled}
                         onClick={() => onSelect(item.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Tab') {
+                            if (!e.shiftKey) {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              if (item.status === 'REVIEW_NEEDED') {
+                                const firstErrorInput = document.querySelector(`input[data-document-id="${item.id}"][data-nav-error="true"]`) as HTMLInputElement;
+                                if (firstErrorInput) {
+                                  firstErrorInput.focus();
+                                } else {
+                                  onRequestNextDocument();
+                                }
+                              } else {
+                                onRequestNextDocument();
+                              }
+                            } else {
+                              // [Point: Shift + Tab은 에디터로 들어가지 않고 문서 간 역방향 이동만 수행]
+                              e.preventDefault();
+                              e.stopPropagation();
+                              onRequestPrevDocument();
+                            }
+                          }
+                        }}
                         className={`
                           w-full text-left flex items-center px-8 border-b border-[#F0F0F0] transition-all
                           ${disabled ? 'cursor-not-allowed opacity-60' : isSelected ? 'bg-[#004b93] text-white' : `cursor-pointer hover:bg-[#E9EEF3] ${text} ${bg}`}

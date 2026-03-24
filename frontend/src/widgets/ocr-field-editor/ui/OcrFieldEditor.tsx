@@ -7,8 +7,10 @@ interface Props {
   status: DocumentStatus;
   /** 문서 전체 단위의 위험 여부 플래그 (cf. field.isRiskTarget: 개별 필드 원인 단위) */
   isRisk?: boolean;
+  selectedId?: string | null;
   onFieldChange?: (key: string, value: string) => void;
   onFocus?: (key: string) => void;
+  onRequestNextDocument?: () => void;
 }
 
 /**
@@ -16,9 +18,15 @@ interface Props {
  * OCR로 추출된 데이터 필드를 편집하며 정합성 상태(오류/경고/통과)에 따른 제어 로직을 제공합니다.
  * (Why: 정합성이 통과된 데이터는 수정을 막아 데이터 무결성을 보장하고, 오류가 있는 데이터만 집중 검수 유도)
  */
-export const OcrFieldEditor = ({ fields, status, isRisk, onFieldChange, onFocus }: Props) => {
+export const OcrFieldEditor = ({ fields, status, isRisk, selectedId, onFieldChange, onFocus, onRequestNextDocument }: Props) => {
   // 문서 자체가 정합성 오류 상태인지 확인
   const isReviewNeeded = status === 'REVIEW_NEEDED';
+
+  const errorFieldIndices = fields
+    .map((field, idx) => (!field.isMatch ? idx : -1))
+    .filter(idx => idx !== -1);
+  const firstErrorIndex = errorFieldIndices[0] ?? -1;
+  const lastErrorIndex = errorFieldIndices[errorFieldIndices.length - 1] ?? -1;
   
   return (
     <div className="flex-1 h-full border-r border-gray-300 flex flex-col bg-white overflow-hidden">
@@ -48,7 +56,7 @@ export const OcrFieldEditor = ({ fields, status, isRisk, onFieldChange, onFocus 
       {/* Field List Section */}
       <div className="flex-1 overflow-auto p-6 space-y-4">
         <div className="grid grid-cols-2 gap-x-8 gap-y-6">
-          {fields.map((field) => {
+          {fields.map((field, index) => {
             // 정합성 통과 여부 및 수정 가능 여부 판단
             const isErrorField = !field.isMatch;
 
@@ -69,8 +77,24 @@ export const OcrFieldEditor = ({ fields, status, isRisk, onFieldChange, onFocus 
                 <Input 
                   value={String(field.value ?? '')}
                   disabled={!canEdit}
+                  data-document-id={selectedId}
+                  data-nav-error={isErrorField}
                   onFocus={() => onFocus?.(field.key)}
                   onChange={(e) => onFieldChange?.(field.key, e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Tab') {
+                      if (e.shiftKey && index === firstErrorIndex) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const btn = document.querySelector(`button[data-doc-id="${selectedId}"]`) as HTMLButtonElement | null;
+                        if (btn) btn.focus();
+                      } else if (!e.shiftKey && index === lastErrorIndex) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onRequestNextDocument?.();
+                      }
+                    }
+                  }}
                   className={`
                     h-8 rounded-none transition-all
                     ${isErrorField 
