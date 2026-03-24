@@ -11,11 +11,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.zud.backend.common.error.ErrorCode;
 import com.zud.backend.domain.consultation.entity.Consultation;
 import com.zud.backend.domain.consultation.enums.CounselStatus;
 import com.zud.backend.domain.consultation.service.ConsultationStatusService;
 import com.zud.backend.domain.consultation.service.query.ConsultationQueryService;
 import com.zud.backend.domain.document.converter.DocumentConverter;
+import com.zud.backend.domain.document.dto.message.OcrReqMessage;
 import com.zud.backend.domain.document.dto.request.DocumentExtractionReqDto;
 import com.zud.backend.domain.document.dto.request.file.FileMetaDto;
 import com.zud.backend.domain.document.dto.request.file.PresignedUrlReqDto;
@@ -26,7 +28,11 @@ import com.zud.backend.domain.document.dto.response.DocumentValidationResult;
 import com.zud.backend.domain.document.dto.response.file.PresignedFileDto;
 import com.zud.backend.domain.document.dto.response.file.PresignedUrlResDto;
 import com.zud.backend.domain.document.dto.response.file.UploadCompletionResDto;
+import com.zud.backend.domain.document.exception.DocumentException;
+import com.zud.backend.domain.document.redis.OcrExtractionResultCache;
+import com.zud.backend.domain.document.repository.OcrResultRedisRepository;
 import com.zud.backend.domain.document.service.cloudflare.CloudflareService;
+import com.zud.backend.domain.document.service.kafka.OcrKafkaProducer;
 import com.zud.backend.domain.document.validator.DocumentValidator;
 import com.zud.backend.domain.document.validator.FileValidator;
 
@@ -47,6 +53,8 @@ public class DocumentFacadeServiceImpl implements DocumentFacadeService {
 	private final ConsultationQueryService consultationQueryService;
 
 	private final CloudflareService cloudflareService;
+	private final OcrKafkaProducer ocrKafkaProducer;
+	private final OcrResultRedisRepository ocrResultRedisRepository;
 
 	private final FileValidator fileValidator;
 	private final DocumentValidator documentValidator;
@@ -72,9 +80,9 @@ public class DocumentFacadeServiceImpl implements DocumentFacadeService {
 
 			consultationStatusService.updateDocumentVerificationStatus(consultationId, CounselStatus.OCR_QUEUED,
 				uploadedUrls);
-			log.info("[Document] 다중 파일 업로드 완료: counselId={}, count={}", consultationId, uploadedUrls.size());
+			log.info("[Document] 다중 파일 업로드 완료: consultationId={}, count={}", consultationId, uploadedUrls.size());
 		} catch (Exception e) {
-			log.error("[Document] 파일 업로드 실패: counselId={}", consultationId, e);
+			log.error("[Document] 파일 업로드 실패: consultationId={}", consultationId, e);
 			consultationStatusService.updateDocumentVerificationStatus(consultationId, CounselStatus.FAILED, List.of());
 		}
 	}
@@ -82,9 +90,17 @@ public class DocumentFacadeServiceImpl implements DocumentFacadeService {
 	@Override
 	@Transactional(readOnly = true)
 	public DocumentExtractionDesDto validateDocuments(final DocumentExtractionReqDto reqDto) {
-		Consultation consultation = consultationQueryService.findByUuid(reqDto.caseId());
+		Consultation consultation = consultationQueryService.findByUuid(reqDto.consultationId());
 		DocumentValidationResult validationResult = documentValidator.validateAll(reqDto.documents(), consultation);
 		return DocumentConverter.toDocumentExtractionDesDto(validationResult, reqDto.documents());
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public DocumentExtractionDesDto getExtractionResult(final String consultationId) {
+		return ocrResultRedisRepository.findByConsultationId(consultationId)
+			.map(OcrExtractionResultCache::result)
+			.orElseThrow(() -> new DocumentException(ErrorCode.NOT_FOUND));
 	}
 
 	@Override
@@ -122,6 +138,11 @@ public class DocumentFacadeServiceImpl implements DocumentFacadeService {
 			consultationStatusService.updateDocumentVerificationStatus(consultationId, status, List.of());
 		} else {
 			status = CounselStatus.OCR_QUEUED;
+			List<String> documentUrls = successFileNames.stream()
+				.map(fileName -> cloudflareService.generateGetPresignedUrl(consultationId, fileName))
+				.toList();
+			OcrReqMessage requestMessage = new OcrReqMessage(consultationId, documentUrls);
+			ocrKafkaProducer.sendRequest(consultationId, requestMessage);
 			consultationStatusService.updateDocumentVerificationStatus(consultationId, status, successFileNames);
 		}
 

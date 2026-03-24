@@ -16,6 +16,8 @@ public interface DocumentFacadeService {
 
 	DocumentExtractionDesDto validateDocuments(final DocumentExtractionReqDto reqDto);
 
+	DocumentExtractionDesDto getExtractionResult(final String consultationId);
+
 	PresignedUrlResDto issuePresignedUrls(final PresignedUrlReqDto reqDto);
 
 	UploadCompletionResDto completeUpload(final String consultationId, final UploadCompletionReqDto reqDto);
