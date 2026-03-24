@@ -35,12 +35,12 @@ export const VerificationResultPage = () => {
   if (isLoading || !localResult) {
 
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50 font-sans">
+      <div className="h-screen flex flex-col bg-gray-50 font-sans overflow-hidden">
         <Header />
-        <main className="flex-1 p-4 space-y-4">
-          <section><LoanStepper /></section>
-          <section><CustomerInfoForm /></section>
-          <section><LoanTabs /></section>
+        <main className="flex-1 min-h-0 p-4 space-y-4 flex flex-col overflow-hidden">
+          <section className="shrink-0"><LoanStepper /></section>
+          <section className="shrink-0"><CustomerInfoForm /></section>
+          <section className="shrink-0"><LoanTabs /></section>
           <div className="flex-1 flex items-center justify-center font-black text-gray-300 animate-pulse uppercase tracking-[0.5em] py-20">
             Analyzing Document Consistency...
           </div>
@@ -52,23 +52,23 @@ export const VerificationResultPage = () => {
   const selectedDoc = selectedId ? localResult.documents[selectedId] : undefined;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 font-sans">
+    <div className="h-screen flex flex-col bg-gray-50 font-sans overflow-hidden">
       <Header />
       
-      <main className="flex-1 p-4 space-y-4">
-        <section>
+      <main className="flex-1 min-h-0 p-4 space-y-4 flex flex-col overflow-hidden">
+        <section className="shrink-0">
           <LoanStepper />
         </section>
         
-        <section>
+        <section className="shrink-0">
           <CustomerInfoForm />
         </section>
         
-        <section>
+        <section className="shrink-0">
           <LoanTabs />
         </section>
         
-        <section className="h-[600px] flex overflow-hidden border border-gray-300 bg-white rounded-sm">
+        <section className="flex-1 min-h-0 flex overflow-hidden border border-gray-300 bg-white rounded-sm">
           {/* 좌측: 서류 트리 (실시간 상태 반영) */}
           <VerificationRepository 
             categories={localResult.categories} 

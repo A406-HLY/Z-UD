@@ -15,7 +15,7 @@ interface Props {
 
 const LAYOUT = {
   SIDEBAR_WIDTH: '260px',
-  HEADER_HEIGHT: '32px',
+  HEADER_HEIGHT: '40px',
   CATEGORY_HEIGHT: '28px',
   ITEM_HEIGHT: '26px'
 };
@@ -70,7 +70,7 @@ export const VerificationRepository = ({ categories, documents, selectedId, onSe
 
   return (
     <div 
-      className="h-full border-r border-gray-300 flex flex-col bg-[#F8F9FA] shrink-0"
+      className="h-full min-h-0 border-r border-gray-300 flex flex-col bg-[#F8F9FA] shrink-0"
       style={{ width: LAYOUT.SIDEBAR_WIDTH }}
     >
       <div 
