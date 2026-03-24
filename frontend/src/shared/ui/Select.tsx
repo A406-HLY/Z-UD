@@ -24,8 +24,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           // (P2) Default / Success State
           !isError && !isSuccess && 'border-slate-300 focus:border-[#004b93] focus:ring-[#004b93]',
           !isError && isSuccess && 'border-[#004b93] bg-blue-50 focus:border-[#004b93] focus:ring-[#004b93]',
-          // (P1) Error State
-          isError && 'border-red-500 focus:bg-red-50 focus:border-red-600 focus:ring-red-200',
+          // (P1) Error State (OCR 필드와 동일: 평소엔 빨간 배경, 포커스 시 흰 배경 + 진한 테두리)
+          isError && 'border-red-400 bg-red-50 text-red-700 focus:bg-white focus:border-red-600 focus:ring-red-600',
           className
         )}
         {...props}
