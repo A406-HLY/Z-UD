@@ -24,7 +24,7 @@ public record LoanReportReqDto(
 	@NotNull(message = "report input 값은 필수입니다.")
 	@Valid
 	ReportInput reportInput
-	) {
+) {
 	@ValidLoanReportReq
 	public record ReportInput(
 		@NotBlank(message = "세대주명은 필수입니다.")
@@ -183,14 +183,14 @@ public record LoanReportReqDto(
 		String name,
 		@NotBlank(message = "세대원 주민등록번호는 필수입니다.")
 		String residentRegistrationNumber
-	) {}
+	) { }
 
 	public record Spouse(
 		@NotNull(message = "배우자 존재 여부는 필수입니다.")
 		Boolean exists,
 		String name,
 		String residentRegistrationNumber
-	) {}
+	) { }
 
 	public record DepositAmount(
 		@NotNull(message = "입금일은 필수입니다.")
@@ -199,7 +199,7 @@ public record LoanReportReqDto(
 		@NotNull(message = "입금액은 필수입니다.")
 		@PositiveOrZero(message = "입금액은 0 이상이어야 합니다.")
 		Long depositAmount
-	) {}
+	) { }
 
 	public record TaxItem(
 		@NotBlank(message = "세목명은 필수입니다.")
@@ -208,13 +208,13 @@ public record LoanReportReqDto(
 		@PositiveOrZero(message = "세액은 0 이상이어야 합니다.")
 		Long taxAmount,
 		String remark
-	) {}
+	) { }
 
 	public record SeniorRight(
 		@NotNull(message = "채권최고액은 필수입니다.")
 		@PositiveOrZero(message = "채권최고액은 0 이상이어야 합니다.")
 		Long maximumClaimAmount
-	) {}
+	) { }
 
 	public record FloorStatus(
 		@NotBlank(message = "층 정보는 필수입니다.")
@@ -224,17 +224,17 @@ public record LoanReportReqDto(
 		@NotNull(message = "면적은 필수입니다.")
 		@PositiveOrZero(message = "면적은 0 이상이어야 합니다.")
 		BigDecimal area
-	) {}
+	) { }
 
 	public record Seller(
 		@NotBlank(message = "매도인 이름은 필수입니다.")
 		String name
-	) {}
+	) { }
 
 	public record Buyer(
 		@NotBlank(message = "매수인 이름은 필수입니다.")
 		String name
-	) {}
+	) { }
 
 	public record MoveInHousehold(
 		@NotBlank(message = "전입세대 세대주명은 필수입니다.")
@@ -242,5 +242,5 @@ public record LoanReportReqDto(
 		@NotNull(message = "전입일은 필수입니다.")
 		@JsonFormat(pattern = "yyyy-MM-dd")
 		LocalDate moveInDate
-	) {}
+	) { }
 }

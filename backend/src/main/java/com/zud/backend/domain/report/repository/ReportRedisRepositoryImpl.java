@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class ReportRedisRepositoryImpl implements ReportRedisRepository{
+public class ReportRedisRepositoryImpl implements ReportRedisRepository {
 
 	private static final String KEY_PREFIX = "loan-report:";
 	private static final Duration TTL = Duration.ofHours(24);

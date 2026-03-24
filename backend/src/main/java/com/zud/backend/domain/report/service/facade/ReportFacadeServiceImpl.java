@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
-@Transactional(readOnly=true)
+@Transactional(readOnly = true)
 public class ReportFacadeServiceImpl implements ReportFacadeService {
 
 	private final ReportRequestService reportRequestService;

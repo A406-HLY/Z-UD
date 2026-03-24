@@ -18,9 +18,15 @@ public class LoanReportReqValidator
 		context.disableDefaultConstraintViolation();
 
 		if (request.employmentType() == EmploymentType.EMPLOYEE) {
-			valid &= requireNotBlank(request.subscriberType(), "subscriberType", "근로자의 가입자 구분은 필수입니다.", context);
-			valid &= requireNotNull(request.latestAcquisitionDate(), "latestAcquisitionDate", "근로자의 최종 취득일은 필수입니다.", context);
-			valid &= requireNotBlank(request.incomeRecipientName(), "incomeRecipientName", "근로자의 소득수령자명은 필수입니다.", context);
+			valid &= requireNotBlank(
+				request.subscriberType(), "subscriberType", "근로자의 가입자 구분은 필수입니다.", context
+			);
+			valid &= requireNotNull(
+				request.latestAcquisitionDate(), "latestAcquisitionDate", "근로자의 최종 취득일은 필수입니다.", context
+			);
+			valid &= requireNotBlank(
+				request.incomeRecipientName(), "incomeRecipientName", "근로자의 소득수령자명은 필수입니다.", context
+			);
 			valid &= requireNotBlank(
 				request.incomeRecipientResidentRegistrationNumber(),
 				"incomeRecipientResidentRegistrationNumber",
@@ -33,7 +39,9 @@ public class LoanReportReqValidator
 
 		if (request.employmentType() == EmploymentType.SELF_EMPLOYED) {
 			valid = requireNotBlank(request.businessName(), "businessName", "상호명은 필수입니다.", context);
-			valid &= requireNotBlank(request.businessRegistrationNumber(), "businessRegistrationNumber", "사업자등록번호는 필수입니다.", context);
+			valid &= requireNotBlank(
+				request.businessRegistrationNumber(), "businessRegistrationNumber", "사업자등록번호는 필수입니다.", context
+			);
 			valid &= requireNotBlank(request.incomeYear(), "incomeYear", "소득 귀속연도는 필수입니다.", context);
 			valid &= requireNotNull(request.incomeAmount(), "incomeAmount", "소득 금액은 필수입니다.", context);
 			valid &= requireNotNull(request.determinedTaxAmount(), "determinedTaxAmount", "결정세액은 필수입니다.", context);
