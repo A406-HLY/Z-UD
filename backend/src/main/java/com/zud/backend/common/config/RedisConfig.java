@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zud.backend.common.config.properties.RedisProperties;
 import com.zud.backend.common.serializer.GzipRedisSerializer;
 import com.zud.backend.domain.auth.session.UserSession;
+import com.zud.backend.domain.report.redis.LoanReportResultCache;
 
 import lombok.RequiredArgsConstructor;
 
@@ -48,6 +49,12 @@ public class RedisConfig {
 
 	@Bean
 	public RedisTemplate<String, List<String>> documentVerificationRedisTemplate() {
+		return createGzipJsonRedisTemplate(objectMapper, new TypeReference<>() {
+		});
+	}
+
+	@Bean
+	public RedisTemplate<String, LoanReportResultCache> loanReportCacheRedisTemplate() {
 		return createGzipJsonRedisTemplate(objectMapper, new TypeReference<>() {
 		});
 	}
