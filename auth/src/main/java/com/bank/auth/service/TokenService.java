@@ -16,6 +16,8 @@ import com.bank.auth.dto.request.TokenIssueReqDto;
 import com.bank.auth.dto.request.TokenRefreshReqDto;
 import com.bank.auth.dto.request.TokenRevokeReqDto;
 import com.bank.auth.dto.response.TokenIssueResDto;
+import com.bank.auth.entity.AuditLog;
+import com.bank.auth.enums.TokenAction;
 import com.bank.auth.service.command.RefreshTokenCommandService;
 import com.bank.auth.service.command.TokenBlacklistCommandService;
 import com.bank.auth.service.query.RefreshTokenQueryService;
@@ -24,6 +26,8 @@ import com.bank.common.config.propertie.OAuthProperties;
 import com.bank.common.error.ErrorCode;
 import com.bank.common.error.exception.BusinessException;
 
+import io.micrometer.common.util.StringUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,29 +37,37 @@ import lombok.extern.slf4j.Slf4j;
 public class TokenService {
 
 	private static final String ISSUER = "zud-auth";
+	public static final String HTTP_HEADER_X_FORWARDED_FOR = "X-Forwarded-For";
 
 	private final JwtEncoder jwtEncoder;
 	private final JwtDecoder jwtDecoder;
+
 	private final RefreshTokenCommandService refreshTokenCommandService;
 	private final RefreshTokenQueryService refreshTokenQueryService;
+
 	private final TokenBlacklistCommandService tokenBlacklistCommandService;
 	private final TokenBlacklistQueryService tokenBlacklistQueryService;
+
+	private final AuditLogService auditLogService;
 	private final OAuthProperties oAuthProperties;
 
-	public TokenIssueResDto issueToken(final TokenIssueReqDto reqDto) {
+	public TokenIssueResDto issueToken(final TokenIssueReqDto reqDto, final HttpServletRequest servletRequest) {
 		long accessTtl = oAuthProperties.accessTokenTtl().toSeconds();
 		long refreshTtl = oAuthProperties.refreshTokenTtl().toSeconds();
 
 		String accessToken = encodeToken(reqDto, UUID.randomUUID().toString(), accessTtl, "access");
 		String refreshToken = encodeToken(reqDto, UUID.randomUUID().toString(), refreshTtl, "refresh");
-
 		refreshTokenCommandService.save(reqDto.employeeNumber(), refreshToken, refreshTtl);
 
+		saveTokenActionAuditLog(reqDto.employeeNumber(), TokenAction.TOKEN_ISSUE, extractIp(servletRequest));
 		log.info("[Token] 토큰 발급 완료 - employeeNumber: {}", reqDto.employeeNumber());
 		return TokenConverter.toTokenIssueResDto(accessToken, refreshToken, accessTtl);
 	}
 
-	public TokenIssueResDto reissueAccessToken(final TokenRefreshReqDto reqDto) {
+	public TokenIssueResDto reissueAccessToken(
+		final TokenRefreshReqDto reqDto,
+		final HttpServletRequest servletRequest
+	) {
 		Jwt refreshJwt = decodeAndValidateRefreshToken(reqDto.refreshToken());
 		String employeeNumber = refreshJwt.getSubject();
 
@@ -63,17 +75,29 @@ public class TokenService {
 		TokenIssueReqDto issueReqDto = extractClaimsAsIssueReqDto(refreshJwt);
 		String newAccessToken = encodeToken(issueReqDto, UUID.randomUUID().toString(), accessTtl, "access");
 
+		saveTokenActionAuditLog(employeeNumber, TokenAction.TOKEN_ISSUE, extractIp(servletRequest));
 		log.info("[Token] 액세스 토큰 갱신 완료 - employeeNumber: {}", employeeNumber);
 		return TokenConverter.toTokenIssueResDto(newAccessToken, reqDto.refreshToken(), accessTtl);
 	}
 
-	public void revokeToken(final TokenRevokeReqDto reqDto) {
+	public void revokeToken(final TokenRevokeReqDto reqDto, final HttpServletRequest servletRequest) {
 		Jwt jwt = decodeToken(reqDto.accessToken());
+		String employeeNumber = jwt.getSubject();
 
 		addToBlacklist(jwt, reqDto.reason());
-		refreshTokenCommandService.deleteByEmployeeNumber(jwt.getSubject());
+		refreshTokenCommandService.deleteByEmployeeNumber(employeeNumber);
 
-		log.info("[Token] 토큰 무효화 완료 - employeeNumber: {}, reason: {}", jwt.getSubject(), reqDto.reason());
+		saveTokenActionAuditLog(employeeNumber, TokenAction.TOKEN_REVOKE, extractIp(servletRequest));
+		log.info("[Token] 토큰 무효화 완료 - employeeNumber: {}, reason: {}", employeeNumber, reqDto.reason());
+	}
+
+	private void saveTokenActionAuditLog(
+		final String employeeNumber,
+		final TokenAction tokenRevoke,
+		final String ipAddress
+	) {
+		AuditLog auditLog = AuditLog.create(employeeNumber, tokenRevoke, null, ipAddress, null, true);
+		auditLogService.save(auditLog);
 	}
 
 	private String encodeToken(
@@ -139,4 +163,11 @@ public class TokenService {
 		}
 	}
 
+	private String extractIp(final HttpServletRequest request) {
+		String ip = request.getHeader(HTTP_HEADER_X_FORWARDED_FOR);
+		if (StringUtils.isEmpty(ip)) {
+			ip = request.getRemoteAddr();
+		}
+		return ip;
+	}
 }

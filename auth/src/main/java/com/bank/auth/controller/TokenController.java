@@ -16,6 +16,7 @@ import com.bank.common.util.ResponseUtils;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -31,27 +32,31 @@ public class TokenController {
 	@Operation(summary = "토큰 발급", description = "사용자 인증 완료 후 JWT Access/Refresh Token을 발급합니다.")
 	@PostMapping("/issue")
 	public ResponseEntity<BaseResponse<TokenIssueResDto>> issueToken(
-		@Valid @RequestBody final TokenIssueReqDto reqDto
+		@Valid @RequestBody final TokenIssueReqDto reqDto,
+		final HttpServletRequest httpServletRequest
 	) {
-		TokenIssueResDto response = tokenService.issueToken(reqDto);
+		TokenIssueResDto response = tokenService.issueToken(reqDto, httpServletRequest);
 		return ResponseUtils.created(response);
 	}
 
 	@Operation(summary = "토큰 갱신", description = "Refresh Token으로 새로운 Access Token을 발급합니다.")
 	@PostMapping("/reissue")
-	public ResponseEntity<BaseResponse<TokenIssueResDto>> refreshToken(
-		@Valid @RequestBody final TokenRefreshReqDto reqDto
+	public ResponseEntity<BaseResponse<TokenIssueResDto>> reissueToken(
+		@Valid @RequestBody final TokenRefreshReqDto reqDto,
+		final HttpServletRequest httpServletRequest
 	) {
-		TokenIssueResDto response = tokenService.reissueAccessToken(reqDto);
+		TokenIssueResDto response = tokenService.reissueAccessToken(reqDto, httpServletRequest);
 		return ResponseUtils.ok(response);
 	}
 
 	@Operation(summary = "토큰 무효화", description = "Access Token을 블랙리스트에 등록하고 Refresh Token을 삭제합니다.")
 	@PostMapping("/revoke")
 	public ResponseEntity<BaseResponse<Void>> revokeToken(
-		@Valid @RequestBody final TokenRevokeReqDto reqDto
+		@Valid @RequestBody final TokenRevokeReqDto reqDto,
+		final HttpServletRequest httpServletRequest
 	) {
-		tokenService.revokeToken(reqDto);
+		tokenService.revokeToken(reqDto, httpServletRequest);
 		return ResponseUtils.noContent();
 	}
+
 }
