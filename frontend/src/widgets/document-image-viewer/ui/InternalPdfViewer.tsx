@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
+import { PDF_CONFIG } from '@/shared/config/pdf';
 
-// 1. 내부망 워커 경로 설정 (Step 1에서 복사한 위치)
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/assets/pdf.worker.min.js';
+// 1. 내부망 워커 경로 설정 (Shared Config 참조)
+pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_CONFIG.WORKER_SRC;
 
 interface Props {
   fileUrl: string; // PDF 데이터 소스 URL (내부 API 또는 Blob/ArrayBuffer)
@@ -42,8 +43,8 @@ const InternalPdfViewer: React.FC<Props> = ({ fileUrl }) => {
         // 2. 문서 로드 (CMap 로컬 절대 경로 필수 설정)
         const loadingTask = pdfjsLib.getDocument({
           url: fileUrl,
-          cMapUrl: '/assets/cmaps/',
-          cMapPacked: true,
+          cMapUrl: PDF_CONFIG.CMAP_URL,
+          cMapPacked: PDF_CONFIG.CMAP_PACKED,
         });
 
         const pdf = await loadingTask.promise;
@@ -101,7 +102,7 @@ const InternalPdfViewer: React.FC<Props> = ({ fileUrl }) => {
     <div className="relative flex flex-col items-center bg-slate-100 min-h-full overflow-auto p-8 border border-slate-200">
       {/* Loading Overlay */}
       {isLoading && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm transition-opacity">
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/60 transition-opacity">
           <div className="flex flex-col items-center gap-3">
             <div className="w-8 h-8 border-4 border-[#004b93] border-t-transparent rounded-full animate-spin" />
             <p className="text-[11px] font-bold text-[#004b93] uppercase tracking-widest">Optimizing View...</p>

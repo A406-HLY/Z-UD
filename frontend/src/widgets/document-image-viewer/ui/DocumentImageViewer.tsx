@@ -20,6 +20,8 @@ export const DocumentImageViewer = ({ fields = [], focusedFieldKey = null, fileU
   const {
     scale, setScale,
     pageNumber,
+    isLoading,
+    setIsLoading,
     containerRef,
     setRenderedSize,
     scaledBboxes
@@ -57,28 +59,49 @@ export const DocumentImageViewer = ({ fields = [], focusedFieldKey = null, fileU
         </div>
       </div>
       
-      {/* 2. 스크롤 가능한 캔버스 영역 (Auto-Focus 컨테이너) */}
-      <div 
-        ref={containerRef}
-        className="flex-1 overflow-auto p-12 flex justify-center shadow-[inset_0_0_50px_rgba(0,0,0,0.5)] relative"
-      >
-        <div className="relative shrink-0 transition-transform origin-top">
-           <PdfRenderer 
-             fileUrl={fileUrl} 
-             pageNumber={pageNumber} 
-             scale={scale} 
-             onLoadSuccess={setRenderedSize} 
-           />
-           <BboxOverlay 
-             bboxes={scaledBboxes} 
-             focusedFieldKey={focusedFieldKey} 
-           />
-        </div>
+      {/* 2. 스크롤 가능한 캔버스 영역 (Viewport 고정 레이어 분리) */}
+      <div className="flex-1 relative">
+         {/* (Point: 스크롤 영역과 별개로 뷰포트 정중앙에 플로팅되는 로딩 인디케이터) */}
+         {isLoading && (
+            <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/5 pointer-events-none">
+              <div className="flex flex-col items-center gap-4 bg-[#f4f4f4] px-24 py-10 border-2 border-gray-400 shadow-xl">
+                <div className="w-8 h-8 border-4 border-[#004b93] border-t-transparent rounded-full animate-spin" />
+                <span className="text-[12px] font-bold text-[#333] tracking-[0.2em] uppercase font-mono">
+                  PROCESSING
+                </span>
+              </div>
+            </div>
+         )}
+
+         <div 
+           ref={containerRef}
+           className="absolute inset-0 overflow-auto p-12 flex justify-center shadow-[inset_0_0_50px_rgba(0,0,0,0.5)]"
+         >
+           <div className="relative shrink-0 transition-transform origin-top">
+              <PdfRenderer 
+                fileUrl={fileUrl} 
+                pageNumber={pageNumber} 
+                scale={scale} 
+                onLoadSuccess={setRenderedSize} 
+                isLoading={isLoading}
+                setIsLoading={setIsLoading}
+              />
+              <BboxOverlay 
+                bboxes={scaledBboxes} 
+                focusedFieldKey={focusedFieldKey} 
+              />
+           </div>
+         </div>
       </div>
       
       {/* 3. 하단 메타데이터 바 */}
-      <div className="h-[24px] bg-[#333] flex items-center px-4 gap-6 text-[9px] font-mono text-gray-400 uppercase shrink-0">
+      <div className="h-[24px] bg-[#333] flex items-center px-4 gap-6 text-[9px] font-mono text-gray-400 uppercase shrink-0 z-20">
          <span>Viewer: React-PDF Engine</span>
+         <span className="opacity-30">|</span>
+         <span className="flex items-center gap-1.5">
+           <span className={`w-1.5 h-1.5 rounded-full ${isLoading ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'}`} />
+           Status: {isLoading ? 'Rendering' : 'Ready'}
+         </span>
          <span className="opacity-30">|</span>
          <span>Bboxes: {scaledBboxes.length} Active</span>
       </div>
