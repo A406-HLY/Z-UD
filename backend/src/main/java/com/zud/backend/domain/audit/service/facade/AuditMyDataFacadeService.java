@@ -4,5 +4,5 @@ import com.zud.backend.domain.audit.dto.request.MyDataReqDto;
 import com.zud.backend.domain.audit.dto.response.MyDataResDto;
 
 public interface AuditMyDataFacadeService {
-	MyDataResDto getMyData(final MyDataReqDto reqDto);
+	MyDataResDto getMyData(final Long userId, final MyDataReqDto reqDto);
 }

@@ -40,8 +40,11 @@ public class AuditController {
 	}
 
 	@PostMapping("/my-data")
-	public ResponseEntity<BaseResponse<MyDataResDto>> getMyData(@Valid @RequestBody MyDataReqDto reqDto) {
-		MyDataResDto response = auditMyDataFacadeService.getMyData(reqDto);
+	public ResponseEntity<BaseResponse<MyDataResDto>> getMyData(
+		@Authentication Long userId,
+		@Valid @RequestBody MyDataReqDto reqDto
+	) {
+		MyDataResDto response = auditMyDataFacadeService.getMyData(userId, reqDto);
 		return ResponseUtils.ok(response);
 	}
 }
