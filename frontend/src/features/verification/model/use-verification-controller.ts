@@ -6,14 +6,10 @@ import { useAppSelector } from '@/app/store/hooks';
 import { 
   checkIsResolved, 
   calculateDocumentStatus,
-  isCustomerInfoField
+  isCustomerInfoField,
+  getNextDocumentId,
+  getPrevDocumentId
 } from '@/entities/verification/model/verification.logic';
-
-/**
- * @feature verification
- * 서류 검증 퍼널의 실시간 정합성 판정 및 통합 데이터 관리를 책임지는 Controller Hook 입니다.
- * (Why: Page 컴포넌트는 UI 조립에 집중해야 하므로, 데이터 Fetching 및 상태 변경 비즈니스 로직을 이 훅으로 격리합니다.)
- */
 export const useVerificationController = (verificationId: string) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [localResult, setLocalResult] = useState<VerificationResult | null>(null);
@@ -110,6 +106,30 @@ export const useVerificationController = (verificationId: string) => {
     });
   };
 
+  const handleNextDocument = () => {
+    if (!localResult || !selectedId) return;
+    const nextId = getNextDocumentId(selectedId, localResult.categories);
+    if (nextId) {
+      setSelectedId(nextId);
+      setTimeout(() => {
+        const nextButton = document.querySelector(`button[data-doc-id="${nextId}"]`) as HTMLButtonElement | null;
+        if (nextButton) nextButton.focus();
+      }, 30);
+    }
+  };
+
+  const handlePrevDocument = () => {
+    if (!localResult || !selectedId) return;
+    const prevId = getPrevDocumentId(selectedId, localResult.categories);
+    if (prevId) {
+      setSelectedId(prevId);
+      setTimeout(() => {
+        const prevButton = document.querySelector(`button[data-doc-id="${prevId}"]`) as HTMLButtonElement | null;
+        if (prevButton) prevButton.focus();
+      }, 30);
+    }
+  };
+
   return {
     localResult,
     selectedId: selectedId as string | null,
@@ -117,6 +137,8 @@ export const useVerificationController = (verificationId: string) => {
     focusedFieldKey,
     setSelectedId,
     setFocusedFieldKey,
-    handleFieldChange
+    handleFieldChange,
+    handleNextDocument,
+    handlePrevDocument
   };
 };
