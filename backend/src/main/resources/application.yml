@@ -20,7 +20,7 @@ spring:
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092} #ec2 설정으로 변경 필요
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -29,6 +29,11 @@ spring:
       properties:
         enable.idempotence: true
         spring.json.add.type.headers: false
+    consumer:
+      group-id: loan-report-response-consumer-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
   jpa:
     open-in-view: false
     defer-datasource-initialization: true
