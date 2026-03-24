@@ -1,4 +1,4 @@
-package com.zud.backend.domain.audit.enums;
+package com.zud.backend.domain.report.enums;
 
 public enum EmploymentType {
 	EMPLOYEE,

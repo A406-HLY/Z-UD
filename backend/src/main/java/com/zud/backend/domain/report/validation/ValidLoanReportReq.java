@@ -1,4 +1,4 @@
-package com.zud.backend.domain.audit.validation;
+package com.zud.backend.domain.report.validation;
 
 import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.*;

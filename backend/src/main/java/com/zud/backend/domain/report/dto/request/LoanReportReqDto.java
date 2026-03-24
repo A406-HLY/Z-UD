@@ -1,4 +1,4 @@
-package com.zud.backend.domain.audit.dto.request;
+package com.zud.backend.domain.report.dto.request;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -7,8 +7,8 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.zud.backend.domain.audit.enums.EmploymentType;
-import com.zud.backend.domain.audit.validation.ValidLoanReportReq;
+import com.zud.backend.domain.report.enums.EmploymentType;
+import com.zud.backend.domain.report.validation.ValidLoanReportReq;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;

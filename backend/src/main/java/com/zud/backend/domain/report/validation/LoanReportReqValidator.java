@@ -1,7 +1,7 @@
-package com.zud.backend.domain.audit.validation;
+package com.zud.backend.domain.report.validation;
 
-import com.zud.backend.domain.audit.dto.request.LoanReportReqDto;
-import com.zud.backend.domain.audit.enums.EmploymentType;
+import com.zud.backend.domain.report.dto.request.LoanReportReqDto;
+import com.zud.backend.domain.report.enums.EmploymentType;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
