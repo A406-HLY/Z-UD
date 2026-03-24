@@ -94,6 +94,7 @@ export const VerificationResultPage = () => {
           <DocumentImageViewer 
             fields={selectedId ? (localResult.documentFields[selectedId] || []) : []}
             focusedFieldKey={focusedFieldKey}
+            fileUrl={selectedDoc?.fileUrl}
             originalWidth={selectedDoc?.resolution?.width}
           />
         </section>
