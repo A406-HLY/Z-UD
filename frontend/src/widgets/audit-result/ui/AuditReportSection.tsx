@@ -110,7 +110,11 @@ const CreditDetail = ({ summary, isLoading }: { summary: string, isLoading: bool
 );
 
 const HouseAuditDetail = ({ details, isLoading }: { details: unknown, isLoading: boolean }) => {
-  const d = (details as Record<string, any>) || {}; 
+  type HouseDetails = {
+    housePrice?: { price?: number; priceType?: string };
+    nearestBranch?: { currentBranchIsNearest?: boolean };
+  };
+  const d = (details as HouseDetails) || {}; 
 
   return (
     <div className="flex flex-col text-[12px] h-full tabular-nums">
