@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -60,6 +61,17 @@ public class DocumentController {
 		@Valid @RequestBody DocumentExtractionReqDto reqDto
 	) {
 		DocumentExtractionDesDto response = facadeService.validateDocuments(reqDto);
+		return ResponseUtils.ok(response);
+	}
+
+	@GetMapping("/extraction-results/{consultationId}")
+	@Operation(summary = "OCR 추출 결과 조회", description = "Kafka consumer가 저장한 OCR 추출 결과를 조회한다.")
+	@ApiErrorResponse
+	public ResponseEntity<BaseResponse<DocumentExtractionDesDto>> getExtractionResult(
+		@Parameter(description = "상담 ID")
+		@PathVariable String consultationId
+	) {
+		DocumentExtractionDesDto response = facadeService.getExtractionResult(consultationId);
 		return ResponseUtils.ok(response);
 	}
 
