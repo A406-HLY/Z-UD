@@ -3,7 +3,6 @@ package com.zud.backend.domain.report.dto.message;
 import java.time.LocalDateTime;
 
 public record LoanReportResMessage(
-	String uuid,
 	LocalDateTime completedAt,
 	ReportResponsePayload payload
 ) {
