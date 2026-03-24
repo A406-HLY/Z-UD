@@ -21,6 +21,18 @@ export const LOAN_PURPOSE_OPTIONS = [
 export type EmploymentType = typeof EMPLOYMENT_TYPES[number];
 export type LoanPurposeOption = typeof LOAN_PURPOSE_OPTIONS[number];
 
+/** (Why) 프론트엔드 한글 옵션을 백엔드 Enum(영문 대문자)으로 매핑합니다. */
+export const EMPLOYMENT_TYPE_MAP: Record<EmploymentType, string> = {
+  '직장인': 'EMPLOYEE',
+  '자영업자': 'SELF_EMPLOYED',
+  '프리랜서': 'FREELANCER',
+};
+
+export const LOAN_PURPOSE_MAP: Record<LoanPurposeOption, string> = {
+  '주택구입목적': 'HOME_PURCHASE',
+  '생활안정자금목적': 'LIVING_STABILITY',
+};
+
 /** (Why) 진척도 계산 및 필수 유효성 검사 기준이 되는 필드 목록입니다. */
 export const REQUIRED_FIELDS: (keyof Customer)[] = [
   'name',

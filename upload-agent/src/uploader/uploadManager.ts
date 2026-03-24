@@ -1,5 +1,5 @@
 import { FileQueueStore, QueuedFile } from '../state/fileQueueStore';
-import { BackendApiClient, FileMetaDto, PresignedUrlDto } from '../client/backendApiClient';
+import { BackendApiClient, FileMetaDto, PresignedUrlDto, UploadCompletionResult } from '../client/backendApiClient';
 import { logger } from '../utils/logger';
 import fs from 'fs';
 import path from 'path';
@@ -47,7 +47,7 @@ export class UploadManager {
    * 업로드 프로세스를 시작합니다.
    * (Why) counselId는 백엔드 업로드 시 필수 식별자이며, 신규 규격에 따라 string 타입을 사용합니다.
    */
-  public static async startUploading(mode: 'all' | 'selected' = 'all', sequenceIds?: number[], counselId?: string): Promise<void> {
+  public static async startUploading(mode: 'all' | 'selected' = 'all', sequenceIds?: number[], counselId?: string, accessToken?: string): Promise<void> {
     if (!counselId) {
       throw new Error('counselId is required for backend upload.');
     }
@@ -59,7 +59,7 @@ export class UploadManager {
 
     this.isUploading = true;
     try {
-      await this.processQueue(mode, sequenceIds, counselId);
+      await this.processQueue(mode, sequenceIds, counselId, accessToken);
     } finally {
       this.isUploading = false;
       logger.info('Upload process finished or paused.');
@@ -71,7 +71,7 @@ export class UploadManager {
    * (Why) 백엔드의 사전 메타데이터 검증을 통해 Presigned URL을 대량 발급받은 뒤, 
    * 스토리지에 클라이언트(에이전트)가 순차 직접 전송(Direct Upload)하는 구조입니다.
    */
-  private static async processQueue(mode: 'all' | 'selected', sequenceIds: number[] | undefined, counselId: string): Promise<void> {
+  private static async processQueue(mode: 'all' | 'selected', sequenceIds: number[] | undefined, counselId: string, accessToken?: string): Promise<void> {
     let filesToUpload: QueuedFile[] = [];
 
     if (mode === 'all') {
@@ -115,7 +115,7 @@ export class UploadManager {
     // 2. Presigned URL 대량 발급 요청
     let presignedUrls: PresignedUrlDto[];
     try {
-       presignedUrls = await BackendApiClient.getPresignedUrls(counselId, fileMetas);
+       presignedUrls = await BackendApiClient.getPresignedUrls(counselId, fileMetas, accessToken);
     } catch (error) {
        logger.error('Failed to get Presigned URLs. Halting upload process.');
        filesToUpload.forEach(f => FileQueueStore.updateFileStatus(f.sequenceId, 'FAILED', 'URL 발급 실패'));
@@ -123,6 +123,8 @@ export class UploadManager {
     }
 
     // 3. 발급받은 URL을 순회하며 R2(스토리지)로 직접 물리적 업로드 (Sequential 진행)
+    const uploadResults: UploadCompletionResult[] = [];
+
     for (const file of filesToUpload) {
       try {
          const urlInfo = presignedUrls.find(u => u.fileName === file.fileName);
@@ -136,6 +138,7 @@ export class UploadManager {
          await executeUploadWithRetry(urlInfo.presignedUrl, file.storedPath, contentType, file.size);
          
          FileQueueStore.updateFileStatus(file.sequenceId, 'COMPLETED');
+         uploadResults.push({ fileName: file.fileName, success: true });
 
          // 4. 업로드 완료된 스캔본의 하드디스크 정리 (Cleanup) 및 프론트엔드 동기화
          try {
@@ -154,8 +157,19 @@ export class UploadManager {
          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
          logger.error(`Failed to upload file [Seq: ${file.sequenceId}]:`, errorMessage);
          FileQueueStore.updateFileStatus(file.sequenceId, 'FAILED', errorMessage);
+         uploadResults.push({ fileName: file.fileName, success: false });
          // (Why) 순서 보장이나 안정성이 중요한 큐 구조상, 파일 1개가 완전히 실패하면 즉시 전체 일시 정지(break)합니다.
          break; 
+      }
+    }
+
+    // 5. 업로드 결과를 백엔드에 이벤트 단위로 통보 (Upload Completions API)
+    // (Why) 에이전트 내 이벤트 처리의 마지막 단계로, 백엔드가 OCR 처리를 시작할 수 있도록 종료 시점을 명확히 알려줍니다.
+    if (uploadResults.length > 0) {
+      try {
+        await BackendApiClient.notifyUploadCompletions(counselId, uploadResults, accessToken);
+      } catch (notifyError) {
+        logger.error(`Failed to notify backend of upload completions for counselId: ${counselId}`, notifyError);
       }
     }
   }

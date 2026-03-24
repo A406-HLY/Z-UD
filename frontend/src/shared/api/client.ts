@@ -10,6 +10,7 @@ import { ApiResponse } from '../../entities/user';
 export const apiClient = axios.create({
   baseURL: env.apiBaseUrl,
   timeout: 10000,
+  withCredentials: true, // (Why) 세션 쿠키(ZUD_SESSION)를 모든 요청에 자동으로 포함시키기 위함입니다.
   headers: {
     'Content-Type': 'application/json',
   },
@@ -26,9 +27,11 @@ apiClient.interceptors.request.use(
      * 1. 토큰 저장소 결정 (localStorage, sessionStorage, cookie 등)
      * 2. 헤더 키 명칭 결정 (Authorization: Bearer <token> 등)
      */
-    const token = localStorage.getItem('access_token'); // 임시 키 이름
+    const token = sessionStorage.getItem('access_token'); // (Why) 보안을 위해 세션 기반 저장소를 사용합니다.
     
-    if (token && config.headers) {
+    // (Why) 토큰이 명시적으로 존재하는 경우에만 Authorization 헤더를 추가합니다. 
+    // 문자열 'undefined'나 'null'이 담기지 않도록 방어적으로 체크합니다.
+    if (token && token !== 'undefined' && token !== 'null' && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     
@@ -38,6 +41,7 @@ apiClient.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
 
 /**
  * 응답 인터셉터

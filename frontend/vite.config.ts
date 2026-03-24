@@ -12,5 +12,12 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    proxy: {
+      '/api': {
+        target: 'https://j14a406.p.ssafy.io',
+        changeOrigin: true,
+        secure: false, // (Why) SSL 인증서 문제 우회용 
+      }
+    }
   },
 });
