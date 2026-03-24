@@ -12,6 +12,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.zud.backend.common.error.ErrorCode;
+import com.zud.backend.domain.document.dto.request.file.FileMetaDto;
 import com.zud.backend.domain.document.exception.DocumentException;
 
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,25 @@ public class FileValidator {
 		validateMimeType(file, extension);
 		validateFileSignature(file, extension);
 		validateFileSize(file);
+	}
+
+	public void validateMeta(final FileMetaDto fileMeta) {
+		String extension = validateExtension(fileMeta.fileName());
+		validateContentType(fileMeta.contentType(), extension);
+		validateMetaFileSize(fileMeta.fileSize());
+	}
+
+	private void validateContentType(final String contentType, final String extension) {
+		List<String> validTypes = VALID_MIME_TYPES.get(extension);
+		if (validTypes == null || !validTypes.contains(contentType)) {
+			throw new DocumentException(ErrorCode.FILE_MIME_TYPE_MISMATCH);
+		}
+	}
+
+	private void validateMetaFileSize(final long fileSize) {
+		if (fileSize > MAX_FILE_SIZE) {
+			throw new DocumentException(ErrorCode.FILE_SIZE_EXCEEDED);
+		}
 	}
 
 	private void validateNotEmpty(final MultipartFile file) {
