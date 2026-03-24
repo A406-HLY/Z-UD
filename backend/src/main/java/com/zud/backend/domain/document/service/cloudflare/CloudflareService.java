@@ -8,4 +8,6 @@ public interface CloudflareService {
 	String uploadFile(final MultipartFile file, final String directory);
 
 	String generatePutPresignedUrl(final String consultationId, final FileMetaDto fileMeta);
+
+	String generateGetPresignedUrl(final String consultationId, final String fileName);
 }
