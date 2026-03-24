@@ -47,4 +47,23 @@ public class AuditLog extends BaseEntity {
 
 	@Column(name = "success", nullable = false)
 	private Boolean success = Boolean.FALSE;
+
+	public static AuditLog create(
+		final String employeeNumber,
+		final TokenAction action,
+		final String clientId,
+		final String ipAddress,
+		final String details,
+		final boolean success
+	) {
+		return AuditLog.builder()
+			.employeeNumber(employeeNumber)
+			.action(action)
+			.clientId(clientId)
+			.ipAddress(ipAddress)
+			.details(details)
+			.success(success)
+			.build();
+	}
+
 }
