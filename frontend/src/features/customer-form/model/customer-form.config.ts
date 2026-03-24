@@ -10,6 +10,8 @@ export interface FieldConfig {
   options?: readonly string[];
   className?: string;
   formatType?: 'name' | 'personalId' | 'phoneNumber' | 'currency' | 'number';
+  rightAddon?: string;
+  hasStepper?: boolean;
 }
 
 /**
@@ -65,6 +67,7 @@ export const CUSTOMER_FIELDS_CONFIG: FieldConfig[] = [
     placeholder: CUSTOMER_FORM_PLACEHOLDERS.desiredAmount,
     component: 'input',
     formatType: 'currency',
+    rightAddon: 'KRW',
     className: 'h-8 w-full pr-7 text-right font-bold text-slate-900',
   },
   {
@@ -74,6 +77,8 @@ export const CUSTOMER_FIELDS_CONFIG: FieldConfig[] = [
     type: 'number',
     component: 'input',
     formatType: 'number',
-    className: 'h-8 w-full pr-5 text-right',
+    rightAddon: '채',
+    hasStepper: true,
+    className: 'h-8 w-[90px] text-right',
   },
 ];
