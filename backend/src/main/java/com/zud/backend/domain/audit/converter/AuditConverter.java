@@ -22,5 +22,13 @@ public class AuditConverter {
 			.housePrice(housePrice)
 			.build();
 	}
+
+	public HousePriceResDto toUnavailableHousePrice(final String message) {
+		return HousePriceResDto.builder()
+			.price(null)
+			.priceType(null)
+			.message(message)
+			.build();
+	}
 }
 
