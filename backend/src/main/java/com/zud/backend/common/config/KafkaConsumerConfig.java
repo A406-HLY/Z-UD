@@ -38,4 +38,22 @@ public class KafkaConsumerConfig {
 		return factory;
 	}
 
+	@Bean
+	public ConsumerFactory<String, String> ocrStringConsumerFactory() {
+		Map<String, Object> props = new HashMap<>(kafkaProperties.buildConsumerProperties());
+		props.putIfAbsent(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+		props.putIfAbsent(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+		props.putIfAbsent(ConsumerConfig.GROUP_ID_CONFIG, "ocr-response-consumer-group");
+		props.putIfAbsent(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+		return new DefaultKafkaConsumerFactory<>(props);
+	}
+
+	@Bean
+	public ConcurrentKafkaListenerContainerFactory<String, String> ocrKafkaListenerContainerFactory() {
+		ConcurrentKafkaListenerContainerFactory<String, String> factory =
+			new ConcurrentKafkaListenerContainerFactory<>();
+		factory.setConsumerFactory(ocrStringConsumerFactory());
+		return factory;
+	}
+
 }
