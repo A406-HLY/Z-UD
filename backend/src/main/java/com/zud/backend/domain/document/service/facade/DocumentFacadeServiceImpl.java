@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.zud.backend.common.error.ErrorCode;
 import com.zud.backend.domain.consultation.entity.Consultation;
 import com.zud.backend.domain.consultation.enums.CounselStatus;
 import com.zud.backend.domain.consultation.service.ConsultationStatusService;
@@ -28,11 +27,9 @@ import com.zud.backend.domain.document.dto.response.DocumentValidationResult;
 import com.zud.backend.domain.document.dto.response.file.PresignedFileDto;
 import com.zud.backend.domain.document.dto.response.file.PresignedUrlResDto;
 import com.zud.backend.domain.document.dto.response.file.UploadCompletionResDto;
-import com.zud.backend.domain.document.exception.DocumentException;
-import com.zud.backend.domain.document.redis.OcrExtractionResultCache;
-import com.zud.backend.domain.document.repository.OcrResultRedisRepository;
 import com.zud.backend.domain.document.service.cloudflare.CloudflareService;
 import com.zud.backend.domain.document.service.kafka.OcrKafkaProducer;
+import com.zud.backend.domain.document.service.query.DocumentExtractionQueryService;
 import com.zud.backend.domain.document.validator.DocumentValidator;
 import com.zud.backend.domain.document.validator.FileValidator;
 
@@ -54,7 +51,7 @@ public class DocumentFacadeServiceImpl implements DocumentFacadeService {
 
 	private final CloudflareService cloudflareService;
 	private final OcrKafkaProducer ocrKafkaProducer;
-	private final OcrResultRedisRepository ocrResultRedisRepository;
+	private final DocumentExtractionQueryService documentExtractionQueryService;
 
 	private final FileValidator fileValidator;
 	private final DocumentValidator documentValidator;
@@ -98,9 +95,7 @@ public class DocumentFacadeServiceImpl implements DocumentFacadeService {
 	@Override
 	@Transactional(readOnly = true)
 	public DocumentExtractionResDto getExtractionResult(final String consultationId) {
-		return ocrResultRedisRepository.findByConsultationId(consultationId)
-			.map(OcrExtractionResultCache::result)
-			.orElseThrow(() -> new DocumentException(ErrorCode.NOT_FOUND));
+		return documentExtractionQueryService.getExtractionResult(consultationId);
 	}
 
 	@Override
