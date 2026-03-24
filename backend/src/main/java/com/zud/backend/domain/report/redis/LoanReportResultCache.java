@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import com.zud.backend.domain.report.enums.LoanReportStatus;
 
 public record LoanReportResultCache(
-	String counselId,
+	String consultationId,
 	Long userId,
 	LoanReportStatus status,
 	String payload,
@@ -14,9 +14,9 @@ public record LoanReportResultCache(
 	LocalDateTime completedAt
 ) implements Serializable {
 
-	public static LoanReportResultCache requested(String counselId, Long userId, LocalDateTime requestedAt) {
+	public static LoanReportResultCache requested(String consultationId, Long userId, LocalDateTime requestedAt) {
 		return new LoanReportResultCache(
-			counselId,
+			consultationId,
 			userId,
 			LoanReportStatus.REQUESTED,
 			null,
@@ -27,7 +27,7 @@ public record LoanReportResultCache(
 
 	public LoanReportResultCache completed(String payload, LocalDateTime completedAt) {
 		return new LoanReportResultCache(
-			this.counselId,
+			this.consultationId,
 			this.userId,
 			LoanReportStatus.COMPLETED,
 			payload,
@@ -38,7 +38,7 @@ public record LoanReportResultCache(
 
 	public LoanReportResultCache failed(LocalDateTime completedAt) {
 		return new LoanReportResultCache(
-			this.counselId,
+			this.consultationId,
 			this.userId,
 			LoanReportStatus.FAILED,
 			this.payload,

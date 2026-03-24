@@ -29,17 +29,17 @@ public class ReportRequestServiceImpl implements ReportRequestService {
 	@Override
 	@Transactional
 	public LoanReportGenerateRes requestReport(Long userId, LoanReportReqDto request) {
-		String counselId = request.counselId().toString();
-		log.info("[Report] 리포트 생성 요청 수신: userId={}, counselId={}", userId, counselId);
+		String consultationId = request.consultationId().toString();
+		log.info("[Report] 리포트 생성 요청 수신: userId={}, consultationId={}", userId, consultationId);
 
 		reportRedisRepository.save(
-			LoanReportResultCache.requested(counselId, userId, LocalDateTime.now())
+			LoanReportResultCache.requested(consultationId, userId, LocalDateTime.now())
 		);
 
 		LoanReportReqMessage message = reportConverter.toMessage(request);
-		reportKafkaProducer.send(counselId, message);
-		log.info("[Report] Kafka 요청 전송 완료: topic=report-request, counselId={}", counselId);
+		reportKafkaProducer.send(consultationId, message);
+		log.info("[Report] Kafka 요청 전송 완료: topic=report-request, consultationId={}", consultationId);
 
-		return reportConverter.toGenerateResponse(counselId);
+		return reportConverter.toGenerateResponse(consultationId);
 	}
 }

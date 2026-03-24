@@ -42,13 +42,13 @@ public class ReportController {
 		return ResponseEntity.ok(reportFacadeService.generateLoanReport(userId, request));
 	}
 
-	@GetMapping("/{counselId}")
-	@Operation(summary = "대출 리포트 결과 조회", description = "counselId로 리포트 생성 결과를 조회한다.")
+	@GetMapping("/{consultationId}")
+	@Operation(summary = "대출 리포트 결과 조회", description = "consultationId로 리포트 생성 결과를 조회한다.")
 	@ApiErrorResponse
 	public ResponseEntity<LoanReportResultResDto> getReportResult(
 		@Parameter(description = "리포트 상담 ID")
-		@PathVariable String counselId
+		@PathVariable String consultationId
 	) {
-		return ResponseEntity.ok(reportFacadeService.getReportResult(counselId));
+		return ResponseEntity.ok(reportFacadeService.getReportResult(consultationId));
 	}
 }

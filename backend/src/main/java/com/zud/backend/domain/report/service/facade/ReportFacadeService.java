@@ -7,5 +7,5 @@ import com.zud.backend.domain.report.dto.response.LoanReportResultResDto;
 public interface ReportFacadeService {
 	LoanReportGenerateRes generateLoanReport(Long userId, LoanReportReqDto request);
 
-	LoanReportResultResDto getReportResult(String counselId);
+	LoanReportResultResDto getReportResult(String consultationId);
 }

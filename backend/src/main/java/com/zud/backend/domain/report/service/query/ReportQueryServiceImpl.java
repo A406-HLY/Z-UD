@@ -24,12 +24,12 @@ public class ReportQueryServiceImpl implements ReportQueryService {
 	private final ReportConverter reportConverter;
 
 	@Override
-	public LoanReportResultResDto getReportResult(String counselId) {
-		log.info("[Report] 리포트 결과 조회 요청: counselId={}", counselId);
-		LoanReportResultCache cache = reportRedisRepository.findByCounselId(counselId)
+	public LoanReportResultResDto getReportResult(String consultationId) {
+		log.info("[Report] 리포트 결과 조회 요청: consultationId={}", consultationId);
+		LoanReportResultCache cache = reportRedisRepository.findByConsultationId(consultationId)
 			.orElseThrow(() -> new ReportException(ErrorCode.REPORT_RESULT_NOT_FOUND));
 
-		log.info("[Report] 리포트 결과 조회 성공: counselId={}, status={}", counselId, cache.status());
+		log.info("[Report] 리포트 결과 조회 성공: consultationId={}, status={}", consultationId, cache.status());
 		return reportConverter.toResultResponse(cache);
 	}
 }

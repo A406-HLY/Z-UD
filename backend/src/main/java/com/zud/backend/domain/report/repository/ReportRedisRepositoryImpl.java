@@ -22,16 +22,16 @@ public class ReportRedisRepositoryImpl implements ReportRedisRepository {
 	@Override
 	public void save(LoanReportResultCache cache) {
 		loanReportRedisTemplate.opsForValue().set(
-			KEY_PREFIX + cache.counselId(),
+			KEY_PREFIX + cache.consultationId(),
 			cache,
 			TTL
 		);
 	}
 
 	@Override
-	public Optional<LoanReportResultCache> findByCounselId(String counselId) {
+	public Optional<LoanReportResultCache> findByConsultationId(String consultationId) {
 		return Optional.ofNullable(
-			loanReportRedisTemplate.opsForValue().get(KEY_PREFIX + counselId)
+			loanReportRedisTemplate.opsForValue().get(KEY_PREFIX + consultationId)
 		);
 	}
 }

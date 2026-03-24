@@ -17,8 +17,8 @@ public class ReportKafkaProducer {
 
 	private final KafkaTemplate<String, Object> kafkaTemplate;
 
-	public void send(String counselId, LoanReportReqMessage message) {
-		kafkaTemplate.send(REPORT_REQUEST, counselId, message);
-		log.debug("[ReportKafka] 메시지 발행: topic={}, key={}", REPORT_REQUEST, counselId);
+	public void send(String consultationId, LoanReportReqMessage message) {
+		kafkaTemplate.send(REPORT_REQUEST, consultationId, message);
+		log.debug("[ReportKafka] 메시지 발행: topic={}, key={}", REPORT_REQUEST, consultationId);
 	}
 }

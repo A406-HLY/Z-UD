@@ -19,8 +19,8 @@ public class ReportNotificationService {
 
 	private final NotificationFacadeService notificationFacadeService;
 
-	public void notifyReportCompleted(final Long userId, final String counselId) {
-		send(userId, ReportEventType.REPORT_COMPLETED, Map.of("counselId", counselId));
+	public void notifyReportCompleted(final Long userId, final String consultationId) {
+		send(userId, ReportEventType.REPORT_COMPLETED, Map.of("consultationId", consultationId));
 	}
 
 	private void send(final Long userId, final ReportEventType eventType, final Object data) {

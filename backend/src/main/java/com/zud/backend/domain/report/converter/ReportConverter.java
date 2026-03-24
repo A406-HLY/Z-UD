@@ -22,16 +22,16 @@ public class ReportConverter {
 		);
 	}
 
-	public LoanReportGenerateRes toGenerateResponse(String counselId) {
+	public LoanReportGenerateRes toGenerateResponse(String consultationId) {
 		return new LoanReportGenerateRes(
-			counselId,
+			consultationId,
 			REPORT_REQUEST_ACCEPTED_MESSAGE
 		);
 	}
 
 	public LoanReportResultResDto toResultResponse(LoanReportResultCache cache) {
 		return new LoanReportResultResDto(
-			cache.counselId(),
+			cache.consultationId(),
 			cache.status().name(),
 			cache.payload()
 		);

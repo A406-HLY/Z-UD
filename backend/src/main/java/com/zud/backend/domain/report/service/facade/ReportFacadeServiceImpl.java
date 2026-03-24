@@ -27,7 +27,7 @@ public class ReportFacadeServiceImpl implements ReportFacadeService {
 	}
 
 	@Override
-	public LoanReportResultResDto getReportResult(String counselId) {
-		return reportQueryService.getReportResult(counselId);
+	public LoanReportResultResDto getReportResult(String consultationId) {
+		return reportQueryService.getReportResult(consultationId);
 	}
 }
