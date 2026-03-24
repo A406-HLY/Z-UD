@@ -24,7 +24,9 @@ import com.zud.backend.domain.document.dto.request.file.UploadCompletionReqDto;
 import com.zud.backend.domain.document.dto.request.file.UploadResultDto;
 import com.zud.backend.domain.document.dto.response.file.PresignedUrlResDto;
 import com.zud.backend.domain.document.dto.response.file.UploadCompletionResDto;
+import com.zud.backend.domain.document.repository.OcrResultRedisRepository;
 import com.zud.backend.domain.document.service.cloudflare.CloudflareService;
+import com.zud.backend.domain.document.service.kafka.OcrKafkaProducer;
 import com.zud.backend.domain.document.validator.DocumentValidator;
 import com.zud.backend.domain.document.validator.FileValidator;
 
@@ -40,6 +42,10 @@ class DocumentFacadeServiceImplTest {
 	private ConsultationQueryService consultationQueryService;
 	@Mock
 	private CloudflareService cloudflareService;
+	@Mock
+	private OcrKafkaProducer ocrKafkaProducer;
+	@Mock
+	private OcrResultRedisRepository ocrResultRedisRepository;
 	@Mock
 	private FileValidator fileValidator;
 	@Mock
@@ -108,6 +114,8 @@ class DocumentFacadeServiceImplTest {
 			));
 
 			given(consultationQueryService.findByUuid(CONSULTATION_ID)).willReturn(mock(Consultation.class));
+			given(cloudflareService.generateGetPresignedUrl(eq(CONSULTATION_ID), anyString()))
+				.willReturn("https://signed-get-url");
 
 			// when
 			UploadCompletionResDto result = documentFacadeService.completeUpload(CONSULTATION_ID, reqDto);
@@ -128,6 +136,8 @@ class DocumentFacadeServiceImplTest {
 			));
 
 			given(consultationQueryService.findByUuid(CONSULTATION_ID)).willReturn(mock(Consultation.class));
+			given(cloudflareService.generateGetPresignedUrl(eq(CONSULTATION_ID), anyString()))
+				.willReturn("https://signed-get-url");
 
 			// when
 			UploadCompletionResDto result = documentFacadeService.completeUpload(CONSULTATION_ID, reqDto);
