@@ -7,5 +7,5 @@ import com.zud.backend.domain.report.redis.LoanReportResultCache;
 public interface ReportRedisRepository {
 	void save(LoanReportResultCache cache);
 
-	Optional<LoanReportResultCache> findByUuid(String uuid);
+	Optional<LoanReportResultCache> findByCounselId(String counselId);
 }

@@ -12,7 +12,9 @@ import com.zud.backend.domain.report.repository.ReportRedisRepository;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 @Transactional(readOnly = true)
@@ -22,10 +24,12 @@ public class ReportQueryServiceImpl implements ReportQueryService {
 	private final ReportConverter reportConverter;
 
 	@Override
-	public LoanReportResultResDto getReportResult(String uuid) {
-		LoanReportResultCache cache = reportRedisRepository.findByUuid(uuid)
+	public LoanReportResultResDto getReportResult(String counselId) {
+		log.info("[Report] 리포트 결과 조회 요청: counselId={}", counselId);
+		LoanReportResultCache cache = reportRedisRepository.findByCounselId(counselId)
 			.orElseThrow(() -> new ReportException(ErrorCode.REPORT_RESULT_NOT_FOUND));
 
+		log.info("[Report] 리포트 결과 조회 성공: counselId={}, status={}", counselId, cache.status());
 		return reportConverter.toResultResponse(cache);
 	}
 }

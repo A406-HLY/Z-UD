@@ -17,9 +17,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
 public record LoanReportReqDto(
-	@JsonProperty("UUID")
-	@NotNull(message = "UUID는 필수입니다.")
-	UUID uuid,
+	@JsonProperty("counselId")
+	@NotNull(message = "counselId는 필수입니다.")
+	UUID counselId,
 
 	@NotNull(message = "report input 값은 필수입니다.")
 	@Valid

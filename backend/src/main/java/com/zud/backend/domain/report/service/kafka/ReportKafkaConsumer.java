@@ -8,7 +8,9 @@ import org.springframework.kafka.annotation.KafkaListener;
 import com.zud.backend.domain.report.service.ReportResultSaveService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class ReportKafkaConsumer {
@@ -20,6 +22,7 @@ public class ReportKafkaConsumer {
 		containerFactory = "loanReportKafkaListenerContainerFactory"
 	)
 	public void consume(String messageBody) {
+		log.debug("[ReportKafka] 메시지 수신: topic={}", REPORT_RESPONSE);
 		reportResultSaveService.saveReportResult(messageBody);
 	}
 
