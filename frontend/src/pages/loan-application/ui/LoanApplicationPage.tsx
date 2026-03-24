@@ -3,6 +3,7 @@ import { useAppSelector } from '@/app/store/hooks';
 import { Header } from '@/widgets/header/ui/Header';
 import { CustomerInfoForm } from '@/widgets/customer-info-form/ui/CustomerInfoForm';
 import { LoanTabs } from '@/widgets/loan-tabs/ui/LoanTabs';
+import { LoanStepper } from '@/widgets/loan-stepper/ui/LoanStepper';
 import { DocumentViewer } from '@/widgets/document-viewer/ui/DocumentViewer';
 import { PollingStatusToast } from '@/entities/customer/ui/PollingStatusToast';
 import { useSelectSync } from '@/features/document-sync/model/use-select-sync';
@@ -65,6 +66,11 @@ export const LoanApplicationPage = () => {
 
       {/* 2. 메인 콘텐츠 영역 (Flex Container) */}
       <main className="flex-1 p-4 space-y-4 flex flex-col min-h-0 overflow-hidden">
+        {/* 프로세스 가이드: 스텝퍼 */}
+        <section className="shrink-0">
+          <LoanStepper />
+        </section>
+
         {/* 고객 기본정보 입력 영역 */}
         <section className="shrink-0">
           <CustomerInfoForm />

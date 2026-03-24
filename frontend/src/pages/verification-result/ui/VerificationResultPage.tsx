@@ -2,10 +2,12 @@ import { useEffect } from 'react';
 import { Header } from '@/widgets/header';
 import { LoanTabs } from '@/widgets/loan-tabs';
 import { CustomerInfoForm } from '@/widgets/customer-info-form';
+import { LoanStepper } from '@/widgets/loan-stepper/ui/LoanStepper';
 import { VerificationRepository } from '@/widgets/verification-repository/ui/VerificationRepository';
 import { OcrFieldEditor } from '@/widgets/ocr-field-editor/ui/OcrFieldEditor';
 import { DocumentImageViewer } from '@/widgets/document-image-viewer/ui/DocumentImageViewer';
 import { useVerificationController } from '@/features/verification/model/use-verification-controller';
+import { useGlobalFocusRecovery } from '@/features/verification/model/use-global-focus-recovery';
 
 /**
  * @page verification-result
@@ -24,31 +26,11 @@ export const VerificationResultPage = () => {
     handlePrevDocument
   } = useVerificationController('v-12345');
 
-  useEffect(() => {
-    const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Tab') {
-        const active = document.activeElement;
-        const isBody = active === document.body;
-        const isManagedInput = active?.hasAttribute('data-document-id');
-        const isSidebarButton = active?.hasAttribute('data-doc-id');
-
-        if (isBody || (!isManagedInput && !isSidebarButton)) {
-          const isInputWork = ['INPUT', 'SELECT', 'TEXTAREA'].includes(active?.tagName || '');
-          if (!isInputWork) {
-            e.preventDefault();
-            if (!e.shiftKey) {
-              handleNextDocument();
-            } else {
-              handlePrevDocument();
-            }
-          }
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleGlobalKeyDown);
-    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [handleNextDocument, handlePrevDocument]);
+  // (Why: 전역 포커스 감시 로직을 훅으로 격리하여 페이지(UI) 코드를 조립 역할에 집중시킵니다.)
+  useGlobalFocusRecovery({
+    handleNextDocument,
+    handlePrevDocument
+  });
 
   if (isLoading || !localResult) {
 
@@ -56,6 +38,7 @@ export const VerificationResultPage = () => {
       <div className="min-h-screen flex flex-col bg-gray-50 font-sans">
         <Header />
         <main className="flex-1 p-4 space-y-4">
+          <section><LoanStepper /></section>
           <section><CustomerInfoForm /></section>
           <section><LoanTabs /></section>
           <div className="flex-1 flex items-center justify-center font-black text-gray-300 animate-pulse uppercase tracking-[0.5em] py-20">
@@ -73,6 +56,10 @@ export const VerificationResultPage = () => {
       <Header />
       
       <main className="flex-1 p-4 space-y-4">
+        <section>
+          <LoanStepper />
+        </section>
+        
         <section>
           <CustomerInfoForm />
         </section>

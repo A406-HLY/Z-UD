@@ -1,6 +1,9 @@
 import { Check, AlertCircle, Info } from 'lucide-react';
+import { useMemo } from 'react';
 import { ExtractedField, DocumentStatus } from '@/entities/verification/model/types';
 import { Input } from '@/shared/ui';
+import { useEditorKeyboard } from '../model/use-editor-keyboard';
+import { EditorAlertBanner } from './EditorAlertBanner';
 
 interface Props {
   fields: ExtractedField[];
@@ -19,14 +22,40 @@ interface Props {
  * (Why: 정합성이 통과된 데이터는 수정을 막아 데이터 무결성을 보장하고, 오류가 있는 데이터만 집중 검수 유도)
  */
 export const OcrFieldEditor = ({ fields, status, isRisk, selectedId, onFieldChange, onFocus, onRequestNextDocument }: Props) => {
-  // 문서 자체가 정합성 오류 상태인지 확인
   const isReviewNeeded = status === 'REVIEW_NEEDED';
 
-  const errorFieldIndices = fields
-    .map((field, idx) => (!field.isMatch ? idx : -1))
-    .filter(idx => idx !== -1);
-  const firstErrorIndex = errorFieldIndices[0] ?? -1;
-  const lastErrorIndex = errorFieldIndices[errorFieldIndices.length - 1] ?? -1;
+  // (Point: 렌더링 최적화 및 제어용 인덱스 추출)
+  const { errorFieldIndices, firstErrorIndex, lastErrorIndex } = useMemo(() => {
+    const indices = fields
+      .map((f, i) => (!f.isMatch ? i : -1))
+      .filter(i => i !== -1);
+    return {
+      errorFieldIndices: indices,
+      firstErrorIndex: indices[0] ?? -1,
+      lastErrorIndex: indices[indices.length - 1] ?? -1
+    };
+  }, [fields]);
+
+  const { handleInputKeyDown } = useEditorKeyboard({
+    selectedId: selectedId ?? null,
+    firstErrorIndex,
+    lastErrorIndex,
+    onRequestNextDocument
+  });
+
+  /**
+   * (Point: 4중 중첩 삼항 연산자를 제거하고 선언적인 스타일링 로직 제공)
+   */
+  const getFieldStyles = (field: ExtractedField, canEdit: boolean) => {
+    const isError = !field.isMatch;
+
+    if (isError) return 'border-red-400 bg-red-50 text-red-700 font-bold focus-within:border-red-600 focus-within:bg-white focus-within:ring-red-600';
+    if (field.isRiskTarget) return 'border-yellow-400 bg-yellow-50 text-yellow-800 focus-within:border-yellow-600 focus-within:bg-white focus-within:ring-yellow-600';
+    if (field.isModified) return 'border-blue-400 bg-blue-50 text-[#444] font-bold focus-within:border-blue-600 focus-within:bg-white focus-within:ring-blue-600';
+    if (!canEdit) return 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed';
+    
+    return 'border-gray-300 bg-[#fcfcfc] focus-within:border-[#004b93] focus-within:bg-white';
+  };
   
   return (
     <div className="flex-1 h-full border-r border-gray-300 flex flex-col bg-white overflow-hidden">
@@ -36,22 +65,8 @@ export const OcrFieldEditor = ({ fields, status, isRisk, selectedId, onFieldChan
           <span className="text-[11px] font-bold text-[#444] uppercase tracking-wider">OCR Data Correction</span>        </div>
       </div>
 
-      {/* Risk & Error Alert Banner (Priority: Error > Risk) */}
-      {(isReviewNeeded || isRisk) && (
-        <div className={`border-b px-4 py-2 flex items-start gap-3 ${isReviewNeeded ? 'bg-red-100 border-red-200' : 'bg-yellow-100 border-yellow-200'}`}>
-          <Info className={`w-4 h-4 mt-0.5 shrink-0 ${isReviewNeeded ? 'text-red-700' : 'text-yellow-700'}`} />
-          <div className="space-y-0.5">
-            <p className={`text-[11px] font-bold ${isReviewNeeded ? 'text-red-800' : 'text-yellow-800'}`}>
-              {isReviewNeeded ? '알림: 데이터 정합성 확인이 필요한 문서입니다.' : '주의: 세밀한 검토가 필요한 위험 문서입니다.'}
-            </p>
-            <p className={`text-[10px] leading-tight ${isReviewNeeded ? 'text-red-700' : 'text-yellow-700'}`}>
-              {isReviewNeeded 
-                ? '일부 필드에서 원본 데이터와 불일치가 감지되었습니다. 추출된 데이터와 실물 이미지를 대조하여 수정해 주세요.' 
-                : '해당 문서는 백엔드 시스템에서 위험 요소가 탐지되었습니다. 추출된 데이터와 실물 이미지를 대조하여 최종 승인해 주시기 바랍니다.'}
-            </p>
-          </div>
-        </div>
-      )}
+      {/* (Point: 복잡한 배너 로직을 컴포넌트로 분리) */}
+      <EditorAlertBanner isReviewNeeded={isReviewNeeded} isRisk={isRisk} />
 
       {/* Field List Section */}
       <div className="flex-1 overflow-auto p-6 space-y-4">
@@ -81,33 +96,9 @@ export const OcrFieldEditor = ({ fields, status, isRisk, selectedId, onFieldChan
                   data-nav-error={isErrorField}
                   onFocus={() => onFocus?.(field.key)}
                   onChange={(e) => onFieldChange?.(field.key, e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Tab') {
-                      if (e.shiftKey && index === firstErrorIndex) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        const btn = document.querySelector(`button[data-doc-id="${selectedId}"]`) as HTMLButtonElement | null;
-                        if (btn) btn.focus();
-                      } else if (!e.shiftKey && index === lastErrorIndex) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        onRequestNextDocument?.();
-                      }
-                    }
-                  }}
-                  className={`
-                    h-8 rounded-none transition-all
-                    ${isErrorField 
-                      ? 'border-red-400 bg-red-50 text-red-700 font-bold focus-within:border-red-600 focus-within:bg-white focus-within:ring-red-600' 
-                      : field.isRiskTarget
-                        ? 'border-yellow-400 bg-yellow-50 text-yellow-800 focus-within:border-yellow-600 focus-within:bg-white focus-within:ring-yellow-600'
-                        : field.isModified
-                          ? 'border-blue-400 bg-blue-50 text-[#444] font-bold focus-within:border-blue-600 focus-within:bg-white focus-within:ring-blue-600'
-                          : !canEdit 
-                            ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed' 
-                            : 'border-gray-300 bg-[#fcfcfc] focus-within:border-[#004b93] focus-within:bg-white'
-                    }
-                  `}
+                  onBlur={() => {}} // TODO: 필요 시 Blur 처리 추가
+                  onKeyDown={(e) => handleInputKeyDown(e, index)}
+                  className={`h-8 rounded-none transition-all ${getFieldStyles(field, canEdit)}`}
                   inputClassName="!text-[10px] font-mono"
                   rightElement={
                     isErrorField ? (

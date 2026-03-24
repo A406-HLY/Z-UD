@@ -1,6 +1,7 @@
 import { Header } from '@/widgets/header';
 import { LoanTabs } from '@/widgets/loan-tabs';
 import { CustomerInfoForm } from '@/widgets/customer-info-form';
+import { LoanStepper } from '@/widgets/loan-stepper/ui/LoanStepper';
 
 /**
  * @page customer-info
@@ -13,6 +14,10 @@ export const CustomerInfoPage = () => {
       <Header />
       
       <main className="flex-1 p-4 space-y-4">
+        <section>
+          <LoanStepper />
+        </section>
+        
         <section>
           <CustomerInfoForm />
         </section>
