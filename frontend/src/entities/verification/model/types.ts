@@ -30,6 +30,7 @@ export interface ValidationRisk {
 /** 백엔드 전체 응답 구조 */
 export interface VerificationServerResponse {
   data: {
+    resolution: { width: number; height: number };
     documents: ServerDocItem[];
     validationResult: {
       documentMissings: ValidationMissing[];
@@ -65,29 +66,42 @@ export interface ExtractedField {
     pageNum: number;
     bbox: number[] | null; // [x, y, w, h]
     rawText: string;
+    confidence?: number;
   };
 }
 
 /** 서버에서 내려주는 개별 문서 원본 데이터 */
 export interface ServerDocItem {
   fileId: string;
+  storageType?: string;
+  bucket?: string;
+  fileKey?: string;
   fileName: string;
+  fileUrl?: string; // 백엔드에서 전달할 실제 PDF 주소
+  mimeType?: string;
   documentClassification: DocumentClassification;
   status: string;
+  errorCode: string | null;
+  errorMessage: string | null;
   extraction: {
-    content: Record<string, any>; // 실제 응답은 중첩 구조이므로 any 허용(Mapper에서 처리)
+    content: Record<string, unknown>; // 타입 안전성을 위해 any에서 unknown으로 변경
   };
   // TODO: 백엔드 협의 필요 - 문서별 원본 해상도(width, height) 전달 방식 확정 후 반영 예정
   resolution?: { width: number; height: number };
-  fileUrl?: string; // 백엔드에서 전달할 실제 PDF 주소
-  reviewItems?: Array<{ reviewCode: string; reviewMessage: string }>;
+  rawText?: string;
+  pages?: Array<{ pageNum: number }>;
 }
 
-/** UI에서 사용하는 가공된 문서 아이템 */
 export interface DocItem extends Omit<ServerDocItem, 'extraction'> {
-  id: string; // fileId를 id로 매핑하여 사용
+  id: string; // docType을 id로 매핑하여 사용
   status: DocumentStatus;
   isRisk: boolean;
+  /** 병합된 문서에 포함된 물리적 파일들의 메타데이터 리스트 */
+  files: Array<{
+    fileId: string;
+    fileUrl?: string;
+    pageNum: number;
+  }>;
 }
 
 export interface DocCategory {
