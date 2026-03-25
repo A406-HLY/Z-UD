@@ -76,3 +76,36 @@ services:
       timeout: 5s
       retries: 5
     restart: always
+
+  vector_db:
+    container_name: vector_db
+    image: pgvector/pgvector:pg16
+    environment:
+      - POSTGRES_USER=vector_user
+      - POSTGRES_PASSWORD=vector_password
+      - POSTGRES_DB=vectordb
+    ports:
+      - "5433:5432"
+    volumes:
+      - ../data/vector_db:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U vector_user -d vectordb" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  ai_rag:
+    container_name: ai_rag
+    build:
+      context: ../../ai/RAG
+      dockerfile: Dockerfile
+    environment:
+      - VECTOR_DB_HOST=vector_db
+      - VECTOR_DB_PORT=5432
+    ports:
+      - "8001:8000"
+    depends_on:
+      vector_db:
+        condition: service_healthy
+    restart: always

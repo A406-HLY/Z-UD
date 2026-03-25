@@ -1,0 +1,96 @@
+{
+  "consultationId": "1234",
+  "reportInput": {
+    "headOfHouseholdName": "홍길동",
+    "householdMembers": [
+      {
+        "name": "홍길동",
+        "residentRegistrationNumber": "900101-1******"
+      },
+      {
+        "name": "김영희",
+        "residentRegistrationNumber": "920202-2******"
+      }
+    ],
+    "employmentType": "SELF_EMPLOYED",
+    "currentAddress": "서울특별시 구로구 디지털로 123, 101동 1001호",
+    "name": "홍길동",
+    "residentRegistrationNumber": "900101-1******",
+    "spouse": {
+      "exists": true,
+      "name": "김영희",
+      "residentRegistrationNumber": "920202-2******"
+    },
+    "representativeName": true,
+    "hasCompanySeal": true,
+    "depositAmountList": [
+      {
+        "depositDate": "2025-11-25",
+        "depositAmount": 4500000
+      },
+      {
+        "depositDate": "2025-12-25",
+        "depositAmount": 4500000
+      }
+    ],
+    "manualReviewRequired": true,
+    "businessName": "제민상사",
+    "businessRegistrationNumber": "123-45-67890",
+    "incomeYear": "2025",
+    "incomeAmount": 68500000,
+    "determinedTaxAmount": 2150000,
+    "corporateRegistrationNumber": null,
+    "taxableSalesAmount": 120500000,
+    "registrationNumber": "900101-1******",
+    "identifierNumber": "900101-1******",
+    "taxItems": [
+      {
+        "taxItemName": "재산세",
+        "taxAmount": 320000,
+        "remark": "2025년 정기분"
+      }
+    ],
+    "registrationType": "집합건물",
+    "buildingType": "아파트",
+    "hasDongho": true,
+    "lotAddress": "서울특별시 구로구 구로동 123-45",
+    "hasLandRightCause": false,
+    "hasOwnershipTransferClaim": false,
+    "hasTrustRegistration": false,
+    "ownerName": "김철수",
+    "seniorRights": [
+      {
+        "maximumClaimAmount": 150000000
+      }
+    ],
+    "isViolationBuilding": false,
+    "mainUsage": "공동주택(아파트)",
+    "floorStatusList": [
+      {
+        "floor": "10층",
+        "usage": "주택",
+        "area": 84.97
+      }
+    ],
+    "propertyAddress": "서울특별시 구로구 디지털로 123, 101동 1001호",
+    "salePrice": 850000000,
+    "specialTerms": "잔금일 이전 근저당 말소 조건",
+    "seller": {
+      "name": "김철수"
+    },
+    "buyer": {
+      "name": "홍길동"
+    },
+    "inspectionAddress": "서울특별시 구로구 디지털로 123, 101동 1001호",
+    "moveInHouseholds": [
+      {
+        "headOfHouseholdName": "김철수",
+        "moveInDate": "2024-11-01"
+      }
+    ],
+    "collateralMarketPrice": 900000000,
+    "totalRemainingLoanBalance": 150000000,
+    "creditRating": "A",
+    "annualPrincipalAndInterestRepayment": 14400000
+  }
+}
