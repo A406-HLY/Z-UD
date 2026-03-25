@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Header } from '@/widgets/header';
 import { LoanTabs } from '@/widgets/loan-tabs';
 import { CustomerInfoForm } from '@/widgets/customer-info-form';
