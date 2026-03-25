@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class SwaggerConfig {
 
-	private static final String COOKIE_AUTH_SCHEME = "SessionCookie";
+	private static final String BEARER_AUTH_SCHEME = "BearerAuth";
 
 	@Bean
 	public OpenAPI customOpenApi() {
@@ -35,11 +35,11 @@ public class SwaggerConfig {
 				.description(domain.getDescription()))
 			.toList();
 
-		SecurityScheme cookieAuth = new SecurityScheme()
-			.type(SecurityScheme.Type.APIKEY)
-			.in(SecurityScheme.In.COOKIE)
-			.name("ZUD_SESSION")
-			.description("로그인 후 발급되는 세션 쿠키 (자동 설정됨)");
+		SecurityScheme bearerAuth = new SecurityScheme()
+			.type(SecurityScheme.Type.HTTP)
+			.scheme("bearer")
+			.bearerFormat("JWT")
+			.description("로그인 후 Authorization 헤더에 설정되는 Access Token");
 
 		return new OpenAPI()
 			.info(new Info()
@@ -49,13 +49,13 @@ public class SwaggerConfig {
 					
 					### 인증 방식
 					1. 먼저 `/api/v1/auth/login` API로 로그인하세요.
-					2. 로그인 성공 시 세션 쿠키(`ZUD_SESSION`)가 자동 설정됩니다.
-					3. 이후 API 호출 시 쿠키가 자동으로 전송됩니다.""")
+					2. 로그인 성공 시 Access Token은 `Authorization` 헤더, Refresh Token은 HttpOnly 쿠키로 전달됩니다.
+					3. 이후 API 호출 시 `Authorization: Bearer {accessToken}` 헤더를 포함하세요.""")
 				.version("v1.0"))
 			.servers(servers)
 			.components(new Components()
-				.addSecuritySchemes(COOKIE_AUTH_SCHEME, cookieAuth))
-			.addSecurityItem(new SecurityRequirement().addList(COOKIE_AUTH_SCHEME));
+				.addSecuritySchemes(BEARER_AUTH_SCHEME, bearerAuth))
+			.addSecurityItem(new SecurityRequirement().addList(BEARER_AUTH_SCHEME));
 	}
 
 	@Bean
