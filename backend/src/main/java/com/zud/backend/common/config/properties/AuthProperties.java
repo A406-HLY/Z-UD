@@ -7,6 +7,10 @@ public record AuthProperties(
 	String serverUrl,
 	String clientId,
 	String clientSecret,
-	String jwksUri
+	String jwksUri,
+	String issuePath,
+	String reissuePath,
+	String revokePath,
+	String blacklistPath
 ) {
 }

@@ -104,6 +104,10 @@ auth:
   client-id: ${AUTH_OAUTH_CLIENT_ID:zud-client}
   client-secret: ${AUTH_OAUTH_CLIENT_SECRET:zud-secret}
   jwks-uri: ${AUTH_JWKS_URI:http://localhost:9000/oauth2/jwks}
+  issue-path: "/api/v1/token/issue"
+  reissue-path: "/api/v1/token/reissue"
+  revoke-path: "/api/v1/token/revoke"
+  blacklist-path: "/api/v1/token/blacklist/{jti}"
 
 management:
   endpoints:
