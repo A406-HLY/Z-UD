@@ -33,6 +33,7 @@ public enum ErrorCode {
 	 */
 	TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "AU-001", "유효하지 않은 토큰입니다."),
 	AUTH_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "AU-002", "인증 서버 오류가 발생했습니다."),
+	TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "AU-003", "토큰을 찾을 수 없습니다."),
 
 	/**
 	 * User Error (US-xxx)
