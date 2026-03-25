@@ -4,10 +4,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 
-@Schema(description = "로그인 요청 DTO")
+@Schema(description = "인증 서버 토큰 발급 요청 DTO")
 @Builder
-public record LoginReqDto(
-	@Schema(description = "사원 번호", example = "ZUD144001")
+public record TokenIssueReqDto(
+	@Schema(description = "사원 번호", example = "EMP001")
 	@NotBlank(message = "사원 번호는 필수 입력값 입니다.")
 	String employeeNumber,
 
