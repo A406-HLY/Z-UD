@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.zud.backend.domain.report.converter.ReportConverter;
 import com.zud.backend.domain.report.dto.message.LoanReportReqMessage;
 import com.zud.backend.domain.report.dto.request.LoanReportReqDto;
-import com.zud.backend.domain.report.dto.response.LoanReportGenerateRes;
+import com.zud.backend.domain.report.dto.response.LoanReportGenerateResDto;
 import com.zud.backend.domain.report.redis.LoanReportResultCache;
 import com.zud.backend.domain.report.repository.ReportRedisRepository;
 import com.zud.backend.domain.report.service.kafka.ReportKafkaProducer;
@@ -28,7 +28,7 @@ public class ReportRequestServiceImpl implements ReportRequestService {
 
 	@Override
 	@Transactional
-	public LoanReportGenerateRes requestReport(Long userId, LoanReportReqDto request) {
+	public LoanReportGenerateResDto requestReport(Long userId, LoanReportReqDto request) {
 		String consultationId = request.consultationId().toString();
 		log.info("[Report] 리포트 생성 요청 수신: userId={}, consultationId={}", userId, consultationId);
 

@@ -1,6 +1,6 @@
 package com.zud.backend.domain.report.dto.response;
 
-public record LoanReportGenerateRes(
+public record LoanReportGenerateResDto(
 	String consultationId,
 	String message
 ) {

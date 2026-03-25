@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.zud.backend.common.annotation.Authentication;
 import com.zud.backend.common.config.swagger.ApiErrorResponse;
 import com.zud.backend.domain.report.dto.request.LoanReportReqDto;
-import com.zud.backend.domain.report.dto.response.LoanReportGenerateRes;
+import com.zud.backend.domain.report.dto.response.LoanReportGenerateResDto;
 import com.zud.backend.domain.report.dto.response.LoanReportResultResDto;
 import com.zud.backend.domain.report.service.facade.ReportFacadeService;
 
@@ -35,7 +35,7 @@ public class ReportController {
 	@PostMapping
 	@Operation(summary = "대출 리포트 생성 요청", description = "입력 정보를 기반으로 대출 리포트 생성을 비동기로 요청한다.")
 	@ApiErrorResponse
-	public ResponseEntity<LoanReportGenerateRes> generateReport(
+	public ResponseEntity<LoanReportGenerateResDto> generateReport(
 		@Authentication Long userId,
 		@Valid @RequestBody LoanReportReqDto request
 	) {

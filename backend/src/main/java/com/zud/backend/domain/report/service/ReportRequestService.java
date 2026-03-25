@@ -1,8 +1,8 @@
 package com.zud.backend.domain.report.service;
 
 import com.zud.backend.domain.report.dto.request.LoanReportReqDto;
-import com.zud.backend.domain.report.dto.response.LoanReportGenerateRes;
+import com.zud.backend.domain.report.dto.response.LoanReportGenerateResDto;
 
 public interface ReportRequestService {
-	LoanReportGenerateRes requestReport(Long userId, LoanReportReqDto request);
+	LoanReportGenerateResDto requestReport(Long userId, LoanReportReqDto request);
 }

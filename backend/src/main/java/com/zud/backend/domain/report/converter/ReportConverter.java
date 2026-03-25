@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 import com.zud.backend.domain.report.dto.message.LoanReportReqMessage;
 import com.zud.backend.domain.report.dto.request.LoanReportReqDto;
-import com.zud.backend.domain.report.dto.response.LoanReportGenerateRes;
+import com.zud.backend.domain.report.dto.response.LoanReportGenerateResDto;
 import com.zud.backend.domain.report.dto.response.LoanReportResultResDto;
 import com.zud.backend.domain.report.redis.LoanReportResultCache;
 
@@ -22,8 +22,8 @@ public class ReportConverter {
 		);
 	}
 
-	public LoanReportGenerateRes toGenerateResponse(String consultationId) {
-		return new LoanReportGenerateRes(
+	public LoanReportGenerateResDto toGenerateResponse(String consultationId) {
+		return new LoanReportGenerateResDto(
 			consultationId,
 			REPORT_REQUEST_ACCEPTED_MESSAGE
 		);
