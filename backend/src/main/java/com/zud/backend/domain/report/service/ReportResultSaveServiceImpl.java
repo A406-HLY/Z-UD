@@ -35,7 +35,7 @@ public class ReportResultSaveServiceImpl implements ReportResultSaveService {
 			// TODO: AI 응답 payload 구조 확정 후 consultationId 경로 수정
 			JsonNode consultationIdNode = root.path("payload").path("consultationId");
 			if (consultationIdNode.isMissingNode() || consultationIdNode.isNull()) {
-				consultationIdNode = root.path("payload").path("counselId");
+				consultationIdNode = root.path("payload").path("consultationId");
 			}
 			if (consultationIdNode.isMissingNode() || consultationIdNode.isNull()) {
 				consultationIdNode = root.path("payload").path("uuid");

@@ -11,15 +11,15 @@ public class EmitterRepository {
 
 	private final Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
 
-	public SseEmitter findByCounselId(final Long counselId) {
-		return emitters.get(counselId);
+	public SseEmitter findByConsultationId(final Long consultationId) {
+		return emitters.get(consultationId);
 	}
 
-	public void save(Long counselId, final SseEmitter sseEmitter) {
-		emitters.put(counselId, sseEmitter);
+	public void save(Long consultationId, final SseEmitter sseEmitter) {
+		emitters.put(consultationId, sseEmitter);
 	}
 
-	public void deleteByCounselId(Long counselId) {
-		emitters.remove(counselId);
+	public void deleteByConsultationId(Long consultationId) {
+		emitters.remove(consultationId);
 	}
 }
