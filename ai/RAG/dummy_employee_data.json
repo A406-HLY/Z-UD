@@ -1,0 +1,85 @@
+{
+  "consultationId": "CONS-2026-EMP-001",
+  "reportInput": {
+    "name": "홍길동",
+    "residentRegistrationNumber": "900101-1234567",
+    "phoneNumber": "010-1234-5678",
+    "targetLoanAmount": 200000000,
+    "loanPurpose": "HOME_PURCHASE",
+    "ownedHouseCount": 0,
+    "issueDate": "2026-03-25",
+    "issueNumber": "2026-123456789",
+    "householdMembers": [
+      {
+        "name": "홍길동",
+        "residentRegistrationNumber": "900101-1234567"
+      },
+      {
+        "name": "김지영",
+        "residentRegistrationNumber": "920505-2345678"
+      }
+    ],
+    "currentAddress": "서울특별시 강남구 테헤란로 123",
+    "moveInDate": "2025-01-15",
+    "spouse": {
+      "exists": true,
+      "name": "김지영",
+      "residentRegistrationNumber": "920505-2345678"
+    },
+    "registrationType": "집합건물",
+    "hasDongho": true,
+    "buildingType": "아파트",
+    "lotAddress": "서울특별시 강남구 역삼동 456",
+    "hasLandRightCause": false,
+    "hasOwnershipTransferClaim": false,
+    "hasTrustRegistration": false,
+    "ownerName": "이철수",
+    "deposit": {
+      "hasDeposit": true,
+      "depositAmount": 50000000
+    },
+    "seniorRights": [
+      {
+        "maximumClaimAmount": 100000000
+      }
+    ],
+    "isViolationBuilding": false,
+    "mainUsage": "공동주택",
+    "floorStatusList": [
+      {
+        "floor": "5층",
+        "usage": "아파트",
+        "area": 84.5
+      }
+    ],
+    "propertyAddress": "서울특별시 강남구 테헤란로 123, 101동 502호",
+    "salePrice": 1000000000,
+    "specialTerms": "잔금 지급 전 근저당권 말소 조건",
+    "seller": {
+      "name": "이철수"
+    },
+    "buyer": {
+      "name": "홍길동"
+    },
+    "taxItems": [
+      {
+        "taxItemName": "취득세",
+        "taxAmount": 30000000,
+        "remark": "납부완료"
+      }
+    ],
+    "employmentType": "EMPLOYEE",
+    "hasRepresentativeName": true,
+    "hasCompanySeal": true,
+    "subscriberType": "직장가입자",
+    "latestAcquisitionDate": "2020-03-01",
+    "latestLossDate": "",
+    "workPeriod": "2025.01.01-2025.12.31",
+    "annualIncomeTotal": 70000000,
+    "manualReviewRequired": false,
+    "collateralMarketPrice": 900000000,
+    "totalLoanBalance": 150000000,
+    "creditRating": "A",
+    "annualPrincipalAndInterestRepayment": 14400000
+  }
+}
