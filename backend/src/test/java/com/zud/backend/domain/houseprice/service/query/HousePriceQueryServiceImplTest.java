@@ -43,12 +43,12 @@ class HousePriceQueryServiceImplTest {
 
 	@BeforeEach
 	void setUpFacade() throws Exception {
-		// Lombok's @RequiredArgsConstructor(access = PROTECTED) 이라서 리플렉션으로 생성합니다.
+		// Lombok's @RequiredArgsConstructor(access = PROTECTED) 이라서 리플렉션으로 생성
 		var ctor = HousePriceFacadeServiceImpl.class.getDeclaredConstructor(
 			com.zud.backend.domain.houseprice.service.query.HousePriceQueryService.class
 		);
 		ctor.setAccessible(true);
-		housePriceQueryService = (HousePriceFacadeServiceImpl)ctor.newInstance(housePriceQueryServiceImpl);
+		housePriceQueryService = ctor.newInstance(housePriceQueryServiceImpl);
 	}
 
 	private static final String VALID_ADDRESS = "서울특별시 서초구 반포동 자하문로36길 16-14 반포아파트 101동 101호";
@@ -104,21 +104,22 @@ class HousePriceQueryServiceImplTest {
 			}
 
 			@Test
-			@DisplayName("주택_유형이_다세대연립이면_성공")
-			void 주택_유형이_다세대연립이면_성공() {
-				// given
+			@DisplayName("주택_유형이_다세대연립이면_실거래가_없이_공시가로_조회")
+			void 주택_유형이_다세대연립이면_실거래가_없이_공시가로_조회() {
+				// given — 다세대연립은 실거래가 매칭을 시도하지 않음
 				String address = "서울특별시 강남구 역삼동 테헤란로 212 다세대연립 201호";
-				HouseTradePrice tradePrice = createTradePrice(30000L);
-				given(houseTradePriceRepository.findMultiHouseholdExactMatch(
-					"서울특별시 강남구 역삼동", "테헤란로 212", "다세대연립", null
-				)).willReturn(tradePrice);
+				HouseOfficialPrice officialPrice = createOfficialPriceForGangnamMultiHousehold(450_000_000L);
+				given(houseOfficialPriceRepository.findExactMatch(
+					"서울특별시 강남구 역삼동 테헤란로 212", "다세대연립", null, "201"
+				)).willReturn(officialPrice);
 
 				// when
 				HousePriceResDto result = housePriceQueryService.findHousePrice("다세대연립", address);
 
 				// then
-				assertThat(result.price()).isEqualTo(30000L);
-				assertThat(result.priceType()).isEqualTo("실거래가");
+				assertThat(result.price()).isEqualTo(45000L);
+				assertThat(result.priceType()).isEqualTo("공시가");
+				then(houseTradePriceRepository).shouldHaveNoInteractions();
 			}
 
 			@Test
@@ -444,6 +445,12 @@ class HousePriceQueryServiceImplTest {
 			.stdMonth((short)1)
 			.legalDongCode("1165010100")
 			.roadAddress("서울특별시 서초구 반포동 자하문로36길 16-14")
+			.build();
+	}
+
+	private HouseOfficialPrice createOfficialPriceForGangnamMultiHousehold(Long officialPriceWon) {
+		return HouseOfficialPrice.builder()
+			.officialPrice(officialPriceWon)
 			.build();
 	}
 }
