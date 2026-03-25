@@ -51,12 +51,12 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
             householdMembers: [
               {
                 name: {
-                  value: "홍길동",
+                  value: "홍길순",
                   confidence: 0.98,
                   evidence: {
                     pageNum: 1,
                     bbox: [150, 380, 240, 410],
-                    rawText: "홍길동",
+                    rawText: "홍길순",
                     confidence: 0.98
                   }
                 },
@@ -1445,10 +1445,9 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
         { documentType: "WITHHOLDING_TAX_CERTIFICATE", documentTypeLabel: "근로소득 원천징수영수증" }
       ],
       violations: [
-        { documentType: "SALE_CONTRACT", documentTypeLabel: "매매계약서", fields: ["buyer_name"] }, 
-        { documentType: "MOVE_IN_HOUSEHOLD_REPORT", documentTypeLabel: "전입세대열람내역서", fields: ["address"] },
-        { documentType: "SALE_CONTRACT", documentTypeLabel: "매매계약서", fields: ["address"] },
-        { documentType: "RESIDENT_REGISTRATION_ABSTRACT", documentTypeLabel: "주민등록초본", fields: ["address"] }
+        { documentType: "SALE_CONTRACT", documentTypeLabel: "매매계약서", fields: ["buyer.name"] }, 
+        { documentType: "RESIDENT_REGISTRATION_ABSTRACT", documentTypeLabel: "주민등록초본", fields: ["address"] },
+        { documentType: "RESIDENT_REGISTRATION", documentTypeLabel: "주민등록등본", fields: ["householdMembers[0].name"] }
       ],
       risks: [
         { documentType: "BUILDING_REGISTER", documentTypeLabel: "집합건축물대장", fields: ["mainUsage"] }

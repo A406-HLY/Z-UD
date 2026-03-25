@@ -51,7 +51,7 @@ export const getPrevDocumentId = (
  * 예: householdMembers[0]_name -> name
  */
 export const getNormalizedKey = (key: string): string => {
-  return key.replace(/\[\d+\]/g, '').split('_').pop() || key;
+  return key.replace(/\[\d+\]/g, '').split('.').pop() || key;
 };
 
 /**

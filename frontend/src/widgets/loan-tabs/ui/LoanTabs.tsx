@@ -36,9 +36,7 @@ export const LoanTabs = ({ actionButton, onNextStep, isNextStepPending, isScanCo
   return (
     <div className="flex justify-between items-center bg-white border-b border-gray-200 min-h-[32px] sticky top-0 z-10">
       <div className="flex h-8">
-        {LOAN_PROCESS_TABS.map((tab) => {
-          const isNextTarget = isScanComplete && tab.id === 'ocr';
-          
+        {LOAN_PROCESS_TABS.map((tab) => {          
           return (
             <button
               key={tab.id}

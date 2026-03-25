@@ -32,7 +32,7 @@ const flattenContent = (content: unknown, prefix = '', labelPrefix = ''): Extrac
   const obj = content as Record<string, unknown>; // 동적 키 순회를 위해 타입 단언 유지
   for (const key in obj) {
     const item = obj[key];
-    const fieldKey = prefix ? `${prefix}_${key}` : key;
+    const fieldKey = prefix ? `${prefix}.${key}` : key;
     const displayLabel = labelPrefix ? `${labelPrefix} > ${key}` : key;
 
     const isFieldObject = (val: unknown): val is { value: string | number | boolean | null; confidence?: number; evidence?: any } => {
@@ -139,7 +139,8 @@ export const mapServerResponseToVerificationResult = (
     const docRiskFields = riskMap[docType] || new Set<string>();
 
     const markedFields = mergedFields.map(field => {
-      const parts = field.key.replace(ARRAY_INDEX_REGEX, '').split('_');
+      // (Why: .을 기준으로 분할하여 마지막 필드명을 추출합니다. 배열 인덱스[0] 등은 정규표현식으로 제거합니다.)
+      const parts = field.key.replace(ARRAY_INDEX_REGEX, '').split('.');
       const baseKey = parts[parts.length - 1];
       
       const isViolation = docViolationFields.has(baseKey) || docViolationFields.has(field.key);
