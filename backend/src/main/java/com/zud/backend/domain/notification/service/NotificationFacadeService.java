@@ -5,9 +5,9 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import com.zud.backend.domain.notification.dto.NotificationResDto;
 
 public interface NotificationFacadeService {
-	SseEmitter subscribe(final Long consultationId);
+	SseEmitter subscribe(final Long userId);
 
-	void disconnect(final Long consultationId);
+	void disconnect(final Long userId);
 
-	void send(final Long consultationId, final NotificationResDto notificationResDto);
+	void send(final Long userId, final NotificationResDto notificationResDto);
 }

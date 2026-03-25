@@ -21,14 +21,6 @@ public class ConsultationQueryServiceImpl implements ConsultationQueryService {
 	private final ConsultationRepository consultationRepository;
 
 	@Override
-	public Consultation findById(final Long consultationId) {
-		Consultation consultation = consultationRepository.findById(consultationId)
-			.orElseThrow(() -> new ConsultationException(ErrorCode.CONSULTATION_NOT_FOUND));
-		log.info("상담 조회 완료: consultationId={}", consultation.getId());
-		return consultation;
-	}
-
-	@Override
 	public Consultation findByUuid(final String uuid) {
 		Consultation consultation = consultationRepository.findByExternalConsultationUuid(uuid)
 			.orElseThrow(() -> new ConsultationException(ErrorCode.CONSULTATION_NOT_FOUND));
