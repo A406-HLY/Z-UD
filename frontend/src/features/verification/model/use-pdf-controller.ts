@@ -8,8 +8,11 @@ import { ExtractedField } from '@/entities/verification/model/types';
 export const usePdfController = (
   fields: ExtractedField[], 
   focusedFieldKey: string | null,
-  // TODO: 백엔드에서 해상도 정보가 없을 경우의 기본값(Fallback) 처리 방안 협의 필요
-  originalWidth: number = 1240 
+  files: Array<{ fileId: string; fileUrl?: string; pageNum: number }> = [],
+  initialFileUrl?: string,
+  // (Why: 백엔드에서 해상도 정보가 없을 경우의 기본값(Fallback) 처리 방안 협의 필요)
+  originalWidth: number = 1240,
+  originalHeight: number = 1754
 ) => {
   const [scale, setScale] = useState(1);
   const [pageNumber, setPageNumber] = useState(1);
@@ -17,8 +20,18 @@ export const usePdfController = (
   const [renderedSize, setRenderedSize] = useState({ width: 0, height: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const currentFileUrl = useMemo(() => {
+    if (files.length === 0) return initialFileUrl;
+    // 현재 pageNumber와 일치하는 파일을 찾거나, 가장 가까운 파일 반환
+    const targetFile = files.find(f => f.pageNum === pageNumber) || files[0];
+    return targetFile?.fileUrl || initialFileUrl;
+  }, [files, pageNumber, initialFileUrl]);
+
   const scaleRatio = useMemo(() => {
-    if (!renderedSize.width) return 1;
+    if (!renderedSize.width || !renderedSize.height) return 1;
+    
+    // (Note: 가로/세로 비율이 다를 경우에 대비하여 가로 비율을 기본 스케일로 사용하되, 
+    // 추후 필요시 yScaleRatio를 별도로 산출하여 좌표 정밀도를 높일 수 있습니다.)
     return renderedSize.width / originalWidth;
   }, [renderedSize.width, originalWidth]);
 
@@ -40,7 +53,16 @@ export const usePdfController = (
     if (!focusedFieldKey || !containerRef.current || fields.length === 0) return;
     
     const field = fields.find(f => f.key === focusedFieldKey);
-    if (field && field.evidence && field.evidence.bbox && field.evidence.bbox.length >= 4) {
+    if (!field || !field.evidence) return;
+
+    // [다중 페이지 지원] 포커스된 필드의 페이지로 자동 이동
+    if (field.evidence.pageNum && field.evidence.pageNum !== pageNumber) {
+      setPageNumber(field.evidence.pageNum);
+      // 페이지 전환 시 렌더링 대기 시간이 필요할 수 있으므로, 
+      // 실제 스크롤 이동은 다음 렌더링 사이클에서 pageNumber가 일치할 때 수행되도록 로직 분리 가능
+    }
+
+    if (field.evidence.bbox && field.evidence.bbox.length >= 4 && field.evidence.pageNum === pageNumber) {
       const minY = field.evidence.bbox[1]; // [x1, y1, x2, y2] 중 y1
       
       // 타겟 Y좌표 스케일링 후, 화면 절반 높이만큼 빼서 해당 Bbox가 화면 중앙 레벨에 오도록 보정
@@ -48,7 +70,7 @@ export const usePdfController = (
       
       containerRef.current.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
     }
-  }, [focusedFieldKey, fields, scaleRatio]);
+  }, [focusedFieldKey, fields, scaleRatio, pageNumber]);
 
   // (Why: Ctrl + Wheel 조작 시 브라우저 기본 확대를 차단하고 PDF 뷰어의 스케일만 조절합니다.)
   useEffect(() => {
@@ -80,6 +102,7 @@ export const usePdfController = (
     setIsLoading,
     containerRef,
     setRenderedSize,
-    scaledBboxes
+    scaledBboxes,
+    currentFileUrl
   };
 };

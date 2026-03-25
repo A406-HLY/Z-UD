@@ -9,6 +9,8 @@ interface Props {
   fileUrl?: string; // 백엔드 API로부터 전달받은 PDF 소스 URL
   pageNumber: number;
   scale: number;
+  originalWidth?: number;
+  originalHeight?: number;
   onLoadSuccess: (info: { width: number; height: number }) => void;
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
@@ -23,7 +25,7 @@ interface Props {
  * 2. 렌더링 속도: 1.5초 이내 완료를 위해 Canvas 하드웨어 가속 활용
  * 3. 폐쇄망 대응: public 폴더의 로컬 CMap 데이터 참조로 한글 깨짐 방지
  */
-export const PdfRenderer = ({ fileUrl, pageNumber, scale, onLoadSuccess, isLoading, setIsLoading }: Props) => {
+export const PdfRenderer = ({ fileUrl, pageNumber, scale, originalWidth = 1240, originalHeight = 1754, onLoadSuccess, isLoading, setIsLoading }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [pdfDoc, setPdfDoc] = useState<pdfjsLib.PDFDocumentProxy | null>(null);
   
@@ -68,12 +70,17 @@ export const PdfRenderer = ({ fileUrl, pageNumber, scale, onLoadSuccess, isLoadi
     };
   }, [fileUrl]); 
 
+  // (Why: 화면 크기에 상관없이 원본 문서의 비율을 유지하며 줌(scale)을 적용합니다.)
+  const BASE_VIEW_WIDTH = 800; // 가독성 좋은 표준 뷰어 너비
+  const viewWidth = BASE_VIEW_WIDTH * scale;
+  const viewHeight = (originalHeight / originalWidth) * viewWidth;
+
   // 2. [페이지 렌더링]: pdfDoc, pageNumber, scale이 변경될 때 Canvas에 다시 그립니다.
   useEffect(() => {
     const renderPage = async () => {
       if (!pdfDoc) {
-        // (Why: 초기 대기 상태에서는 기본 A4 비율 크기만 부모에게 리턴하여 레이아웃 유지)
-        onLoadSuccess({ width: 600 * scale, height: 848 * scale });
+        // (Why: 초기 대기 상태 혹은 로딩 실패 시 플레이스홀더 크기를 부모에게 리턴)
+        onLoadSuccess({ width: viewWidth, height: viewHeight });
         return;
       }
 
@@ -87,9 +94,8 @@ export const PdfRenderer = ({ fileUrl, pageNumber, scale, onLoadSuccess, isLoadi
 
         const page = await pdfDoc.getPage(pageNumber);
         
-        // (Safety): 브라우저별 Canvas 픽셀 제한(H/W 가속 한계) 고려. 
-        // 8000px을 초과할 경우 성능 및 뒤집힘 방지를 위해 스케일을 조정할 수도 있으나, 여기서는 최적화 우선.
-        const viewport = page.getViewport({ scale });
+        // (Note: 실제 렌더링 배율은 파일 크기에 맞춰 유동적으로 조절)
+        const viewport = page.getViewport({ scale: viewWidth / page.getViewport({ scale: 1 }).width });
 
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -131,19 +137,19 @@ export const PdfRenderer = ({ fileUrl, pageNumber, scale, onLoadSuccess, isLoadi
         currentRenderTask.current.cancel();
       }
     };
-  }, [pdfDoc, pageNumber, scale, onLoadSuccess]);
+  }, [pdfDoc, pageNumber, scale, originalWidth, originalHeight, onLoadSuccess, viewWidth, viewHeight]);
 
   return (
-    <div className="relative shadow-2xl bg-white flex justify-center overflow-hidden">
+    <div className="relative shadow-2xl bg-white flex justify-center overflow-hidden shrink-0">
       {/* Actual Drawing Surface */}
       {fileUrl ? (
-        <canvas ref={canvasRef} className="max-w-full h-auto" />
+        <canvas ref={canvasRef} className="max-w-full h-auto shadow-inner" />
       ) : (
         <div 
-          className="bg-gray-50 flex items-center justify-center border border-gray-300 transition-all"
-          style={{ width: `${600 * scale}px`, height: `${848 * scale}px` }}
+          className="bg-gray-50 flex items-center justify-center border border-gray-300 transition-all shrink-0"
+          style={{ width: `${viewWidth}px`, height: `${viewHeight}px` }}
         >
-           <span className="text-gray-400 font-bold tracking-widest text-sm">
+           <span className="text-gray-400 font-bold tracking-widest text-xs">
              [ 분석 대상 문서 대기 중 ]
            </span>
         </div>

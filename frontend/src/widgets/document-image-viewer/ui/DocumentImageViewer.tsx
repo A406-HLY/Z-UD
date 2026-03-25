@@ -8,6 +8,7 @@ interface Props {
   fields?: ExtractedField[];
   focusedFieldKey?: string | null;
   fileUrl?: string; // 백엔드에서 추후 전달받을 실제 PDF 주소
+  files?: Array<{ fileId: string; fileUrl?: string; pageNum: number }>;
   originalWidth?: number; // 원본 해상도 폭
 }
 
@@ -16,7 +17,7 @@ interface Props {
  * 실제 PDF 렌더링 및 OCR 좌표 기반 Bounding Box 오버레이를 담당하는 메인 위젯 컨테이너입니다.
  * (Why: 하위 세부 컴포넌트와 비즈니스 로직(Hook)을 결합하여 캡슐화하고 외부에는 데이터 Props만 노출합니다.)
  */
-export const DocumentImageViewer = ({ fields = [], focusedFieldKey = null, fileUrl, originalWidth }: Props) => {
+export const DocumentImageViewer = ({ fields = [], focusedFieldKey = null, fileUrl, files = [], originalWidth }: Props) => {
   const {
     scale, setScale,
     pageNumber,
@@ -24,8 +25,9 @@ export const DocumentImageViewer = ({ fields = [], focusedFieldKey = null, fileU
     setIsLoading,
     containerRef,
     setRenderedSize,
-    scaledBboxes
-  } = usePdfController(fields, focusedFieldKey, originalWidth);
+    scaledBboxes,
+    currentFileUrl
+  } = usePdfController(fields, focusedFieldKey, files, fileUrl, originalWidth);
 
   return (
     <div className="flex-[1.3] h-full flex flex-col bg-[#808080] overflow-hidden relative">
@@ -79,7 +81,7 @@ export const DocumentImageViewer = ({ fields = [], focusedFieldKey = null, fileU
          >
            <div className="relative shrink-0 transition-transform origin-top">
               <PdfRenderer 
-                fileUrl={fileUrl} 
+                fileUrl={currentFileUrl} 
                 pageNumber={pageNumber} 
                 scale={scale} 
                 onLoadSuccess={setRenderedSize} 

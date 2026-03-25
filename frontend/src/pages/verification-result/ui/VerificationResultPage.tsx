@@ -95,7 +95,9 @@ export const VerificationResultPage = () => {
             fields={selectedId ? (localResult.documentFields[selectedId] || []) : []}
             focusedFieldKey={focusedFieldKey}
             fileUrl={selectedDoc?.fileUrl}
+            files={selectedDoc?.files}
             originalWidth={selectedDoc?.resolution?.width}
+            originalHeight={selectedDoc?.resolution?.height}
           />
         </section>
       </main>
