@@ -18,6 +18,7 @@ public record DocumentDto(
 	String bucket,
 	String fileKey,
 	String fileName,
+	String fileUrl,
 	String mimeType,
 	String status,
 	String errorCode,

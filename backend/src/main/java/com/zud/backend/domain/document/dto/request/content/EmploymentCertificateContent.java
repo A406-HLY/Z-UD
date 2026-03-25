@@ -17,8 +17,8 @@ public record EmploymentCertificateContent(
 	DataField<String> name,
 	@Schema(description = "주민등록번호")
 	DataField<String> residentRegistrationNumber,
-	@Schema(description = "대표자성명")
-	DataField<String> hasRepresentativeName,
+	@Schema(description = "대표자성명 표기 여부")
+	DataField<Boolean> hasRepresentativeName,
 	@Schema(description = "회사 직인 여부")
 	DataField<Boolean> hasCompanySeal
 ) implements DocumentContent {

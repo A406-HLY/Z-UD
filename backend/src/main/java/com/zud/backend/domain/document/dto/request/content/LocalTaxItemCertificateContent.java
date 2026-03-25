@@ -21,7 +21,7 @@ public record LocalTaxItemCertificateContent(
 	@Schema(description = "성명")
 	DataField<String> name,
 	@Schema(description = "주민등록번호")
-	DataField<String> identifierNumber,
+	DataField<String> residentRegistrationNumber,
 	@Schema(description = "과세 내역")
 	List<TaxItem> taxItems
 ) implements DocumentContent {
@@ -49,8 +49,8 @@ public record LocalTaxItemCertificateContent(
 		if (name != null && name.value() != null) {
 			fields.put(CrossField.LOAN_APPLICANT_NAME, name.value());
 		}
-		if (identifierNumber != null && identifierNumber.value() != null) {
-			fields.put(CrossField.RESIDENT_REGISTRATION_NUMBER, identifierNumber.value());
+		if (residentRegistrationNumber != null && residentRegistrationNumber.value() != null) {
+			fields.put(CrossField.RESIDENT_REGISTRATION_NUMBER, residentRegistrationNumber.value());
 		}
 		return fields;
 	}
