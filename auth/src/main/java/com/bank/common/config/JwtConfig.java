@@ -23,7 +23,7 @@ public class JwtConfig {
 
 	private final RsaKeysService rsaKeysService;
 
-	@Value("${auth.rsa.jwt.identifier}")
+	@Value("${auth.rsa.key-identifier}")
 	private String identifier;
 
 	@Bean

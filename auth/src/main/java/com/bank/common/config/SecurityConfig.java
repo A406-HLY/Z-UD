@@ -22,7 +22,6 @@ import com.bank.common.oauth.OAuthClientService;
 import lombok.RequiredArgsConstructor;
 
 @Configuration
-@EnableWebSecurity(debug = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
