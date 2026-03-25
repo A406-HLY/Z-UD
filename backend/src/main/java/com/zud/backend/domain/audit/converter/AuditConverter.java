@@ -2,6 +2,7 @@ package com.zud.backend.domain.audit.converter;
 
 import com.zud.backend.domain.audit.dto.response.AuditHouseResDto;
 import com.zud.backend.domain.branch.dto.response.NearestBranchResDto;
+import com.zud.backend.domain.houseprice.converter.HousePriceConverter;
 import com.zud.backend.domain.houseprice.dto.response.HousePriceResDto;
 
 import lombok.experimental.UtilityClass;
@@ -24,11 +25,7 @@ public class AuditConverter {
 	}
 
 	public HousePriceResDto toUnavailableHousePrice(final String message) {
-		return HousePriceResDto.builder()
-			.price(null)
-			.priceType(null)
-			.message(message)
-			.build();
+		return HousePriceConverter.toUnavailableHousePrice(message);
 	}
 }
 
