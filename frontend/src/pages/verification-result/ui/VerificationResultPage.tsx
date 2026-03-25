@@ -1,3 +1,4 @@
+import { useParams } from 'react-router-dom';
 import { Header } from '@/widgets/header';
 import { LoanTabs } from '@/widgets/loan-tabs';
 import { CustomerInfoForm } from '@/widgets/customer-info-form';
@@ -5,14 +6,20 @@ import { LoanStepper } from '@/widgets/loan-stepper/ui/LoanStepper';
 import { VerificationRepository } from '@/widgets/verification-repository/ui/VerificationRepository';
 import { OcrFieldEditor } from '@/widgets/ocr-field-editor/ui/OcrFieldEditor';
 import { DocumentImageViewer } from '@/widgets/document-image-viewer/ui/DocumentImageViewer';
+import { useState } from 'react';
 import { useVerificationController } from '@/features/verification/model/use-verification-controller';
 import { useGlobalFocusRecovery } from '@/features/verification/model/use-global-focus-recovery';
+import { useCrossWindowSync } from '@/features/verification/model/use-cross-window-sync';
+import { useEffect } from 'react';
 
 /**
  * @page verification-result
  * 서류 검증 결과 및 OCR 교정을 수행하는 업무 페이지입니다.
  */
 export const VerificationResultPage = () => {
+  const { id } = useParams<{ id: string }>();
+  const verificationId = id || 'v-12345'; // Fallback for safety
+
   const { 
     localResult, 
     selectedId, 
@@ -23,12 +30,33 @@ export const VerificationResultPage = () => {
     handleFieldChange,
     handleNextDocument,
     handlePrevDocument
-  } = useVerificationController('v-12345');
+  } = useVerificationController(verificationId);
 
   // (Why: 전역 포커스 감시 로직을 훅으로 격리하여 페이지(UI) 코드를 조립 역할에 집중시킵니다.)
   useGlobalFocusRecovery({
     handleNextDocument,
     handlePrevDocument
+  });
+
+  // (Why: 크로스 윈도우 동기화를 위한 로컬 상태 관리 - 기본 배율은 가독성을 위해 80%로 설정합니다.)
+  const [scale, setScale] = useState(0.8);
+  const [pageNumber, setPageNumber] = useState(1);
+
+  // (Why: 문서가 변경되면 페이지 번호(1)와 배율(80%)을 초기화합니다.)
+  useEffect(() => {
+    setPageNumber(1);
+    setScale(0.8);
+  }, [selectedId]);
+
+  // (Why: 메인 창에서 발생하는 모든 뷰어 상태 변경을 BroadcastChannel로 송신합니다.)
+  useCrossWindowSync({
+    role: 'sender',
+    state: {
+      selectedId,
+      pageNumber,
+      scale,
+      focusedFieldKey
+    }
   });
 
   if (isLoading || !localResult) {
@@ -98,6 +126,11 @@ export const VerificationResultPage = () => {
             files={selectedDoc?.files}
             originalWidth={selectedDoc?.resolution?.width}
             originalHeight={selectedDoc?.resolution?.height}
+            scale={scale}
+            pageNumber={pageNumber}
+            onScaleChange={setScale}
+            onPageChange={setPageNumber}
+            verificationId={verificationId}
           />
         </section>
       </main>
