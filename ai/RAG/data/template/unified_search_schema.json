@@ -201,5 +201,12 @@
     "name_ko": "DSR 비율",
     "default_value": "DSR 비율",
     "search_query": "대출 신청자의 연간 소득 대비 총부채상환비율(DTI) 및 총부채원리금상환비율(DSR) 최고 한도 규제 및 심사 인정 기준은?"
+  },
+  {
+    "category": "공통",
+    "name_en": "stressDSR",
+    "name_ko": "스트레스 DSR",
+    "default_value": "3%",
+    "search_query": "대출 심사 시 기존 부채 및 신규 대출의 원리금 상환 부담 산정에 적용되는 스트레스 DSR(총부채원리금상환비율) 가산 금리 기준 및 적용 비율은 어떻게 되는가?"
   }
 ]

@@ -1,12 +1,10 @@
 import os
 import json
-from fastapi import FastAPI, HTTPException
-from schemas import SearchResponse, FieldSearchResponse, UpdateRequest, UpdateResponse
+from schemas import SearchResponse, FieldSearchResponse
 from keyword_pipeline.pipeline import KeywordExtractionPipeline
 from hybrid_retriever import HybridRetriever
 from database import save_chunks, load_chunks
 
-app = FastAPI(title="Loan Rules RAG Service")
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(current_dir, "data")
@@ -52,7 +50,6 @@ class AppState:
 AppState.load_maps()
 
 # Initialize Vector DB from local files on startup
-@app.on_event("startup")
 def startup_event():
     print("[Startup] Initializing Vector DB connection...")
     loaded_any = False
@@ -128,24 +125,19 @@ def _update_pipeline(raw_text=None):
         
     return total_chunks
 
-@app.post("/update", response_model=UpdateResponse)
 def update_vector_db():
     """
     Re-run the pipeline to update Vector DB and in-memory state for all .txt rules.
     """
-    try:
-        num_chunks = _update_pipeline()
-        return UpdateResponse(status="success", message="Vector DB updated successfully", total_chunks=num_chunks)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    num_chunks = _update_pipeline()
+    return {"status": "success", "message": "Vector DB updated successfully", "total_chunks": num_chunks}
 
-@app.post("/search", response_model=SearchResponse)
 def search_rules(user_data: dict):
     """
     Search for rule chunks relevant to the user's data dictionary and generate dynamic queries.
     """
     if not AppState.retrievers:
-        raise HTTPException(status_code=500, detail="Retrievers not initialized. Call /update first.")
+        raise RuntimeError("Retrievers not initialized. Call update_vector_db() or startup_event() first.")
         
     req_uuid = user_data.pop("consultationId", None) or user_data.pop("counselId", None) or user_data.pop("UUID", None) or user_data.pop("uuid", None)
     
@@ -261,9 +253,13 @@ def search_rules(user_data: dict):
     for doc_name, fields_dict in product_results.items():
         final_result_dict[doc_name] = {}
         
-        # 상품명 (productName) 삽입
-        product_name_kor = AppState.product_map.get(doc_name, doc_name)
-        final_result_dict[doc_name]["productName"] = product_name_kor
+        # 상품 메타데이터 삽입
+        product_meta = AppState.product_map.get(doc_name, {"productName": doc_name})
+        if isinstance(product_meta, dict):
+            for meta_k, meta_v in product_meta.items():
+                final_result_dict[doc_name][meta_k] = meta_v
+        else:
+            final_result_dict[doc_name]["productName"] = product_meta
         
         for eng_key, field_data in fields_dict.items():
             final_result_dict[doc_name][eng_key] = FieldSearchResponse(
@@ -275,7 +271,3 @@ def search_rules(user_data: dict):
         
     return SearchResponse(consultationId=req_uuid, result=final_result_dict)
 
-if __name__ == "__main__":
-    import uvicorn
-    # uvicorn api:app --host 0.0.0.0 --port 8000
-    uvicorn.run(app, host="0.0.0.0", port=8000)

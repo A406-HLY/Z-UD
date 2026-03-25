@@ -18,6 +18,5 @@ COPY . .
 ENV VECTOR_DB_HOST=vector_db
 ENV VECTOR_DB_PORT=5432
 
-EXPOSE 8000
-
-CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
+# FastAPI 포트 노출(EXPOSE 8000) 삭제 및 Kafka Consumer 실행 명령어로 교체
+CMD ["python", "-u", "kafka_app.py"]

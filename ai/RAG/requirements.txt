@@ -1,8 +1,15 @@
-fastapi>=0.100.0
-uvicorn[standard]>=0.23.0
+# Core
 pydantic>=2.0.0
+
+# Kafka
+kafka-python>=2.0.2
+python-dotenv>=1.0.0
+
+# RAG / ML
 sentence-transformers>=2.2.2
 kiwipiepy>=0.16.0
 torch>=2.0.0
+
+# DB
 psycopg2-binary>=2.9.0
 pgvector>=0.2.0
