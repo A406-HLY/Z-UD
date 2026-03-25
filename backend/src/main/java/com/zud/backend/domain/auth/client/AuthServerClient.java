@@ -157,13 +157,13 @@ public class AuthServerClient {
 		return root;
 	}
 
-	private ErrorCode resolveErrorCode(final RestClientResponseException e, final String operation) {
-		ErrorCode errorCodeByBody = resolveErrorCodeByBody(e.getResponseBodyAsString());
+	private ErrorCode resolveErrorCode(final RestClientResponseException ex, final String operation) {
+		ErrorCode errorCodeByBody = resolveErrorCodeByBody(ex.getResponseBodyAsString());
 		if (errorCodeByBody != null) {
 			return errorCodeByBody;
 		}
 
-		return switch (e.getStatusCode().value()) {
+		return switch (ex.getStatusCode().value()) {
 			case 401 -> OPERATION_ISSUE.equals(operation) ? ErrorCode.INVALID_CREDENTIALS : ErrorCode.TOKEN_INVALID;
 			case 403 -> ErrorCode.ACCOUNT_LOCKED;
 			case 404 -> ErrorCode.TOKEN_NOT_FOUND;

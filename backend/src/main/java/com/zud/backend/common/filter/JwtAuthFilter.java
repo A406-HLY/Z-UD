@@ -40,7 +40,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 			try {
 				Jwt jwt = jwtDecoder.decode(token);
 				Long userId = jwt.getClaim("userId");
-				UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userId, jwt, Collections.emptyList());
+				UsernamePasswordAuthenticationToken auth =
+					new UsernamePasswordAuthenticationToken(userId, jwt, Collections.emptyList());
 				SecurityContextHolder.getContext().setAuthentication(auth);
 			} catch (JwtException e) {
 				log.warn("[JwtAuthFilter] 유효하지 않은 토큰: {}", e.getMessage());

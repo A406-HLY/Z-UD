@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class SwaggerConfig {
 
-	private static final String BEARER_AUTH_SCHEME = "BearerAuth";
+	private static final String BEARER_AUTH_SCHEME = "Bearer ";
 
 	@Bean
 	public OpenAPI customOpenApi() {
