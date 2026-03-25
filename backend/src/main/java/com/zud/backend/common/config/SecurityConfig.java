@@ -10,8 +10,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -31,7 +29,7 @@ public class SecurityConfig {
 	private static final String[] WHITELIST = {
 		"/swagger-ui/**",
 		"/v3/api-docs/**",
-		"/api/v1/auth/login",
+		"/api/v1/auth/**",
 		"/error",
 		"/grafana",
 		"/grafana/**",
@@ -44,16 +42,10 @@ public class SecurityConfig {
 
 	private final JwtAuthFilter jwtAuthFilter;
 	private final CorsConfigurationSource corsConfigurationSource;
-	private final AuthProperties authProperties;
 
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
-	}
-
-	@Bean
-	public JwtDecoder jwtDecoder() {
-		return NimbusJwtDecoder.withJwkSetUri(authProperties.jwksUri()).build();
 	}
 
 	@Bean
