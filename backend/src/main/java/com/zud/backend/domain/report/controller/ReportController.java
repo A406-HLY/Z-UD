@@ -1,7 +1,6 @@
 package com.zud.backend.domain.report.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,7 +18,6 @@ import com.zud.backend.domain.report.service.facade.ReportFacadeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
@@ -27,7 +25,6 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/reports")
 @Tag(name = "리포트 API", description = "대출 리포트 생성 및 조회 API")
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
-@Validated
 public class ReportController {
 
 	private final ReportFacadeService reportFacadeService;
@@ -37,7 +34,7 @@ public class ReportController {
 	@ApiErrorResponse
 	public ResponseEntity<LoanReportGenerateResDto> generateReport(
 		@Authentication Long userId,
-		@Valid @RequestBody LoanReportReqDto request
+		@RequestBody LoanReportReqDto request
 	) {
 		return ResponseEntity.ok(reportFacadeService.generateLoanReport(userId, request));
 	}

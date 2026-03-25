@@ -9,19 +9,15 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.zud.backend.domain.report.enums.EmploymentType;
 
-import jakarta.validation.Valid;
-
 public record LoanReportReqDto(
 	@JsonProperty("consultationId")
 	UUID consultationId,
 
-	@Valid
 	ReportInput reportInput
 ) {
 	public record ReportInput(
 		String headOfHouseholdName,
 
-		@Valid
 		List<HouseholdMember> householdMembers,
 
 		EmploymentType employmentType,
@@ -32,7 +28,6 @@ public record LoanReportReqDto(
 
 		String residentRegistrationNumber,
 
-		@Valid
 		Spouse spouse,
 
 		Boolean representativeName,
@@ -57,7 +52,6 @@ public record LoanReportReqDto(
 		String corporateRegistrationNumber,
 		Long taxableSalesAmount,
 
-		@Valid
 		List<DepositAmount> depositAmountList,
 
 		Boolean manualReviewRequired,
@@ -66,7 +60,6 @@ public record LoanReportReqDto(
 
 		String identifierNumber,
 
-		@Valid
 		List<TaxItem> taxItems,
 
 		String registrationType,
@@ -85,14 +78,12 @@ public record LoanReportReqDto(
 
 		String ownerName,
 
-		@Valid
 		List<SeniorRight> seniorRights,
 
 		Boolean isViolationBuilding,
 
 		String mainUsage,
 
-		@Valid
 		List<FloorStatus> floorStatusList,
 
 		String propertyAddress,
@@ -101,15 +92,12 @@ public record LoanReportReqDto(
 
 		String specialTerms,
 
-		@Valid
 		Seller seller,
 
-		@Valid
 		Buyer buyer,
 
 		String inspectionAddress,
 
-		@Valid
 		List<MoveInHousehold> moveInHouseholds,
 
 		Long collateralMarketPrice,
