@@ -1,76 +1,75 @@
 package com.zud.backend.domain.auth.service.facade;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-
-import java.util.concurrent.TimeUnit;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.BDDMockito.*;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.zud.backend.common.error.ErrorCode;
+import com.zud.backend.domain.auth.client.AuthServerClient;
 import com.zud.backend.domain.auth.dto.request.LoginReqDto;
 import com.zud.backend.domain.auth.dto.response.LoginSuccessResDto;
-import com.zud.backend.domain.auth.enums.SessionConstants;
+import com.zud.backend.domain.auth.dto.response.TokenIssueResDto;
 import com.zud.backend.domain.auth.exception.AuthException;
-import com.zud.backend.domain.auth.session.UserSession;
 import com.zud.backend.domain.branch.entity.Branch;
-import com.zud.backend.domain.user.entity.User;
-import com.zud.backend.domain.user.service.query.UserQueryService;
+import com.zud.backend.domain.branch.service.query.BranchQueryService;
 
-import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AuthFacadeServiceImpl 단위 테스트")
 class AuthFacadeServiceImplTest {
 
-	private static final String ENCODED_PASSWORD = "$2a$encodedPassword";
-	private static final String PLAIN_PASSWORD = "plainPassword";
-	private static final String WRONG_PASSWORD = "wrongPassword";
 	private static final String EMPLOYEE_NUMBER = "EMP001";
+	private static final String PLAIN_PASSWORD = "plainPassword";
+	private static final String MOCK_ACCESS_TOKEN = "mock-access-token";
+	private static final String MOCK_REFRESH_TOKEN = "mock-refresh-token";
+	private static final Long MOCK_EXPIRES_IN = 3600L;
+	private static final Long MOCK_USER_ID = 1L;
+	private static final String MOCK_USER_NAME = "홍길동";
+	private static final Long MOCK_BRANCH_ID = 1L;
+	private static final String MOCK_BRANCH_NAME = "세종";
+
 	@Mock
-	private RedisTemplate<String, UserSession> sessionRedisTemplate;
+	private AuthServerClient authServerClient;
 	@Mock
-	private PasswordEncoder passwordEncoder;
-	@Mock
-	private UserQueryService userQueryService;
+	private BranchQueryService branchQueryService;
 	@InjectMocks
 	private AuthFacadeServiceImpl authFacadeService;
 
-	private User createDefaultUser() {
-		Branch branch = Branch.builder()
-			.id(1L)
-			.name("세종")
-			.build();
-		return User.builder()
-			.id(1L)
+	private TokenIssueResDto createMockTokenResponse() {
+		return TokenIssueResDto.builder()
+			.accessToken(MOCK_ACCESS_TOKEN)
+			.refreshToken(MOCK_REFRESH_TOKEN)
+			.expiresIn(MOCK_EXPIRES_IN)
+			.userId(MOCK_USER_ID)
+			.name(MOCK_USER_NAME)
 			.employeeNumber(EMPLOYEE_NUMBER)
-			.name("홍길동")
-			.password(ENCODED_PASSWORD)
-			.branch(branch)
+			.branchId(MOCK_BRANCH_ID)
 			.build();
 	}
 
-	@SuppressWarnings("unchecked")
-	private ValueOperations<String, UserSession> stubSuccessfulLogin(User user) {
-		ValueOperations<String, UserSession> valueOps = Mockito.mock(ValueOperations.class);
-		given(userQueryService.findByEmployeeNumber(EMPLOYEE_NUMBER)).willReturn(user);
-		given(passwordEncoder.matches(PLAIN_PASSWORD, ENCODED_PASSWORD)).willReturn(true);
-		given(sessionRedisTemplate.opsForValue()).willReturn(valueOps);
-		return valueOps;
+	private Branch createDefaultBranch() {
+		return Branch.builder()
+			.id(MOCK_BRANCH_ID)
+			.name(MOCK_BRANCH_NAME)
+			.build();
+	}
+
+	private void stubSuccessfulLogin() {
+		LoginReqDto reqDto = new LoginReqDto(EMPLOYEE_NUMBER, PLAIN_PASSWORD);
+		TokenIssueResDto tokenResponse = createMockTokenResponse();
+		Branch branch = createDefaultBranch();
+
+		given(authServerClient.issueToken(reqDto)).willReturn(tokenResponse);
+		given(branchQueryService.findById(MOCK_BRANCH_ID)).willReturn(branch);
 	}
 
 	@Nested
@@ -78,84 +77,114 @@ class AuthFacadeServiceImplTest {
 	class Login {
 
 		@Test
-		@DisplayName("로그인_성공시_응답_반환")
-		void 로그인_성공_시_응답_반환() {
+		@DisplayName("로그인_성공시_Jwt_토큰_응답_반환")
+		void 로그인_성공시_Jwt_토큰_응답_반환() {
 			// given
 			LoginReqDto reqDto = new LoginReqDto(EMPLOYEE_NUMBER, PLAIN_PASSWORD);
-			User user = createDefaultUser();
-			HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
-			stubSuccessfulLogin(user);
+			HttpServletResponse servletResponse = mock(HttpServletResponse.class);
+			stubSuccessfulLogin();
 
 			// when
-			LoginSuccessResDto result = authFacadeService.login(reqDto, response);
+			LoginSuccessResDto result = authFacadeService.login(reqDto, servletResponse);
 
 			// then
 			assertThat(result).isNotNull();
 			assertThat(result.userInfoDto().employeeNumber()).isEqualTo(EMPLOYEE_NUMBER);
-			assertThat(result.userInfoDto().name()).isEqualTo("홍길동");
-			assertThat(result.sessionExpiry()).isNotNull().isNotBlank();
+			assertThat(result.userInfoDto().name()).isEqualTo(MOCK_USER_NAME);
+			assertThat(result.branchInfoDto().name()).isEqualTo(MOCK_BRANCH_NAME);
+			assertThat(result.expiresIn()).isEqualTo(MOCK_EXPIRES_IN);
 		}
 
 		@Test
-		@DisplayName("로그인_성공시_세션_Redis_저장")
-		void 로그인_성공시_세션_Redis_저장() {
+		@DisplayName("로그인_성공시_AuthServerClient_토큰_발급_호출")
+		void 로그인_성공시_AuthServerClient_토큰_발급_호출() {
 			// given
 			LoginReqDto reqDto = new LoginReqDto(EMPLOYEE_NUMBER, PLAIN_PASSWORD);
-			User user = createDefaultUser();
-			HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
-			ValueOperations<String, UserSession> valueOps = stubSuccessfulLogin(user);
+			HttpServletResponse servletResponse = mock(HttpServletResponse.class);
+			stubSuccessfulLogin();
 
 			// when
-			authFacadeService.login(reqDto, response);
+			authFacadeService.login(reqDto, servletResponse);
 
 			// then
-			ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
-			ArgumentCaptor<UserSession> sessionCaptor = ArgumentCaptor.forClass(UserSession.class);
-			then(valueOps).should().set(
-				keyCaptor.capture(),
-				sessionCaptor.capture(),
-				eq((long)SessionConstants.EXPIRATION_HOUR_TIME),
-				eq(TimeUnit.HOURS)
+			then(authServerClient).should().issueToken(reqDto);
+		}
+
+		@Test
+		@DisplayName("로그인_성공시_Authorization_헤더와_RefreshToken_쿠키_설정")
+		void 로그인_성공시_Authorization_헤더와_RefreshToken_쿠키_설정() {
+			// given
+			LoginReqDto reqDto = new LoginReqDto(EMPLOYEE_NUMBER, PLAIN_PASSWORD);
+			HttpServletResponse servletResponse = mock(HttpServletResponse.class);
+			stubSuccessfulLogin();
+
+			// when
+			authFacadeService.login(reqDto, servletResponse);
+
+			// then
+			then(servletResponse).should().setHeader("Authorization", "Bearer " + MOCK_ACCESS_TOKEN);
+			then(servletResponse).should().addHeader(
+				org.mockito.ArgumentMatchers.eq(org.springframework.http.HttpHeaders.SET_COOKIE),
+				org.mockito.ArgumentMatchers.contains("refreshToken=" + MOCK_REFRESH_TOKEN)
 			);
-			assertThat(keyCaptor.getValue()).startsWith(SessionConstants.PREFIX);
-			assertThat(sessionCaptor.getValue().getUserId()).isEqualTo(1L);
 		}
 
 		@Test
-		@DisplayName("로그인_성공시_응답에_세션_쿠키_추가")
-		void 로그인_성공시_응답에_세션_쿠키_추가() {
+		@DisplayName("authServerClient_예외시_AuthException_전파")
+		void authServerClient_예외시_AuthException_전파() {
 			// given
 			LoginReqDto reqDto = new LoginReqDto(EMPLOYEE_NUMBER, PLAIN_PASSWORD);
-			User user = createDefaultUser();
-			HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
-			stubSuccessfulLogin(user);
+			HttpServletResponse servletResponse = mock(HttpServletResponse.class);
 
-			// when
-			authFacadeService.login(reqDto, response);
-
-			// then
-			ArgumentCaptor<Cookie> cookieCaptor = ArgumentCaptor.forClass(Cookie.class);
-			then(response).should().addCookie(cookieCaptor.capture());
-			Cookie cookie = cookieCaptor.getValue();
-			assertThat(cookie.getName()).isEqualTo(SessionConstants.PREFIX);
-			assertThat(cookie.isHttpOnly()).isTrue();
-			assertThat(cookie.getSecure()).isTrue();
-			assertThat(cookie.getMaxAge()).isGreaterThan(0);
-		}
-
-		@Test
-		@DisplayName("비밀번호_불일치시_AuthException_발생")
-		void 비밀번호_불일치시_AuthException_발생() {
-			// given
-			LoginReqDto reqDto = new LoginReqDto(EMPLOYEE_NUMBER, WRONG_PASSWORD);
-			User user = createDefaultUser();
-			HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
-
-			given(userQueryService.findByEmployeeNumber(EMPLOYEE_NUMBER)).willReturn(user);
-			given(passwordEncoder.matches(WRONG_PASSWORD, ENCODED_PASSWORD)).willReturn(false);
+			given(authServerClient.issueToken(reqDto))
+				.willThrow(new AuthException(ErrorCode.AUTH_SERVER_ERROR));
 
 			// when & then
-			assertThatThrownBy(() -> authFacadeService.login(reqDto, response)).isInstanceOf(AuthException.class);
+			assertThatThrownBy(() -> authFacadeService.login(reqDto, servletResponse))
+				.isInstanceOf(AuthException.class);
+		}
+	}
+
+	@Nested
+	@DisplayName("logout()")
+	class Logout {
+
+		@Test
+		@DisplayName("authorization_헤더_존재시_토큰_무효화_호출")
+		void authorization_헤더_존재시_토큰_무효화_호출() {
+			// given
+			HttpServletRequest servletRequest = mock(HttpServletRequest.class);
+			HttpServletResponse servletResponse = mock(HttpServletResponse.class);
+			given(servletRequest.getHeader("Authorization")).willReturn("Bearer " + MOCK_ACCESS_TOKEN);
+
+			// when
+			authFacadeService.logout(servletRequest, servletResponse);
+
+			// then
+			then(authServerClient).should().revokeToken(MOCK_ACCESS_TOKEN, "USER_LOGOUT");
+			then(servletResponse).should().addHeader(
+				org.mockito.ArgumentMatchers.eq(org.springframework.http.HttpHeaders.SET_COOKIE),
+				org.mockito.ArgumentMatchers.contains("Max-Age=0")
+			);
+		}
+
+		@Test
+		@DisplayName("authorization_헤더_없어도_RefreshToken_쿠키_만료")
+		void authorization_헤더_없어도_RefreshToken_쿠키_만료() {
+			// given
+			HttpServletRequest servletRequest = mock(HttpServletRequest.class);
+			HttpServletResponse servletResponse = mock(HttpServletResponse.class);
+			given(servletRequest.getHeader("Authorization")).willReturn(null);
+
+			// when
+			authFacadeService.logout(servletRequest, servletResponse);
+
+			// then
+			then(authServerClient).shouldHaveNoInteractions();
+			then(servletResponse).should().addHeader(
+				org.mockito.ArgumentMatchers.eq(org.springframework.http.HttpHeaders.SET_COOKIE),
+				org.mockito.ArgumentMatchers.contains("refreshToken=")
+			);
 		}
 	}
 }
