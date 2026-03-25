@@ -108,7 +108,7 @@ export const useVerificationController = (verificationId: string) => {
 
   const handleNextDocument = () => {
     if (!localResult || !selectedId) return;
-    const nextId = getNextDocumentId(selectedId, localResult.categories);
+    const nextId = getNextDocumentId(selectedId, localResult.categories, localResult.documents);
     if (nextId) {
       setSelectedId(nextId);
       setTimeout(() => {
@@ -120,7 +120,7 @@ export const useVerificationController = (verificationId: string) => {
 
   const handlePrevDocument = () => {
     if (!localResult || !selectedId) return;
-    const prevId = getPrevDocumentId(selectedId, localResult.categories);
+    const prevId = getPrevDocumentId(selectedId, localResult.categories, localResult.documents);
     if (prevId) {
       setSelectedId(prevId);
       setTimeout(() => {
