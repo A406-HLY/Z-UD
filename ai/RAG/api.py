@@ -201,6 +201,17 @@ def search_rules(user_data: dict):
         value = data["value"]
         base_query = data["query"]
         
+        # Optimization: Skip expensive RAG retrieval entirely if the user provided no data (null)
+        if value is None:
+            for doc_name in AppState.retrievers.keys():
+                product_results[doc_name][eng_key] = {
+                    "name_ko": field,
+                    "value": None,
+                    "search_query": base_query,
+                    "matched_articles": []
+                }
+            continue
+            
         for doc_name, retriever in AppState.retrievers.items():
             doc_documents = AppState.grouped_documents[doc_name]
             doc_vectors = AppState.grouped_doc_vectors[doc_name]
