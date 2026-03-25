@@ -3,16 +3,15 @@ package com.zud.backend.domain.consultation.converter;
 import com.zud.backend.domain.consultation.dto.request.CustomerInfoReqDto;
 import com.zud.backend.domain.consultation.dto.response.CustomerInfoResDto;
 import com.zud.backend.domain.consultation.entity.Consultation;
-import com.zud.backend.domain.user.entity.User;
 
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class ConsultationConverter {
 
-	public Consultation toConsultation(final User user, final CustomerInfoReqDto reqDto) {
+	public Consultation toConsultation(final Long userId, final CustomerInfoReqDto reqDto) {
 		return Consultation.create(
-			user,
+			userId,
 			reqDto.name(),
 			reqDto.phoneNumber(),
 			reqDto.residentRegistrationNumber(),

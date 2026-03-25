@@ -40,7 +40,7 @@ public class OcrKafkaConsumer {
 			DocumentExtractionReqDto reqDto = objectMapper.readValue(messageBody, DocumentExtractionReqDto.class);
 			DocumentExtractionResDto result = documentFacadeService.validateDocuments(reqDto);
 			ocrResultRedisRepository.save(OcrExtractionResultCache.of(reqDto.consultationId(), result));
-			Long userId = consultationQueryService.findByUuid(reqDto.consultationId()).getUser().getId();
+			Long userId = consultationQueryService.findByUuid(reqDto.consultationId()).getUserId();
 			ocrNotificationService.notifyOcrCompleted(userId, reqDto.consultationId());
 		} catch (DocumentException e) {
 			log.error("[OCR] Kafka 응답 처리 실패", e);
