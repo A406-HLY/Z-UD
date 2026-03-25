@@ -16,6 +16,7 @@ template_dir = os.path.join(data_dir, "template")
 concept_dict_path = os.path.join(data_dir, "concept_dict.json")
 original_rules_path = os.path.join(document_dir, "ssageumjari.txt")
 english_to_korean_map_path = os.path.join(data_dir, "english_to_korean_map.json")
+loan_products_path = os.path.join(data_dir, "loan_products.json")
 
 # Global State
 class AppState:
@@ -27,6 +28,7 @@ class AppState:
     korean_to_english_map = {}
     evaluation_template = {}  # 하나의 공통 베이스라인 템플릿
     category_map = {}  # kor -> category
+    product_map = {}   # doc_name -> kor product name
 
     @classmethod
     def load_maps(cls):
@@ -42,6 +44,10 @@ class AppState:
                     cls.query_map[kor] = item["search_query"]
                     cls.evaluation_template[kor] = item["default_value"]
                     cls.category_map[kor] = item.get("category", "공통")
+                    
+        if os.path.exists(loan_products_path):
+            with open(loan_products_path, "r", encoding="utf-8") as f:
+                cls.product_map = json.load(f)
 
 AppState.load_maps()
 
@@ -254,6 +260,11 @@ def search_rules(user_data: dict):
     final_result_dict = {}
     for doc_name, fields_dict in product_results.items():
         final_result_dict[doc_name] = {}
+        
+        # 상품명 (productName) 삽입
+        product_name_kor = AppState.product_map.get(doc_name, doc_name)
+        final_result_dict[doc_name]["productName"] = product_name_kor
+        
         for eng_key, field_data in fields_dict.items():
             final_result_dict[doc_name][eng_key] = FieldSearchResponse(
                 name_ko=field_data["name_ko"],

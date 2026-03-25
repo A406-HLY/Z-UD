@@ -78,7 +78,7 @@
     "annualIncomeTotal": 70000000,
     "manualReviewRequired": false,
     "collateralMarketPrice": 900000000,
-    "totalLoanBalance": 150000000,
+    "totalRemainingLoanBalance": 150000000,
     "creditRating": "A",
     "annualPrincipalAndInterestRepayment": 14400000
   }

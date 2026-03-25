@@ -85,7 +85,7 @@
   },
   {
     "category": "공통",
-    "name_en": "totalLoanBalance",
+    "name_en": "totalRemainingLoanBalance",
     "name_ko": "총 대출 잔액",
     "default_value": null,
     "search_query": "고객의 기존 부채 및 총 대출 잔액 수준에 따른 DSR 산출 지표와 대출 가능 금액 산정 방식은?"

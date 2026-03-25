@@ -22,7 +22,7 @@ class FieldSearchResponse(BaseModel):
 
 class SearchResponse(BaseModel):
     consultationId: Optional[str] = None
-    result: Dict[str, Dict[str, FieldSearchResponse]]
+    result: Dict[str, Dict[str, Any]]
 
 class UpdateRequest(BaseModel):
     """

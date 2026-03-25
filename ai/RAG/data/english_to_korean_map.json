@@ -14,7 +14,7 @@
   "propertyAddress": "소재지 주소",
   "collateralMarketPrice": "담보 시세",
   "salePrice": "최근 실거래가",
-  "totalLoanBalance": "총 대출 잔액",
+  "totalRemainingLoanBalance": "총 대출 잔액",
   "monthlyRepaymentAmount": "월 상환액",
   "annualPrincipalAndInterestRepayment": "연간 원리금 상환액",
   "subscriberType": "가입자 구분",

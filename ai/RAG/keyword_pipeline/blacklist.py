@@ -10,13 +10,9 @@ class BlacklistFilter:
             self.blacklist.update(custom_blacklist)
 
     def filter(self, word_list):
-        """
-        블랙리스트에 포함된 단어 제외
-        """
         return [word for word in word_list if word not in self.blacklist]
 
 if __name__ == "__main__":
-    # 간단한 테스트
     f = BlacklistFilter()
     sample = ["대출", "상환능력", "심사", "규제지역", "기준"]
     print(f"Original: {sample}")
