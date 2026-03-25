@@ -127,7 +127,7 @@ export const VerificationRepository = ({ categories, documents, selectedId, onSe
                       >
                         <FileText className={`w-3 h-3 mr-2 ${isSelected ? 'text-white' : 'text-gray-400'}`} />
                         <span className="text-[10px] font-medium truncate flex-1 leading-none">
-                          {item.fileName} {item.status === 'MISSING' && '(누락)'}
+                          {item.documentClassification.documentTypeLabel} {item.status === 'MISSING' && '(누락)'}
                         </span>
                         {renderStatusIcon(iconType, isSelected)}
                       </button>
