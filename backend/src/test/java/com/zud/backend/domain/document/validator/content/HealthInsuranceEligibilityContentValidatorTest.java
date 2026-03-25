@@ -25,8 +25,8 @@ class HealthInsuranceEligibilityContentValidatorTest {
 	}
 
 	@Test
-	@DisplayName("getSupportedTag는_FILE_005_반환")
-	void getSupportedTag는_FILE_005_반환() {
+	@DisplayName("getSupportedTag는_File_005_반환")
+	void getSupportedTag는_File_005_반환() {
 		assertThat(validator.getSupportedTag())
 			.isEqualTo(DocumentTag.FILE_005_HEALTH_INSURANCE_ELIGIBILITY);
 	}

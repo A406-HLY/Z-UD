@@ -1,10 +1,7 @@
 package com.zud.backend.domain.audit.service.facade;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doAnswer;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.BDDMockito.*;
 
 import java.util.function.Supplier;
 
@@ -104,8 +101,7 @@ class AuditHouseFacadeServiceImplTest {
 			AuditHouseResDto result = auditFacadeService.auditHouse(USER_ID, reqDto);
 
 			// then
-			assertThat(result).isNotNull();
-			assertThat(result).isEqualTo(expected);
+			assertThat(result).isNotNull().isEqualTo(expected);
 			then(branchFacadeService).should().findNearestBranch(USER_ID, ADDRESS);
 			then(housePriceFacadeService).should()
 				.findHousePrice(HOUSE_TYPE, ADDRESS);
@@ -143,8 +139,7 @@ class AuditHouseFacadeServiceImplTest {
 			AuditHouseResDto result = auditFacadeService.auditHouse(USER_ID, reqDto);
 
 			// then
-			assertThat(result).isNotNull();
-			assertThat(result).isEqualTo(expected);
+			assertThat(result).isNotNull().isEqualTo(expected);
 			then(branchFacadeService).should().findNearestBranch(USER_ID, ADDRESS);
 			then(housePriceFacadeService).should()
 				.findHousePrice(HOUSE_TYPE, ADDRESS);

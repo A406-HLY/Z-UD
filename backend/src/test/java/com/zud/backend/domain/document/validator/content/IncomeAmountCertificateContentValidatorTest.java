@@ -25,8 +25,8 @@ class IncomeAmountCertificateContentValidatorTest {
 	}
 
 	@Test
-	@DisplayName("getSupportedTag는_FILE_008_반환")
-	void getSupportedTag는_FILE_008_반환() {
+	@DisplayName("getSupportedTag는_File_008_반환")
+	void getSupportedTag는_File_008_반환() {
 		assertThat(validator.getSupportedTag())
 			.isEqualTo(DocumentTag.FILE_008_INCOME_AMOUNT_CERTIFICATE);
 	}

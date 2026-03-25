@@ -22,8 +22,8 @@ class TitleDeedContentValidatorTest {
 	}
 
 	@Test
-	@DisplayName("getSupportedTag는_FILE_014_TITLE_DEED_반환")
-	void getSupportedTag는_FILE_014_TITLE_DEED_반환() {
+	@DisplayName("getSupportedTag는_File_014_TitleDeed_반환")
+	void getSupportedTag는_File_014_TitleDeed_반환() {
 		assertThat(validator.getSupportedTag()).isEqualTo(DocumentTag.FILE_014_TITLE_DEED);
 	}
 

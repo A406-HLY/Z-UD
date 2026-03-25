@@ -44,8 +44,8 @@ class CloudflareServiceImplTest {
 	class GeneratePutPresignedUrl {
 
 		@Test
-		@DisplayName("정상_요청이면_Presigned_URL_반환")
-		void 정상_요청이면_Presigned_URL_반환() throws Exception {
+		@DisplayName("정상_요청이면_Presigned_Url_반환")
+		void 정상_요청이면_Presigned_Url_반환() throws Exception {
 			// given
 			given(cloudflareProperties.bucket()).willReturn("test-bucket");
 
@@ -62,8 +62,8 @@ class CloudflareServiceImplTest {
 		}
 
 		@Test
-		@DisplayName("S3Exception_발생시_PRESIGNED_URL_GENERATION_FAILED_예외")
-		void S3Exception_발생시_PRESIGNED_URL_GENERATION_FAILED_예외() {
+		@DisplayName("s3Exception_발생시_PresignedUrlGenerationFailed_예외")
+		void s3Exception_발생시_PresignedUrlGenerationFailed_예외() {
 			// given
 			given(cloudflareProperties.bucket()).willReturn("test-bucket");
 			given(s3Presigner.presignPutObject(any(PutObjectPresignRequest.class)))

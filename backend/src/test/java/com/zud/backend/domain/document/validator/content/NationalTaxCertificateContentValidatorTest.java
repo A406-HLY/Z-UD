@@ -25,8 +25,8 @@ class NationalTaxCertificateContentValidatorTest {
 	}
 
 	@Test
-	@DisplayName("getSupportedTag는_FILE_011_반환")
-	void getSupportedTag는_FILE_011_반환() {
+	@DisplayName("getSupportedTag는_File_011_반환")
+	void getSupportedTag는_File_011_반환() {
 		assertThat(validator.getSupportedTag())
 			.isEqualTo(DocumentTag.FILE_011_NATIONAL_TAX_CERTIFICATE);
 	}
