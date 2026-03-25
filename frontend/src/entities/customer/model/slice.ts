@@ -9,17 +9,16 @@ import { Customer, INITIAL_CUSTOMER_STATE } from './types';
 export interface CustomerState {
   data: Customer;
   isPollingActive: boolean;
+  isSubmitting: boolean;
 }
 
 const initialState: CustomerState = {
   // 테스트를 위해 초기값을 세팅해둡니다. (실제 운영시 INITIAL_CUSTOMER_STATE 사용)
   data: {
     ...INITIAL_CUSTOMER_STATE,
-    // name: '홍길동',
-    // personalId: '900101-1234567', // (Why) 백엔드 주민번호 정규식(000000-0000000) 통과를 위해 올바른 형식을 사용합니다.
-    // phoneNumber: '010-1234-5678',
   },
   isPollingActive: false,
+  isSubmitting: false,
 };
 
 const customerSlice = createSlice({
@@ -35,8 +34,11 @@ const customerSlice = createSlice({
     setIsPollingActive: (state, action: PayloadAction<boolean>) => {
       state.isPollingActive = action.payload;
     },
+    setIsSubmitting: (state, action: PayloadAction<boolean>) => {
+      state.isSubmitting = action.payload;
+    },
   },
 });
 
-export const { updateCustomerData, setCounselId, setIsPollingActive } = customerSlice.actions;
+export const { updateCustomerData, setCounselId, setIsPollingActive, setIsSubmitting } = customerSlice.actions;
 export default customerSlice.reducer;
