@@ -10,6 +10,8 @@ import { useSelectSync } from '@/features/document-sync/model/use-select-sync';
 import { useUploadDocuments } from '@/features/document-sync/api/use-upload-documents';
 import { useAgentDocs } from '@/features/document-sync/model/use-agent-docs';
 
+import { DocumentTransferModal } from '@/features/document-sync/ui/DocumentTransferModal';
+
 /**
  * @page LoanApplicationPage
  * 대출 신청 메인 페이지 (기초 정보 입력 단계)입니다.
@@ -18,6 +20,8 @@ import { useAgentDocs } from '@/features/document-sync/model/use-agent-docs';
 export const LoanApplicationPage = () => {
   const navigate = useNavigate();
   const counselId = useAppSelector((state) => state.customer.data.counselId);
+  const customerName = useAppSelector((state) => state.customer.data.name);
+  const isSubmitting = useAppSelector((state) => state.customer.isSubmitting);
 
   // 1. 에이전트 서류 데이터, 폴링 상태, 스캔 완료 상태 가져오기 (Feature)
   const { docs: agentDocs, isPollingActive, isScanComplete } = useAgentDocs();
@@ -58,6 +62,13 @@ export const LoanApplicationPage = () => {
   return (
     <div className="h-screen bg-gray-50 flex flex-col font-sans overflow-hidden relative">
       {/* (Why) 전체 브라우저 스크롤을 방지하고 내부 위젯(뷰어)만 스크롤 가능하게 하기 위해 h-screen과 overflow-hidden을 사용합니다. */}
+      {/* 파일 전송 팝업 (XP 스타일) */}
+      <DocumentTransferModal 
+        isOpen={isPending || isSubmitting || (isPollingActive && !isScanComplete)} 
+        customerName={customerName}
+        mode={isPending ? 'upload' : 'scan'} 
+      />
+      
       {/* 전역 상태 팝업 */}
       <PollingStatusToast />
       

@@ -9,6 +9,7 @@ import {
 import { 
   setCounselId, 
   setIsPollingActive, 
+  setIsSubmitting,
   updateCustomerData 
 } from '@/entities/customer/model/slice';
 import { validateCustomer, isFieldComplete } from '@/entities/customer/model/validation';
@@ -41,6 +42,7 @@ export const useCustomerForm = () => {
   const dispatch = useAppDispatch();
   const form = useAppSelector((state) => state.customer.data);
   const isPollingActive = useAppSelector((state) => state.customer.isPollingActive);
+  const isSubmitting = useAppSelector((state) => state.customer.isSubmitting); // Redux state
   
   const [errors, setErrors] = useState<Partial<Record<keyof Customer, boolean>>>({});
   const [touched, setTouched] = useState<Partial<Record<keyof Customer, boolean>>>({});
@@ -91,6 +93,12 @@ export const useCustomerForm = () => {
 
   /** 저장/제출 핸들러 (상담 등록 API 연동) */
   const handleSave = async () => {
+    // (P2) 정보 수정 모드일 때 (이미 폴링 중일 때) 클릭 시, API 호출 없이 입력 폼만 다시 활성화합니다.
+    if (isPollingActive) {
+      dispatch(setIsPollingActive(false));
+      return;
+    }
+
     const validationErrors = validateCustomer(form);
     
     if (Object.keys(validationErrors).length > 0) {
@@ -107,6 +115,7 @@ export const useCustomerForm = () => {
     }
 
     try {
+      dispatch(setIsSubmitting(true));
       // (Why) 백엔드 /consultations 엔드포인트에 상담 정보를 저장하여 에이전트 연동의 정합성을 확보합니다.
       const response = await createConsultation({ ...form, counselId: currentCounselId });
       
@@ -120,6 +129,8 @@ export const useCustomerForm = () => {
     } catch (error) {
       console.error('[System] Error during consultation registration:', error);
       alert('서버 통신 중 오류가 발생했습니다.');
+    } finally {
+      dispatch(setIsSubmitting(false));
     }
   };
 
@@ -129,6 +140,7 @@ export const useCustomerForm = () => {
     successFields,
     touched,
     isPollingActive,
+    isSubmitting,
     progressPercentage,
     firstEmptyField,
     handleChange,
