@@ -20,8 +20,10 @@ interface Props {
  */
 export const DocumentImageViewer = ({ fields = [], focusedFieldKey = null, fileUrl, files = [], originalWidth = 1240, originalHeight = 1754 }: Props) => {
   const {
-    scale, setScale,
+    scale,
+    setScale,
     pageNumber,
+    setPageNumber,
     isLoading,
     setIsLoading,
     containerRef,
@@ -35,9 +37,27 @@ export const DocumentImageViewer = ({ fields = [], focusedFieldKey = null, fileU
       {/* 1. 뷰어 컨트롤 헤더 (중복 테두리 제거 및 높이 통일) */}
       <div className="h-[40px] bg-gray-200 border-b border-gray-300 flex items-center px-4 justify-between shrink-0 z-20">
         <span className="text-[11px] font-bold text-[#444] uppercase tracking-wider font-mono">
-          Page {pageNumber}
+          Page {pageNumber}/{files.length}
         </span>
         <div className="flex items-center gap-2">
+          {/* Prev button */}
+          <button
+            type="button"
+            onClick={() => setPageNumber(p => Math.max(1, p - 1))}
+            disabled={pageNumber <= 1}
+            className="p-1.5 bg-white border border-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+          </button>
+          {/* Next button */}
+          <button
+            type="button"
+            onClick={() => setPageNumber(p => Math.min(files.length, p + 1))}
+            disabled={pageNumber >= files.length}
+            className="p-1.5 bg-white border border-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+          </button>
           <button 
             type="button"
             onClick={() => setScale(s => Math.max(0.4, Number((s - 0.2).toFixed(1))))} 
@@ -82,8 +102,9 @@ export const DocumentImageViewer = ({ fields = [], focusedFieldKey = null, fileU
          >
            <div className="relative shrink-0 transition-transform origin-top">
               <PdfRenderer 
+                key={currentFileUrl}
                 fileUrl={currentFileUrl} 
-                pageNumber={pageNumber} 
+                pageNumber={1} 
                 scale={scale}
                 originalWidth={originalWidth}
                 originalHeight={originalHeight}

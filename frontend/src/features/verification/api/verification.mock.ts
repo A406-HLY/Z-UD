@@ -15,7 +15,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
         bucket: "loan-docs",
         fileKey: "cases/CASE_001/raw/resident_registration_01.pdf",
         fileName: "resident_registration_01.pdf",
-        fileUrl: "파일다운로드주소",
+        fileUrl: "/test-docs/교육필증 (1).pdf",
         mimeType: "application/pdf",
         status: "SUCCESS",
         errorCode: null,
@@ -104,12 +104,50 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
         ]
       },
       {
+        fileId: "FILE_001_PAGE2",
+        storageType: "OBJECT_STORAGE",
+        bucket: "loan-docs",
+        fileKey: "cases/CASE_001/raw/resident_registration_01_p2.pdf",
+        fileName: "resident_registration_01_p2.pdf",
+        fileUrl: "/test-docs/SGR 직무소개서_IT서비스 기획 운영 (1).pdf",
+        mimeType: "application/pdf",
+        status: "SUCCESS",
+        errorCode: null,
+        errorMessage: null,
+        documentClassification: {
+          documentGroup: "IDENTITY_FAMILY",
+          documentType: "RESIDENT_REGISTRATION",
+          documentTypeLabel: "주민등록등본",
+          classificationConfidence: 0.99
+        },
+        extraction: {
+          content: {
+            additionalInfo: {
+              value: "2페이지 하단 추가 정보 확인됨",
+              confidence: 0.95,
+              evidence: {
+                pageNum: 2,
+                bbox: [300, 420, 470, 450],
+                rawText: "추가 정보",
+                confidence: 0.95
+              }
+            }
+          }
+        },
+        rawText: "주민등록표 등본 2페이지 OCR 원문",
+        pages: [
+          {
+            pageNum: 2
+          }
+        ]
+      },
+      {
         fileId: "FILE_002",
         storageType: "OBJECT_STORAGE",
         bucket: "loan-docs",
         fileKey: "cases/CASE_001/raw/resident_registration_abstract_01.pdf",
         fileName: "resident_registration_abstract_01.pdf",
-        fileUrl: "파일다운로드주소",
+        fileUrl: "/test-docs/26상_삼성생명_직군소개서.pdf",
         mimeType: "application/pdf",
         status: "SUCCESS",
         errorCode: null,
@@ -197,7 +235,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
         bucket: "loan-docs",
         fileKey: "cases/CASE_001/raw/family_relation_certificate_01.pdf",
         fileName: "family_relation_certificate_01.pdf",
-        fileUrl: "파일다운로드주소",
+        fileUrl: "/test-docs/SGR 직무소개서_IT서비스 기획 운영.pdf",
         mimeType: "application/pdf",
         status: "SUCCESS",
         errorCode: null,
@@ -287,7 +325,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
         bucket: "loan-docs",
         fileKey: "cases/CASE_001/raw/employment_certificate_01.pdf",
         fileName: "employment_certificate_01.pdf",
-        fileUrl: "파일다운로드주소",
+        fileUrl: "/test-docs/SGR 직무소개서_IT서비스 기획 운영 (1).pdf",
         mimeType: "application/pdf",
         status: "SUCCESS",
         errorCode: null,
@@ -350,12 +388,50 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
         ]
       },
       {
+        fileId: "FILE_004_PAGE2",
+        storageType: "OBJECT_STORAGE",
+        bucket: "loan-docs",
+        fileKey: "cases/CASE_001/raw/employment_certificate_01_p2.pdf",
+        fileName: "employment_certificate_01_p2.pdf",
+        fileUrl: "/test-docs/SGR 직무소개서_IT서비스 기획 운영 (2).pdf",
+        mimeType: "application/pdf",
+        status: "SUCCESS",
+        errorCode: null,
+        errorMessage: null,
+        documentClassification: {
+          documentGroup: "INCOME_EMPLOYEE",
+          documentType: "EMPLOYMENT_CERTIFICATE",
+          documentTypeLabel: "재직증명서",
+          classificationConfidence: 0.99
+        },
+        extraction: {
+          content: {
+            careerInfo: {
+              value: "이전 직장 경력 5년 포함 확인",
+              confidence: 0.92,
+              evidence: {
+                pageNum: 2,
+                bbox: [100, 300, 500, 350],
+                rawText: "경력 사항",
+                confidence: 0.92
+              }
+            }
+          }
+        },
+        rawText: "재직증명서 2페이지 OCR 원문",
+        pages: [
+          {
+            pageNum: 2
+          }
+        ]
+      },
+      {
         fileId: "FILE_005",
         storageType: "OBJECT_STORAGE",
         bucket: "loan-docs",
         fileKey: "cases/CASE_001/raw/health_insurance_eligibility_01.pdf",
         fileName: "health_insurance_eligibility_01.pdf",
-        fileUrl: "파일다운로드주소",
+        fileUrl: "/test-docs/SGR 직무소개서_IT서비스 기획 운영 (2).pdf",
         mimeType: "application/pdf",
         status: "SUCCESS",
         errorCode: null,
@@ -443,7 +519,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
         bucket: "loan-docs",
         fileKey: "cases/CASE_001/raw/withholding_tax_certificate_01.pdf",
         fileName: "withholding_tax_certificate_01.pdf",
-        fileUrl: "파일다운로드주소",
+        fileUrl: "/test-docs/교육필증 (1).pdf",
         mimeType: "application/pdf",
         status: "SUCCESS",
         errorCode: null,
@@ -511,7 +587,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
         bucket: "loan-docs",
         fileKey: "cases/CASE_001/raw/salary_account_statement_01.pdf",
         fileName: "salary_account_statement_01.pdf",
-        fileUrl: "파일다운로드주소",
+        fileUrl: "/test-docs/교육필증 (1).pdf",
         mimeType: "application/pdf",
         status: "PARTIAL_SUCCESS",
         errorCode: null,
@@ -549,7 +625,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
         bucket: "loan-docs",
         fileKey: "cases/CASE_001/raw/income_amount_certificate_01.pdf",
         fileName: "income_amount_certificate_01.pdf",
-        fileUrl: "파일다운로드주소",
+        fileUrl: "/test-docs/교육필증 (1).pdf",
         mimeType: "application/pdf",
         status: "SUCCESS",
         errorCode: null,
@@ -637,7 +713,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
         bucket: "loan-docs",
         fileKey: "cases/CASE_001/raw/business_registration_certificate_01.pdf",
         fileName: "business_registration_certificate_01.pdf",
-        fileUrl: "파일다운로드주소",
+        fileUrl: "/test-docs/[삼성화재해상보험]사업보고서(2026.03.12).pdf",
         mimeType: "application/pdf",
         status: "SUCCESS",
         errorCode: null,
@@ -725,7 +801,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
         bucket: "loan-docs",
         fileKey: "cases/CASE_001/raw/vat_tax_base_certificate_01.pdf",
         fileName: "vat_tax_base_certificate_01.pdf",
-        fileUrl: "파일다운로드주소",
+        fileUrl: "/test-docs/교육필증 (1).pdf",
         mimeType: "application/pdf",
         status: "SUCCESS",
         errorCode: null,
@@ -823,7 +899,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
         bucket: "loan-docs",
         fileKey: "cases/CASE_001/raw/national_tax_certificate_01.pdf",
         fileName: "national_tax_certificate_01.pdf",
-        fileUrl: "파일다운로드주소",
+        fileUrl: "/test-docs/교육필증 (1).pdf",
         mimeType: "application/pdf",
         status: "SUCCESS",
         errorCode: null,
@@ -891,7 +967,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
         bucket: "loan-docs",
         fileKey: "cases/CASE_001/raw/local_tax_certificate_01.pdf",
         fileName: "local_tax_certificate_01.pdf",
-        fileUrl: "파일다운로드주소",
+        fileUrl: "/test-docs/교육필증 (1).pdf",
         mimeType: "application/pdf",
         status: "SUCCESS",
         errorCode: null,
@@ -959,7 +1035,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
         bucket: "loan-docs",
         fileKey: "cases/CASE_001/raw/local_tax_item_certificate_01.pdf",
         fileName: "local_tax_item_certificate_01.pdf",
-        fileUrl: "파일다운로드주소",
+        fileUrl: "/test-docs/교육필증 (1).pdf",
         mimeType: "application/pdf",
         status: "SUCCESS",
         errorCode: null,
@@ -1061,7 +1137,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
         bucket: "loan-docs",
         fileKey: "cases/CASE_001/raw/title_deed_01.pdf",
         fileName: "title_deed_01.pdf",
-        fileUrl: "파일다운로드주소",
+        fileUrl: "/test-docs/교육필증 (1).pdf",
         mimeType: "application/pdf",
         status: "PARTIAL_SUCCESS",
         errorCode: null,
@@ -1205,7 +1281,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
         bucket: "loan-docs",
         fileKey: "cases/CASE_001/raw/building_register_01.pdf",
         fileName: "building_register_01.pdf",
-        fileUrl: "파일다운로드주소",
+        fileUrl: "/test-docs/교육필증 (1).pdf",
         mimeType: "application/pdf",
         status: "SUCCESS",
         errorCode: null,
@@ -1287,7 +1363,7 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
         bucket: "loan-docs",
         fileKey: "cases/CASE_001/raw/sale_contract_01.pdf",
         fileName: "sale_contract_01.pdf",
-        fileUrl: "파일다운로드주소",
+        fileUrl: "/test-docs/교육필증 (1).pdf",
         mimeType: "application/pdf",
         status: "PARTIAL_SUCCESS",
         errorCode: null,
