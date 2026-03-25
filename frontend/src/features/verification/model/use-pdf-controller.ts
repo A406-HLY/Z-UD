@@ -36,8 +36,9 @@ export const usePdfController = (
   }, [renderedSize.width, originalWidth]);
 
   // (Why: 스케일링 로직 최적화. 불필요한 State를 만들지 않고 렌더링 시점에 파생 상태로 계산합니다.)
+  // 현재 pageNumber에 해당하는 필드의 bbox만 표시
   const scaledBboxes = useMemo(() => {
-    return fields.filter(f => f.evidence && f.evidence.bbox && f.evidence.bbox.length >= 4)
+    return fields.filter(f => f.evidence && f.evidence.bbox && f.evidence.bbox.length >= 4 && f.evidence.pageNum === pageNumber)
       .map(f => {
         const bbox = f.evidence!.bbox!; // [x1, y1, x2, y2]
         const [x1, y1, x2, y2] = bbox;
@@ -46,7 +47,7 @@ export const usePdfController = (
           points: `${x1 * scaleRatio},${y1 * scaleRatio} ${x2 * scaleRatio},${y1 * scaleRatio} ${x2 * scaleRatio},${y2 * scaleRatio} ${x1 * scaleRatio},${y2 * scaleRatio}`
         };
       });
-  }, [fields, scaleRatio]);
+  }, [fields, scaleRatio, pageNumber]);
 
   // (Why: 외부 폼(에디터)에서 특정한 input에 포커스할 때 뷰어 컨테이너의 스크롤을 즉시 동기화합니다.)
   useEffect(() => {

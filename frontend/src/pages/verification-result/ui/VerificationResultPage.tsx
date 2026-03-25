@@ -92,6 +92,7 @@ export const VerificationResultPage = () => {
           
           {/* 우측: 원본 서류 이미지 뷰어 */}
           <DocumentImageViewer 
+            key={selectedId}
             fields={selectedId ? (localResult.documentFields[selectedId] || []) : []}
             focusedFieldKey={focusedFieldKey}
             fileUrl={selectedDoc?.fileUrl}
