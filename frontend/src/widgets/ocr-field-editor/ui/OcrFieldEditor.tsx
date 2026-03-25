@@ -25,12 +25,11 @@ export const OcrFieldEditor = ({ fields, status, isRisk, selectedId, onFieldChan
   const isReviewNeeded = status === 'REVIEW_NEEDED';
 
   // (Point: 렌더링 최적화 및 제어용 인덱스 추출)
-  const { errorFieldIndices, firstErrorIndex, lastErrorIndex } = useMemo(() => {
+  const { firstErrorIndex, lastErrorIndex } = useMemo(() => {
     const indices = fields
       .map((f, i) => (!f.isMatch ? i : -1))
       .filter(i => i !== -1);
     return {
-      errorFieldIndices: indices,
       firstErrorIndex: indices[0] ?? -1,
       lastErrorIndex: indices[indices.length - 1] ?? -1
     };

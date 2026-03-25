@@ -70,13 +70,17 @@ export const usePdfController = (
     return targetFile?.fileUrl || initialFileUrl;
   }, [files, pageNumber, initialFileUrl]);
 
-  const scaleRatio = useMemo(() => {
-    if (!renderedSize.width || !renderedSize.height) return 1;
+  const scaleRatios = useMemo(() => {
+    if (!renderedSize.width || !renderedSize.height || !originalWidth || !originalHeight) {
+      return { x: 1, y: 1 };
+    }
     
-    // (Note: 가로/세로 비율이 다를 경우에 대비하여 가로 비율을 기본 스케일로 사용하되, 
-    // 추후 필요시 yScaleRatio를 별도로 산출하여 좌표 정밀도를 높일 수 있습니다.)
-    return renderedSize.width / originalWidth;
-  }, [renderedSize.width, originalWidth]);
+    // (Why: 가로와 세로의 원본 대비 렌더링 비율을 각각 계산하여 좌표 정밀도를 극대화합니다.)
+    return {
+      x: renderedSize.width / originalWidth,
+      y: renderedSize.height / originalHeight
+    };
+  }, [renderedSize, originalWidth, originalHeight]);
 
   // (Why: 스케일링 로직 최적화. 불필요한 State를 만들지 않고 렌더링 시점에 파생 상태로 계산합니다.)
   // 현재 pageNumber에 해당하는 필드의 bbox만 표시
@@ -85,12 +89,19 @@ export const usePdfController = (
       .map(f => {
         const bbox = f.evidence!.bbox!; // [x1, y1, x2, y2]
         const [x1, y1, x2, y2] = bbox;
+        
+        // (Why: 계산된 X/Y 비율을 각각 적용하여 SVG 좌표로 변환합니다.)
+        const sx1 = x1 * scaleRatios.x;
+        const sy1 = y1 * scaleRatios.y;
+        const sx2 = x2 * scaleRatios.x;
+        const sy2 = y2 * scaleRatios.y;
+
         return {
           key: f.key,
-          points: `${x1 * scaleRatio},${y1 * scaleRatio} ${x2 * scaleRatio},${y1 * scaleRatio} ${x2 * scaleRatio},${y2 * scaleRatio} ${x1 * scaleRatio},${y2 * scaleRatio}`
+          points: `${sx1},${sy1} ${sx2},${sy1} ${sx2},${sy2} ${sx1},${sy2}`
         };
       });
-  }, [fields, scaleRatio, pageNumber]);
+  }, [fields, scaleRatios, pageNumber]);
 
   // (Why: 외부 폼(에디터)에서 특정한 input에 포커스할 때 뷰어 컨테이너의 스크롤을 즉시 동기화합니다.)
   useEffect(() => {
@@ -110,11 +121,11 @@ export const usePdfController = (
       const minY = field.evidence.bbox[1]; // [x1, y1, x2, y2] 중 y1
       
       // 타겟 Y좌표 스케일링 후, 화면 절반 높이만큼 빼서 해당 Bbox가 화면 중앙 레벨에 오도록 보정
-      const targetY = (minY * scaleRatio) - (containerRef.current.clientHeight / 2) + 100;
+      const targetY = (minY * scaleRatios.y) - (containerRef.current.clientHeight / 2) + 100;
       
       containerRef.current.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
     }
-  }, [focusedFieldKey, fields, scaleRatio, pageNumber]);
+  }, [focusedFieldKey, fields, scaleRatios, pageNumber]);
 
   // (Why: Ctrl + Wheel 조작 시 브라우저 기본 확대를 차단하고 PDF 뷰어의 스케일만 조절합니다.)
   useEffect(() => {
