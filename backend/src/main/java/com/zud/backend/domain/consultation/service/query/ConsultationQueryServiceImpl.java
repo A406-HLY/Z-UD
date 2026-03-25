@@ -22,9 +22,9 @@ public class ConsultationQueryServiceImpl implements ConsultationQueryService {
 
 	@Override
 	public Consultation findByUuid(final String uuid) {
-		Consultation consultation = consultationRepository.findByExternalConsultationUuid(uuid)
+		Consultation consultation = consultationRepository.findById(uuid)
 			.orElseThrow(() -> new ConsultationException(ErrorCode.CONSULTATION_NOT_FOUND));
-		log.info("상담 조회 완료: externalConsultationUuid={}", consultation.getExternalConsultationUuid());
+		log.info("상담 조회 완료: id={}", consultation.getId());
 		return consultation;
 	}
 }

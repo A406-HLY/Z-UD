@@ -13,7 +13,6 @@ public class ConsultationConverter {
 	public Consultation toConsultation(final User user, final CustomerInfoReqDto reqDto) {
 		return Consultation.create(
 			user,
-			reqDto.consultationId(),
 			reqDto.name(),
 			reqDto.phoneNumber(),
 			reqDto.residentRegistrationNumber(),

@@ -32,15 +32,13 @@ import lombok.NoArgsConstructor;
 public class Consultation {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	@GeneratedValue(strategy = GenerationType.UUID)
+	@Column(name = "id", nullable = false, updatable = false, length = 36)
+	private String id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
-
-	@Column(name = "external_consultation_uuid", nullable = false, unique = true)
-	private String externalConsultationUuid;
 
 	@Convert(converter = ResidentRegistrationNumberEncryptConverter.class)
 	@Column(name = "resident_registration_number")
@@ -68,7 +66,6 @@ public class Consultation {
 
 	public static Consultation create(
 		final User user,
-		final String externalConsultationUuid,
 		final String name,
 		final String phoneNumber,
 		final String residentRegistrationNumber,
@@ -79,7 +76,6 @@ public class Consultation {
 	) {
 		return Consultation.builder()
 			.user(user)
-			.externalConsultationUuid(externalConsultationUuid)
 			.name(name)
 			.phoneNumber(phoneNumber)
 			.residentRegistrationNumber(residentRegistrationNumber)
