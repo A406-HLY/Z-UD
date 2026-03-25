@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { ExtractedField } from '@/entities/verification/model/types';
 
 /**
@@ -10,15 +10,58 @@ export const usePdfController = (
   focusedFieldKey: string | null,
   files: Array<{ fileId: string; fileUrl?: string; pageNum: number }> = [],
   initialFileUrl?: string,
-  // (Why: 백엔드에서 해상도 정보가 없을 경우의 기본값(Fallback) 처리 방안 협의 필요)
-  originalWidth: number = 1240,
-  originalHeight: number = 1754
+  // (Why: 동기화 기능을 위해 해상도 정보를 포함한 외부 제어 옵션을 통합 객체로 수신합니다.)
+  options: {
+    scale?: number;
+    pageNumber?: number;
+    onScaleChange?: (scale: number) => void;
+    onPageChange?: (page: number) => void;
+    originalWidth?: number;
+    originalHeight?: number;
+  } = {}
 ) => {
-  const [scale, setScale] = useState(1);
-  const [pageNumber, setPageNumber] = useState(1);
+  const { 
+    originalWidth = 1240, 
+    originalHeight = 1754 
+  } = options;
+
+  const [scale, setInternalScale] = useState(options.scale ?? 1);
+  const [pageNumber, setInternalPageNumber] = useState(options.pageNumber ?? 1);
   const [isLoading, setIsLoading] = useState(false);
   const [renderedSize, setRenderedSize] = useState({ width: 0, height: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // (Why: 외부에서 동기화된 값이 들어올 경우 내부 상태를 업데이트합니다.)
+  useEffect(() => {
+    if (options.scale !== undefined && options.scale !== scale) {
+      setInternalScale(options.scale);
+    }
+  }, [options.scale]);
+
+  useEffect(() => {
+    if (options.pageNumber !== undefined && options.pageNumber !== pageNumber) {
+      setInternalPageNumber(options.pageNumber);
+    }
+  }, [options.pageNumber]);
+
+  /** 
+   * 상태 변경 래퍼 함수 (Why: 로컬 변경 시 외부 콜백을 호출하여 동기화 이벤트를 트리거합니다.)
+   */
+  const setScale = useCallback((val: number | ((prev: number) => number)) => {
+    setInternalScale(prev => {
+      const next = typeof val === 'function' ? val(prev) : val;
+      options.onScaleChange?.(next);
+      return next;
+    });
+  }, [options.onScaleChange]);
+
+  const setPageNumber = useCallback((val: number | ((prev: number) => number)) => {
+    setInternalPageNumber(prev => {
+      const next = typeof val === 'function' ? val(prev) : val;
+      options.onPageChange?.(next);
+      return next;
+    });
+  }, [options.onPageChange]);
 
   const currentFileUrl = useMemo(() => {
     if (files.length === 0) return initialFileUrl;

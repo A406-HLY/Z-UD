@@ -11,6 +11,12 @@ interface Props {
   files?: Array<{ fileId: string; fileUrl?: string; pageNum: number }>;
   originalWidth?: number; // 원본 해상도 폭
   originalHeight?: number; // 원본 해상도 높이
+  // (Why: 외부(크로스 윈도우 동기화 등)에서 제어하기 위한 상태 및 핸들러)
+  scale?: number;
+  pageNumber?: number;
+  onScaleChange?: (scale: number) => void;
+  onPageChange?: (page: number) => void;
+  verificationId?: string;
 }
 
 /**
@@ -18,7 +24,19 @@ interface Props {
  * 실제 PDF 렌더링 및 OCR 좌표 기반 Bounding Box 오버레이를 담당하는 메인 위젯 컨테이너입니다.
  * (Why: 하위 세부 컴포넌트와 비즈니스 로직(Hook)을 결합하여 캡슐화하고 외부에는 데이터 Props만 노출합니다.)
  */
-export const DocumentImageViewer = ({ fields = [], focusedFieldKey = null, fileUrl, files = [], originalWidth = 1240, originalHeight = 1754 }: Props) => {
+export const DocumentImageViewer = ({ 
+  fields = [], 
+  focusedFieldKey = null, 
+  fileUrl, 
+  files = [], 
+  originalWidth = 1240, 
+  originalHeight = 1754,
+  scale: externalScale,
+  pageNumber: externalPageNumber,
+  onScaleChange,
+  onPageChange,
+  verificationId
+}: Props) => {
   const {
     scale,
     setScale,
@@ -30,7 +48,28 @@ export const DocumentImageViewer = ({ fields = [], focusedFieldKey = null, fileU
     setRenderedSize,
     scaledBboxes,
     currentFileUrl
-  } = usePdfController(fields, focusedFieldKey, files, fileUrl, originalWidth, originalHeight);
+  } = usePdfController(fields, focusedFieldKey, files, fileUrl, {
+    scale: externalScale,
+    pageNumber: externalPageNumber,
+    onScaleChange,
+    onPageChange,
+    originalWidth,
+    originalHeight
+  });
+
+  const handleOpenFull = () => {
+    // (Why: 전용 뷰어 라우트를 새 창으로 엽니다. 이 창은 BroadcastChannel을 통해 실시간 동기화됩니다.)
+    const width = window.screen.availWidth * 0.8;
+    const height = window.screen.availHeight * 0.8;
+    const left = (window.screen.availWidth - width) / 2;
+    const top = (window.screen.availHeight - height) / 2;
+
+    window.open(
+      `/viewer/${verificationId || 'v-12345'}?page=${pageNumber}&scale=${scale}`, 
+      'PdfFullViewer', 
+      `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=no`
+    );
+  };
 
   return (
     <div className="flex-[1.3] h-full flex flex-col bg-[#808080] overflow-hidden relative">
@@ -76,7 +115,11 @@ export const DocumentImageViewer = ({ fields = [], focusedFieldKey = null, fileU
             <ZoomIn className="w-4 h-4 text-gray-700" />
           </button>
           <div className="w-px h-5 bg-gray-400 mx-2" />
-          <button type="button" className="h-7 px-3 bg-white border border-gray-400 text-[10px] font-bold hover:bg-gray-50 flex items-center gap-2 text-gray-700 transition-colors">
+          <button 
+            type="button" 
+            onClick={handleOpenFull}
+            className="h-7 px-3 bg-white border border-gray-400 text-[10px] font-bold hover:bg-gray-50 flex items-center gap-2 text-gray-700 transition-colors"
+          >
             <Maximize2 className="w-3.5 h-3.5" /> FULL
           </button>
         </div>
