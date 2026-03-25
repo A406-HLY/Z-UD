@@ -80,6 +80,19 @@ public class CloudflareServiceImpl implements CloudflareService {
 		}
 	}
 
+	@Override
+	public String generateGetPresignedUrl(final String consultationId, final String fileName) {
+		String key = buildObjectKey(consultationId, fileName);
+		try {
+			String url = generatePresignedUrl(key);
+			log.info("[Cloudflare] GET Presigned URL 생성 완료 {key: {}}", key);
+			return url;
+		} catch (S3Exception e) {
+			log.error("[Cloudflare] GET Presigned URL 생성 실패 key:{}, message: {}", key, e.getMessage(), e);
+			throw new DocumentException(ErrorCode.PRESIGNED_URL_GENERATION_FAILED);
+		}
+	}
+
 	private PutObjectPresignRequest createPutObjectPresignRequest(final PutObjectRequest putRequest) {
 		return PutObjectPresignRequest.builder()
 			.signatureDuration(PUT_PRESIGNED_URL_EXPIRATION)

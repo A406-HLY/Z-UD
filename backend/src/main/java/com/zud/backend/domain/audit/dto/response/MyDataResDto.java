@@ -8,7 +8,7 @@ public record MyDataResDto(
 	String userId,
 	String ratingName,
 	long totalLoanBalance,
-	long totalRemainingLaonBalance,
+	long totalRemainingLoanBalance,
 	long totalAnnualPrincipalAndInterestRepayment,
 
 	@JsonProperty("loanProducts")

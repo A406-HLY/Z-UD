@@ -10,7 +10,7 @@ import lombok.Builder;
 
 @Builder
 @Schema(description = "문서 추출/검증 응답 데이터 (DocumentDto 재사용)")
-public record DocumentExtractionDesDto(
+public record DocumentExtractionResDto(
 	@NotNull
 	@Schema(description = "OCR 추출 문서 목록 (DocumentDto)")
 	List<DocumentDto> documents,

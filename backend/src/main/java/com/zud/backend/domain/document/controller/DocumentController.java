@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,7 +20,7 @@ import com.zud.backend.common.util.ResponseUtils;
 import com.zud.backend.domain.document.dto.request.DocumentExtractionReqDto;
 import com.zud.backend.domain.document.dto.request.file.PresignedUrlReqDto;
 import com.zud.backend.domain.document.dto.request.file.UploadCompletionReqDto;
-import com.zud.backend.domain.document.dto.response.DocumentExtractionDesDto;
+import com.zud.backend.domain.document.dto.response.DocumentExtractionResDto;
 import com.zud.backend.domain.document.dto.response.file.PresignedUrlResDto;
 import com.zud.backend.domain.document.dto.response.file.UploadCompletionResDto;
 import com.zud.backend.domain.document.service.facade.DocumentFacadeService;
@@ -56,10 +57,21 @@ public class DocumentController {
 	@PostMapping("/extraction")
 	@Operation(summary = "OCR 추출 결과 수신", description = "OCR 엔진으로부터 분석된 문서 데이터를 수신한다.")
 	@ApiErrorResponse
-	public ResponseEntity<BaseResponse<DocumentExtractionDesDto>> receiveExtractionResult(
+	public ResponseEntity<BaseResponse<DocumentExtractionResDto>> receiveExtractionResult(
 		@Valid @RequestBody DocumentExtractionReqDto reqDto
 	) {
-		DocumentExtractionDesDto response = facadeService.validateDocuments(reqDto);
+		DocumentExtractionResDto response = facadeService.validateDocuments(reqDto);
+		return ResponseUtils.ok(response);
+	}
+
+	@GetMapping("/extraction-results/{consultationId}")
+	@Operation(summary = "OCR 추출 결과 조회", description = "Kafka consumer가 저장한 OCR 추출 결과를 조회한다.")
+	@ApiErrorResponse
+	public ResponseEntity<BaseResponse<DocumentExtractionResDto>> getExtractionResult(
+		@Parameter(description = "상담 ID")
+		@PathVariable String consultationId
+	) {
+		DocumentExtractionResDto response = facadeService.getExtractionResult(consultationId);
 		return ResponseUtils.ok(response);
 	}
 
