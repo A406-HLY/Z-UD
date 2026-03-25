@@ -152,7 +152,6 @@ export const DocumentImageViewer = ({
                 originalWidth={originalWidth}
                 originalHeight={originalHeight}
                 onLoadSuccess={setRenderedSize} 
-                isLoading={isLoading}
                 setIsLoading={setIsLoading}
               />
               <BboxOverlay 
