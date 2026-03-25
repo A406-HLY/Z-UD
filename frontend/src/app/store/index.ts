@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/auth.slice';
 import customerReducer from '@/entities/customer/model/slice';
+import auditReducer from '@/entities/audit/model/audit.slice';
 
 /**
  * 전역 Redux 스토어
@@ -11,8 +12,9 @@ export const store = configureStore({
   reducer: {
     auth: authReducer,
     customer: customerReducer,
+    audit: auditReducer,
   },
-  devTools: process.env.NODE_ENV !== 'production', // 개발 환경에서만 DevTools 활성화
+  devTools: import.meta.env.MODE !== 'production', // 개발 환경에서만 DevTools 활성화
 });
 
 // RootState와 AppDispatch 타입 추론

@@ -12,6 +12,11 @@ export class LocalServer {
   private port = DEFAULT_PORT; 
 
   constructor() {
+    // (Why) 웹 상용서버(HTTPS)에서 로컬 에이전트(127.0.0.1:4000) 접근 시 Chrome의 PNA(Private Network Access) 차단을 방지하기 위한 보안 헤더 설정
+    this.app.use((req: Request, res: Response, next: express.NextFunction) => {
+      res.header('Access-Control-Allow-Private-Network', 'true');
+      next();
+    });
     this.app.use(cors()); // Enable CORS for all routes
     this.app.use(express.json());
     this.setupRoutes();
