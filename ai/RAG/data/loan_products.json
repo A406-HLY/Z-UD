@@ -1,0 +1,12 @@
+{
+  "ssageumjari": {
+    "productName": "싸금자리",
+    "interestRate": "10%",
+    "repaymentPeriod": "50년"
+  },
+  "ssadimdol": {
+    "productName": "싸딤돌",
+    "interestRate": "15%",
+    "repaymentPeriod": "30년"
+  }
+}
