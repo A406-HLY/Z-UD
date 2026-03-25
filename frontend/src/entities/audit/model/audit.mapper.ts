@@ -11,9 +11,10 @@ import { AuditSummaryItem, HouseAuditResponseDto } from './types';
  */
 export const mapHouseAuditToUiModel = (dto: HouseAuditResponseDto): AuditSummaryItem[] => {
   const { data } = dto;
+  if (!data) return []; // (Safety) 데이터가 비어있을 경우 빈 배열 반환
   const items: AuditSummaryItem[] = [];
 
-  const isSuccess = data.supportedHouseType && data.nearestBranch.currentBranchIsNearest;
+  const isSuccess = data.supportedHouseType && data.nearestBranch?.currentBranchIsNearest;
 
   // 1. 주택 심사 통합 (시세, 거리, 위반 등)
   items.push({
