@@ -25,10 +25,10 @@ services:
       context: ../../ai/RAG
       dockerfile: Dockerfile
     env_file:
-      - ../../ai/RAG/.env
+      - ./.env
     environment:
-      - VECTOR_DB_HOST=vector_db_rag
-      - VECTOR_DB_PORT=5432
+      - VECTOR_DB_HOST=${VECTOR_DB_HOST}
+      - VECTOR_DB_PORT=${VECTOR_DB_PORT}
     depends_on:
       vector_db:
         condition: service_healthy
