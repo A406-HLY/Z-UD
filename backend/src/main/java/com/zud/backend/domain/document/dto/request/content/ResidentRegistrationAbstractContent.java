@@ -17,7 +17,7 @@ public record ResidentRegistrationAbstractContent(
 	DataField<String> issueDate,
 	@Schema(description = "발급번호")
 	DataField<String> issueNumber,
-	@Schema(description = "현주소지")
+	@Schema(description = "성명")
 	DataField<String> name,
 	@Schema(description = "주민등록번호")
 	DataField<String> residentRegistrationNumber,
