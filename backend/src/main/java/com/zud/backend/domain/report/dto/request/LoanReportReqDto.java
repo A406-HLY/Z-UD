@@ -102,7 +102,7 @@ public record LoanReportReqDto(
 
 		Long collateralMarketPrice,
 
-		Long totalLoanBalance,
+		Long totalRemainingLoanBalance,
 
 		Long monthlyRepaymentAmount,
 
