@@ -5,68 +5,72 @@ from keyword_pipeline.pipeline import KeywordExtractionPipeline
 from hybrid_retriever import HybridRetriever
 from database import save_chunks, load_chunks
 current_dir = os.path.dirname(os.path.abspath(__file__))
-data_dir = os.path.join(current_dir, "data")
-document_dir = os.path.join(data_dir, "document")
-chunk_dump_dir = os.path.join(data_dir, "chunks")
-template_dir = os.path.join(data_dir, "template")
-concept_dict_path = os.path.join(data_dir, "concept_dict.json")
-original_rules_path = os.path.join(document_dir, "ssageumjari.txt")
-english_to_korean_map_path = os.path.join(data_dir, "english_to_korean_map.json")
-loan_products_path = os.path.join(data_dir, "loan_products.json")
+data_dir = os.path.join(current_dir, 'data')
+document_dir = os.path.join(data_dir, 'document')
+chunk_dump_dir = os.path.join(data_dir, 'chunks')
+template_dir = os.path.join(data_dir, 'template')
+concept_dict_path = os.path.join(data_dir, 'concept_dict.json')
+original_rules_path = os.path.join(document_dir, 'ssageumjari.txt')
+english_to_korean_map_path = os.path.join(data_dir, 'english_to_korean_map.json')
+loan_products_path = os.path.join(data_dir, 'loan_products.json')
+
 class AppState:
-    grouped_documents = {}     
-    grouped_doc_vectors = {}   
-    retrievers = {}            
+    grouped_documents = {}
+    grouped_doc_vectors = {}
+    retrievers = {}
     query_map = {}
     english_to_korean_map = {}
     korean_to_english_map = {}
-    evaluation_template = {}  
-    category_map = {}  
-    product_map = {}   
+    evaluation_template = {}
+    category_map = {}
+    product_map = {}
+
     @classmethod
     def load_maps(cls):
-        unified_schema_path = os.path.join(template_dir, "unified_search_schema.json")
+        unified_schema_path = os.path.join(template_dir, 'unified_search_schema.json')
         if os.path.exists(unified_schema_path):
-            with open(unified_schema_path, "r", encoding="utf-8") as f:
+            with open(unified_schema_path, 'r', encoding='utf-8') as f:
                 schema = json.load(f)
                 for item in schema:
-                    eng = item["name_en"]
-                    kor = item["name_ko"]
+                    eng = item['name_en']
+                    kor = item['name_ko']
                     cls.english_to_korean_map[eng] = kor
                     cls.korean_to_english_map[kor] = eng
-                    cls.query_map[kor] = item["search_query"]
-                    cls.evaluation_template[kor] = item["default_value"]
-                    cls.category_map[kor] = item.get("category", "공통")
+                    cls.query_map[kor] = item['search_query']
+                    cls.evaluation_template[kor] = item['default_value']
+                    cls.category_map[kor] = item.get('category', '공통')
         if os.path.exists(loan_products_path):
-            with open(loan_products_path, "r", encoding="utf-8") as f:
+            with open(loan_products_path, 'r', encoding='utf-8') as f:
                 cls.product_map = json.load(f)
 AppState.load_maps()
+
 def startup_event():
-    print("[Startup] Initializing Vector DB connection...")
+    print('[Startup] Initializing Vector DB connection...')
     loaded_any = False
     try:
         if not os.path.exists(document_dir):
             os.makedirs(document_dir, exist_ok=True)
         for filename in os.listdir(document_dir):
-            if not filename.endswith(".txt"):
+            if not filename.endswith('.txt'):
                 continue
-            doc_name = filename.replace(".txt", "")
+            doc_name = filename.replace('.txt', '')
             try:
                 documents, doc_vectors = load_chunks(doc_name)
                 if documents and doc_vectors is not None:
                     AppState.grouped_documents[doc_name] = documents
                     AppState.grouped_doc_vectors[doc_name] = doc_vectors
                     AppState.retrievers[doc_name] = HybridRetriever(concept_dict_path=concept_dict_path)
-                    print(f"[Startup] Successfully loaded {len(documents)} chunks from Vector DB for {doc_name}.")
+                    print(f'[Startup] Successfully loaded {len(documents)} chunks from Vector DB for {doc_name}.')
                     loaded_any = True
             except Exception as item_e:
-                print(f"[Startup Warning] Could not load DB for {doc_name}: {item_e}")
+                print(f'[Startup Warning] Could not load DB for {doc_name}: {item_e}')
         if not loaded_any:
-            print("[Startup] No existing DB rows found for any document. Building from local files...")
+            print('[Startup] No existing DB rows found for any document. Building from local files...')
             _update_pipeline()
     except Exception as e:
-        print(f"[Startup Warning] DB Load failed entirely: {e}. Falling back to normal pipeline...")
+        print(f'[Startup Warning] DB Load failed entirely: {e}. Falling back to normal pipeline...')
         _update_pipeline()
+
 def _update_pipeline(raw_text=None):
     total_chunks = 0
     AppState.grouped_documents.clear()
@@ -77,13 +81,13 @@ def _update_pipeline(raw_text=None):
     if not os.path.exists(chunk_dump_dir):
         os.makedirs(chunk_dump_dir, exist_ok=True)
     for filename in os.listdir(document_dir):
-        if not filename.endswith(".txt"):
+        if not filename.endswith('.txt'):
             continue
-        doc_name = filename.replace(".txt", "")
+        doc_name = filename.replace('.txt', '')
         file_path = os.path.join(document_dir, filename)
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, 'r', encoding='utf-8') as f:
             doc_text = f.read()
-        print(f"[{doc_name}] Starting Keyword Extraction Pipeline...")
+        print(f'[{doc_name}] Starting Keyword Extraction Pipeline...')
         pipeline = KeywordExtractionPipeline(content=doc_text)
         documents = pipeline.run()
         retriever = HybridRetriever(concept_dict_path=concept_dict_path)
@@ -93,88 +97,56 @@ def _update_pipeline(raw_text=None):
         AppState.retrievers[doc_name] = retriever
         try:
             save_chunks(doc_name, documents, doc_vectors)
-            print(f"[{doc_name}] Saved {len(documents)} embedded chunks to DB")
+            print(f'[{doc_name}] Saved {len(documents)} embedded chunks to DB')
         except Exception as e:
-            print(f"[{doc_name} Error] Failed to save DB: {e}")
+            print(f'[{doc_name} Error] Failed to save DB: {e}')
         total_chunks += len(documents)
     return total_chunks
+
 def update_vector_db():
-    """
-    Re-run the pipeline to update Vector DB and in-memory state for all .txt rules.
-    """
     num_chunks = _update_pipeline()
-    return {"status": "success", "message": "Vector DB updated successfully", "total_chunks": num_chunks}
+    return {'status': 'success', 'message': 'Vector DB updated successfully', 'total_chunks': num_chunks}
+
 def search_rules(user_data: dict):
-    """
-    Search for rule chunks relevant to the user's data dictionary and generate dynamic queries.
-    """
     if not AppState.retrievers:
-        raise RuntimeError("Retrievers not initialized. Call update_vector_db() or startup_event() first.")
-    req_uuid = user_data.pop("consultationId", None) or user_data.pop("counselId", None) or user_data.pop("UUID", None) or user_data.pop("uuid", None)
+        raise RuntimeError('Retrievers not initialized. Call update_vector_db() or startup_event() first.')
+    req_uuid = user_data.pop('consultationId', None) or user_data.pop('counselId', None) or user_data.pop('UUID', None) or user_data.pop('uuid', None)
     base_eval_data = {}
     for eng_key, kor_key in AppState.english_to_korean_map.items():
-        base_eval_data[eng_key] = {
-            "koreanField": kor_key,
-            "value": AppState.evaluation_template[kor_key],
-            "query": AppState.query_map[kor_key],
-            "matched": []
-        }
-    payload = user_data.get("reportInput", user_data.get("user_data", user_data))
+        base_eval_data[eng_key] = {'koreanField': kor_key, 'value': AppState.evaluation_template[kor_key], 'query': AppState.query_map[kor_key], 'matched': []}
+    payload = user_data.get('reportInput', user_data.get('user_data', user_data))
     if not isinstance(payload, dict):
         payload = user_data
-    enum_translation_map = {
-        "loanPurpose": {
-            "HOME_PURCHASE": "주택 구매",
-            "REFINANCE": "대환 대출",
-            "JEONSE_RETURN": "전세보증금 반환",
-            "LIVING_EXPENSE": "생활 안정 자금"
-        },
-        "employmentType": {
-            "EMPLOYEE": "근로자",
-            "SELF_EMPLOYED": "개인사업자"
-        }
-    }
+    enum_translation_map = {'loanPurpose': {'HOME_PURCHASE': '주택 구매', 'REFINANCE': '대환 대출', 'JEONSE_RETURN': '전세보증금 반환', 'LIVING_EXPENSE': '생활 안정 자금'}, 'employmentType': {'EMPLOYEE': '근로자', 'SELF_EMPLOYED': '개인사업자'}}
     for field, mapping in enum_translation_map.items():
         if field in payload and payload[field] in mapping:
             payload[field] = mapping[payload[field]]
     for req_key, val in payload.items():
         if req_key in base_eval_data:
-            base_eval_data[req_key]["value"] = val
+            base_eval_data[req_key]['value'] = val
         elif req_key in AppState.korean_to_english_map:
             eng_key = AppState.korean_to_english_map[req_key]
-            base_eval_data[eng_key]["value"] = val
+            base_eval_data[eng_key]['value'] = val
     product_results = {doc_name: {} for doc_name in AppState.retrievers.keys()}
-    emp_type = payload.get("employmentType", "근로자")
-    valid_categories = {"공통", "특수", emp_type}
+    emp_type = payload.get('employmentType', '근로자')
+    valid_categories = {'공통', '특수', emp_type}
     filtered_eval_data = {}
     for eng_key, data in base_eval_data.items():
-        kor_field = data["koreanField"]
-        if AppState.category_map.get(kor_field, "공통") in valid_categories:
+        kor_field = data['koreanField']
+        if AppState.category_map.get(kor_field, '공통') in valid_categories:
             filtered_eval_data[eng_key] = data
     for eng_key, data in filtered_eval_data.items():
-        field = data["koreanField"]
-        value = data["value"]
-        base_query = data["query"]
+        field = data['koreanField']
+        value = data['value']
+        base_query = data['query']
         if value is None:
             for doc_name in AppState.retrievers.keys():
-                product_results[doc_name][eng_key] = {
-                    "name_ko": field,
-                    "value": None,
-                    "search_query": base_query,
-                    "matched_articles": []
-                }
+                product_results[doc_name][eng_key] = {'name_ko': field, 'value': None, 'search_query': base_query, 'matched_articles': []}
             continue
         for doc_name, retriever in AppState.retrievers.items():
             doc_documents = AppState.grouped_documents[doc_name]
             doc_vectors = AppState.grouped_doc_vectors[doc_name]
-            retrieved = retriever.retrieve(
-                query_text=base_query,
-                target_field=field,
-                documents=doc_documents,
-                doc_vectors=doc_vectors,
-                top_k=None,
-                threshold=0.95
-            )
+            retrieved = retriever.retrieve(query_text=base_query, target_field=field, documents=doc_documents, doc_vectors=doc_vectors, top_k=None, threshold=0.95)
             all_matched_chunks = []
             for r in retrieved:
                 chunk = r['chunk']
@@ -189,26 +161,16 @@ def search_rules(user_data: dict):
                 if match not in seen:
                     seen.add(match)
                     unique_matched.append(match)
-            product_results[doc_name][eng_key] = {
-                "name_ko": field,
-                "value": value,
-                "search_query": base_query,
-                "matched_articles": unique_matched
-            }
+            product_results[doc_name][eng_key] = {'name_ko': field, 'value': value, 'search_query': base_query, 'matched_articles': unique_matched}
     final_result_dict = {}
     for doc_name, fields_dict in product_results.items():
         final_result_dict[doc_name] = {}
-        product_meta = AppState.product_map.get(doc_name, {"productName": doc_name})
+        product_meta = AppState.product_map.get(doc_name, {'productName': doc_name})
         if isinstance(product_meta, dict):
             for meta_k, meta_v in product_meta.items():
                 final_result_dict[doc_name][meta_k] = meta_v
         else:
-            final_result_dict[doc_name]["productName"] = product_meta
+            final_result_dict[doc_name]['productName'] = product_meta
         for eng_key, field_data in fields_dict.items():
-            final_result_dict[doc_name][eng_key] = FieldSearchResponse(
-                name_ko=field_data["name_ko"],
-                value=field_data["value"],
-                search_query=field_data["search_query"],
-                matched_articles=field_data["matched_articles"]
-            )
+            final_result_dict[doc_name][eng_key] = FieldSearchResponse(name_ko=field_data['name_ko'], value=field_data['value'], search_query=field_data['search_query'], matched_articles=field_data['matched_articles'])
     return SearchResponse(consultationId=req_uuid, result=final_result_dict)
