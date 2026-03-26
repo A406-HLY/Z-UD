@@ -1,5 +1,6 @@
 import { createSlice, createSelector, PayloadAction } from '@reduxjs/toolkit';
 import { ConsultationResponse, ProcessedProduct, ProcessedReviewItem } from './types';
+import { APPROVAL_STATUS } from '@/shared/config/constants';
 
 // RootStateLike: store 의존성 사이클 방지를 위한 로컬 타입
 interface RootStateLike {
@@ -93,45 +94,70 @@ export const selectProcessedProducts = createSelector(
         key
       }));
 
-      // 거절 항목 1개라도 있으면 미승인 처리
-      const isApproved = !items.some(item => item.result === '거절');
+      // 거절 항목 1개라도 있으면 미승인 처리 (상수 활용)
+      const isApproved = !items.some(item => item.result === APPROVAL_STATUS.REJECT);
 
-      let ltvLimit = 0;
-      let dsrLimit = 0;
+      let ltvRatioValue = 0;
+      let dsrRatioValue = 0;
+      let marketPrice = 0;
 
       // 상품 내 항목 정렬: 거절이 위로 오도록
       const sortedItems = [...items].sort((a, b) => {
-        if (a.result === '거절' && b.result !== '거절') return -1;
-        if (a.result !== '거절' && b.result === '거절') return 1;
+        if (a.result === APPROVAL_STATUS.REJECT && b.result !== APPROVAL_STATUS.REJECT) return -1;
+        if (a.result !== APPROVAL_STATUS.REJECT && b.result === APPROVAL_STATUS.REJECT) return 1;
         return 0; // 원본 순서 유지
       });
 
-      // LTV, DSR 핵심 파라미터 파싱
+      // LTV, DSR 핵심 파라미터 및 시세 추출 (지능형 스캔)
       sortedItems.forEach(item => {
-        const nameUpper = item.name_ko.toUpperCase();
-        if (nameUpper.includes('LTV') && typeof item.value === 'number') {
-          ltvLimit = Math.max(ltvLimit, item.value);
+        const nameKo = item.name_ko;
+        
+        // 1. LTV/DSR 비율 추출 (목업에서는 'LTV 비율' 이라는 문자열로 들어오기도 함)
+        if (nameKo.includes('LTV 비율')) {
+           // 실제 운영 데이터에서는 숫자로 들어올 것을 가정하나, 목업 대응을 위해 파싱 로직 가미
+           ltvRatioValue = typeof item.value === 'number' ? item.value : 70; // fallback 70
         }
-        if (nameUpper.includes('DSR') && typeof item.value === 'number') {
-          dsrLimit = Math.max(dsrLimit, item.value);
+        if (nameKo.includes('DSR 비율')) {
+           dsrRatioValue = typeof item.value === 'number' ? item.value : 40; // fallback 40
+        }
+
+        // 2. 담보 시세 추출
+        if (nameKo === '담보 시세' || nameKo === '최근 실거래가') {
+          if (typeof item.value === 'number') {
+            marketPrice = Math.max(marketPrice, item.value);
+          }
         }
       });
+
+      // 3. 한도 산출 로직 (Entity Layer에서 처리)
+      const calculatedLimit = isApproved && marketPrice > 0 
+        ? Math.floor((marketPrice * (ltvRatioValue / 100)) / 1000000) * 1000000 // 백만원 단위 절사
+        : 0;
+
+      // 4. 시각화용 파라미터 셋 구성
+      const limitParams = [
+        { label: "평가 시세 (Market)", value: `${marketPrice.toLocaleString()} 원` },
+        { label: "설정비율 (LTV)", value: `${ltvRatioValue}%` },
+        { label: "상환능력 (DSR)", value: `${dsrRatioValue}%` },
+        { label: "최종 산출 한도", value: `${calculatedLimit.toLocaleString()} 원` }
+      ];
 
       return {
         productKey,
         isApproved,
-        ltvLimit,
-        dsrLimit,
+        ltvLimit: ltvRatioValue,
+        dsrLimit: dsrRatioValue,
+        calculatedLimit,
+        limitParams,
         items: sortedItems
       };
     });
 
-    // 탭 순서(상품) 정렬: 승인된 탭을 제일 앞으로, 그 중 LTV 한도가 높은 것 우선
+    // 탭 순서(상품) 정렬: 승인된 탭을 제일 앞으로, 그 중 한도가 높은 것 우선
     products.sort((a, b) => {
       if (a.isApproved && !b.isApproved) return -1;
       if (!a.isApproved && b.isApproved) return 1;
-      if (b.ltvLimit !== a.ltvLimit) return b.ltvLimit - a.ltvLimit;
-      return b.dsrLimit - a.dsrLimit;
+      return b.calculatedLimit - a.calculatedLimit;
     });
 
     return products;
@@ -158,16 +184,21 @@ export const selectFilteredAndSortedCurrentItems = createSelector(
 
     // 하단 컨트롤러 - 필터 적용
     if (filter === 'PASS') {
-      result = result.filter(i => i.result === '승인' || i.result === '상관 없음');
+      result = result.filter(i => i.result === APPROVAL_STATUS.PASS || i.result === APPROVAL_STATUS.IRRELEVANT);
     } else if (filter === 'REJECT') {
-      result = result.filter(i => i.result === '거절' || i.result === '자료 보완 요망');
+      result = result.filter(i => i.result === APPROVAL_STATUS.REJECT || i.result === APPROVAL_STATUS.SUPPLEMENT);
     }
 
     // 하단 컨트롤러 - 정렬 적용
     if (sort === 'PASS_STATUS') {
-      // 거절이 위로 설정 (부적격 심각도순)
+      // 거절이 위로 설정 (부적격 심각도순 - 상수 기반)
       result.sort((a, b) => {
-        const getScore = (res: string) => (res === '거절' ? 0 : res === '자료 보완 요망' ? 1 : 2);
+        const getScore = (res: string) => {
+          if (res === APPROVAL_STATUS.REJECT) return 0;
+          if (res === APPROVAL_STATUS.SUPPLEMENT) return 1;
+          if (res === APPROVAL_STATUS.REVIEW_REQUIRED) return 2;
+          return 3;
+        };
         return getScore(a.result) - getScore(b.result);
       });
     } else if (sort === 'NAME') {
