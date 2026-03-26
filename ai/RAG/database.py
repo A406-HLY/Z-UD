@@ -4,13 +4,13 @@ from pgvector.psycopg2 import register_vector
 import numpy as np
 import os
 
+_port = os.environ.get("VECTOR_DB_PORT")
 DB_PARAMS = {
-    # 로컬 개발 환경용 매핑 (향후 Docker Compose 내부망에서는 'vector_db'로 변경 가능)
-    "host": os.getenv("VECTOR_DB_HOST", "localhost"),
-    "port": int(os.getenv("VECTOR_DB_PORT", 5433)),
-    "user": "vector_user",
-    "password": "vector_password",
-    "dbname": "vectordb"
+    "host": os.environ.get("VECTOR_DB_HOST"),
+    "port": int(_port) if _port else None,
+    "user": os.environ.get("VECTOR_DB_USER"),
+    "password": os.environ.get("VECTOR_DB_PASSWORD"),
+    "dbname": os.environ.get("VECTOR_DB_NAME")
 }
 
 def get_connection():
