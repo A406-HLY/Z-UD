@@ -3,7 +3,6 @@ from psycopg2.extras import Json
 from pgvector.psycopg2 import register_vector
 import numpy as np
 import os
-
 _port = os.environ.get("VECTOR_DB_PORT")
 DB_PARAMS = {
     "host": os.environ.get("VECTOR_DB_HOST"),
@@ -12,17 +11,14 @@ DB_PARAMS = {
     "password": os.environ.get("VECTOR_DB_PASSWORD"),
     "dbname": os.environ.get("VECTOR_DB_NAME")
 }
-
 def get_connection():
     conn = psycopg2.connect(**DB_PARAMS)
     register_vector(conn)
     return conn
-
 def init_db(table_name: str):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("CREATE EXTENSION IF NOT EXISTS vector")
-    # 테이블 이름은 document_chunks_{table_name}
     full_table_name = f"document_chunks_{table_name}"
     cur.execute(f"""
         CREATE TABLE IF NOT EXISTS {full_table_name} (
@@ -40,14 +36,12 @@ def init_db(table_name: str):
     conn.commit()
     cur.close()
     conn.close()
-
 def save_chunks(table_name: str, documents, doc_vectors):
     init_db(table_name)
     conn = get_connection()
     cur = conn.cursor()
     full_table_name = f"document_chunks_{table_name}"
-    cur.execute(f"TRUNCATE TABLE {full_table_name}") # Clear old data
-    
+    cur.execute(f"TRUNCATE TABLE {full_table_name}") 
     for i, doc in enumerate(documents):
         cur.execute(f"""
             INSERT INTO {full_table_name} (
@@ -67,7 +61,6 @@ def save_chunks(table_name: str, documents, doc_vectors):
     conn.commit()
     cur.close()
     conn.close()
-
 def load_chunks(table_name: str):
     init_db(table_name)
     conn = get_connection()
@@ -79,10 +72,8 @@ def load_chunks(table_name: str):
         FROM {full_table_name} ORDER BY id
     """)
     rows = cur.fetchall()
-    
     documents = []
     doc_vectors = []
-    
     for row in rows:
         documents.append({
             "chunk_id": row[0],
@@ -93,11 +84,9 @@ def load_chunks(table_name: str):
             "concepts": row[5],
             "details": row[6]
         })
-        doc_vectors.append(row[7]) # pgvector returns numpy array
-        
+        doc_vectors.append(row[7]) 
     cur.close()
     conn.close()
-    
     if len(doc_vectors) > 0:
         return documents, np.array(doc_vectors)
     return [], None
