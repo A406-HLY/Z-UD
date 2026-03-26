@@ -47,7 +47,7 @@ export const useVerificationActions = () => {
    * (Note: routes.tsx 기준 /basic-info 경로로 이동합니다.)
    */
   const handleNextStep = () => {
-    navigate('/basic-info'); 
+    navigate('/customer-info'); 
   };
 
   return {
