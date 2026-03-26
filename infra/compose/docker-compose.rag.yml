@@ -29,6 +29,8 @@ services:
     environment:
       - VECTOR_DB_HOST=${VECTOR_DB_HOST}
       - VECTOR_DB_PORT=${VECTOR_DB_PORT}
+    volumes:
+      - ../../ai/RAG/data/document:/app/data/document
     depends_on:
       vector_db:
         condition: service_healthy
