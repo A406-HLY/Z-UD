@@ -9,8 +9,10 @@ import {
   setHouseAuditData,
   setCreditData,
   setLoanData,
+  setOcrData,
   addErrorMessage
 } from '../model/audit.slice';
+import { fetchVerificationResult } from '@/entities/verification/api/verification.api';
 
 /**
  * @feature Audit/SSE
@@ -47,9 +49,20 @@ export const useSseAudit = (counselId: string | undefined, isTriggered: boolean)
     };
 
     // 2. OCR 이벤트
-    eventSource.addEventListener('OCR_COMPLETED', (e: MessageEvent) => {
+    eventSource.addEventListener('OCR_COMPLETED', async (e: MessageEvent) => {
       const payload = JSON.parse(e.data);
-      dispatch(updateStepStatus({ step: 'ocr', status: 'SUCCESS', message: payload.message || 'OCR 분석 완료' }));
+      dispatch(updateStepStatus({ step: 'ocr', status: 'LOADING' }));
+      
+      try {
+        if (!counselId) return;
+        const data = await fetchVerificationResult(counselId);
+        dispatch(setOcrData(data));
+        dispatch(updateStepStatus({ step: 'ocr', status: 'SUCCESS', message: payload.message || 'OCR 분석 완료' }));
+      } catch (error) {
+        console.error('[SSE] OCR result fetch failed:', error);
+        dispatch(updateStepStatus({ step: 'ocr', status: 'ERROR', message: 'OCR 데이터 수취 실패' }));
+        dispatch(addErrorMessage('OCR 데이터를 불러오는 데 실패했습니다.'));
+      }
     });
     eventSource.addEventListener('OCR_FAILED', () => {
       dispatch(updateStepStatus({ step: 'ocr', status: 'ERROR', message: 'OCR 분석 실패' }));

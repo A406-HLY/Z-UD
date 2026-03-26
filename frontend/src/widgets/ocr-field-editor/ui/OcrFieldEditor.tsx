@@ -25,12 +25,11 @@ export const OcrFieldEditor = ({ fields, status, isRisk, selectedId, onFieldChan
   const isReviewNeeded = status === 'REVIEW_NEEDED';
 
   // (Point: 렌더링 최적화 및 제어용 인덱스 추출)
-  const { errorFieldIndices, firstErrorIndex, lastErrorIndex } = useMemo(() => {
+  const { firstErrorIndex, lastErrorIndex } = useMemo(() => {
     const indices = fields
       .map((f, i) => (!f.isMatch ? i : -1))
       .filter(i => i !== -1);
     return {
-      errorFieldIndices: indices,
       firstErrorIndex: indices[0] ?? -1,
       lastErrorIndex: indices[indices.length - 1] ?? -1
     };
@@ -49,18 +48,18 @@ export const OcrFieldEditor = ({ fields, status, isRisk, selectedId, onFieldChan
   const getFieldStyles = (field: ExtractedField, canEdit: boolean) => {
     const isError = !field.isMatch;
 
-    if (isError) return 'border-red-400 bg-red-50 text-red-700 font-bold focus-within:border-red-600 focus-within:bg-white focus-within:ring-red-600';
-    if (field.isRiskTarget) return 'border-yellow-400 bg-yellow-50 text-yellow-800 focus-within:border-yellow-600 focus-within:bg-white focus-within:ring-yellow-600';
-    if (field.isModified) return 'border-blue-400 bg-blue-50 text-[#444] font-bold focus-within:border-blue-600 focus-within:bg-white focus-within:ring-blue-600';
-    if (!canEdit) return 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed';
+    if (isError) return 'border-red-400 bg-red-50 text-red-700 font-bold focus-within:border-red-600 focus-within:bg-white focus-within:ring-red-600 cursor-text';
+    if (field.isRiskTarget) return 'border-yellow-400 bg-yellow-50 text-yellow-800 focus-within:border-yellow-600 focus-within:bg-white focus-within:ring-yellow-600 cursor-pointer';
+    if (field.isModified) return 'border-blue-400 bg-blue-50 text-[#444] font-bold focus-within:border-blue-600 focus-within:bg-white focus-within:ring-blue-600 cursor-text';
+    if (!canEdit) return 'bg-gray-50/30 border-gray-100 text-gray-400 cursor-pointer select-none focus-within:border-gray-300';
     
-    return 'border-gray-300 bg-[#fcfcfc] focus-within:border-[#004b93] focus-within:bg-white';
+    return 'border-gray-300 bg-[#fcfcfc] focus-within:border-[#004b93] focus-within:bg-white cursor-text';
   };
   
   return (
-    <div className="flex-1 h-full border-r border-gray-300 flex flex-col bg-white overflow-hidden">
+    <div className="flex-1 h-full min-h-0 border-r border-gray-300 flex flex-col bg-white overflow-hidden">
       {/* Header with Dynamic Judgment Badge */}
-      <div className={`h-[36px] border-b border-gray-300 flex items-center px-4 justify-between shrink-0 transition-colors ${isReviewNeeded ? 'bg-red-50' : isRisk ? 'bg-yellow-50' : 'bg-gray-100'}`}>
+      <div className={`h-[40px] border-b border-gray-300 flex items-center px-4 justify-between shrink-0 transition-colors ${isReviewNeeded ? 'bg-red-50' : isRisk ? 'bg-yellow-50' : 'bg-gray-100'}`}>
         <div className="flex items-center gap-2">
           <span className="text-[11px] font-bold text-[#444] uppercase tracking-wider">OCR Data Correction</span>        </div>
       </div>
@@ -91,7 +90,7 @@ export const OcrFieldEditor = ({ fields, status, isRisk, selectedId, onFieldChan
                 
                 <Input 
                   value={String(field.value ?? '')}
-                  disabled={!canEdit}
+                  readOnly={!canEdit}
                   data-document-id={selectedId}
                   data-nav-error={isErrorField}
                   onFocus={() => onFocus?.(field.key)}
@@ -99,7 +98,7 @@ export const OcrFieldEditor = ({ fields, status, isRisk, selectedId, onFieldChan
                   onBlur={() => {}} // TODO: 필요 시 Blur 처리 추가
                   onKeyDown={(e) => handleInputKeyDown(e, index)}
                   className={`h-8 rounded-none transition-all ${getFieldStyles(field, canEdit)}`}
-                  inputClassName="!text-[10px] font-mono"
+                  inputClassName={`!text-[10px] font-mono ${!canEdit ? '!cursor-pointer' : ''}`}
                   rightElement={
                     isErrorField ? (
                       <AlertCircle className="w-3.5 h-3.5 text-red-500" />

@@ -12,7 +12,9 @@ const ARRAY_INDEX_REGEX = /\[\d+\]/g;
 export const DOCUMENT_GROUP_LABELS: Record<string, string> = {
   IDENTITY_FAMILY: '본인 및 가족관계',
   INCOME_EMPLOYEE: '소득 및 재직증빙',
+  INCOME_BUSINESS: '사업자 소득증빙',
   TAX: '세금 납부 증빙',
+  PROPERTY_HOUSING: '주택 및 권리관계',
 };
 
 /** 
@@ -27,22 +29,26 @@ const flattenContent = (content: unknown, prefix = '', labelPrefix = ''): Extrac
   const fields: ExtractedField[] = [];
   if (!content || typeof content !== 'object') return fields;
 
-  const obj = content as Record<string, any>; // 동적 키 순회를 위해 타입 단언 유지
+  const obj = content as Record<string, unknown>; // 동적 키 순회를 위해 타입 단언 유지
   for (const key in obj) {
     const item = obj[key];
-    const fieldKey = prefix ? `${prefix}_${key}` : key;
+    const fieldKey = prefix ? `${prefix}.${key}` : key;
     const displayLabel = labelPrefix ? `${labelPrefix} > ${key}` : key;
 
-    if (item && typeof item === 'object' && 'value' in item) {
+    const isFieldObject = (val: unknown): val is { value: string | number | boolean | null; confidence?: number; evidence?: any } => {
+      return typeof val === 'object' && val !== null && 'value' in val;
+    };
+
+    if (isFieldObject(item)) {
       fields.push({
-        id: fieldKey, // 나중에 문서의 fileId와 조합하여 앱 전체 고유 ID 생성용으로 쓰임
+        id: fieldKey,
         key: fieldKey,
         label: displayLabel,
         value: item.value,
-        confidence: item.confidence || 0,
+        confidence: item.confidence ?? 0,
         isMatch: true, 
-        isViolationTarget: false, // 아래에서 에러 타겟인지 재검증됨
-        isRiskTarget: false,      // 아래에서 리스크 타겟인지 재검증됨
+        isViolationTarget: false,
+        isRiskTarget: false,
         isModified: false,
         evidence: item.evidence
       });
@@ -66,10 +72,9 @@ export const mapServerResponseToVerificationResult = (
   response: VerificationServerResponse,
   id: string
 ): VerificationResult => {
-  const { documents, validationResult } = response.data;
+  const { documents: serverDocs, validationResult } = response.data;
 
-  // 1. 빠른 조회를 위한 중간 맵들 생성 (에러 타겟들을 종류별로 미리 수집)
-  // TODO: 백엔드 측에 누락된 문서(Missing) 응답 시 documentGroup 포함 요청. 완료 시 가상 DocItem 채워넣는 로직 구현 필요
+  // 1. 빠른 조회를 위한 중간 맵들 생성
   const missingSet = new Set(validationResult.documentMissings.map(m => m.documentType));
   
   const violationMap: Record<string, Set<string>> = {};
@@ -84,8 +89,6 @@ export const mapServerResponseToVerificationResult = (
     r.fields.forEach(f => riskMap[r.documentType].add(f));
   });
 
-  // 1-1. errorTargetDict 빈 바구니 준비
-  // 교차 검증 연동을 위해 '어느 필드에러가 어느 파일들에 걸려있나?' 기록할 사전의 뼈대를 만듭니다.
   const initialErrorTargetDict: Record<string, Set<string>> = {};
   validationResult.violations.forEach(v => {
     v.fields.forEach(field => {
@@ -93,9 +96,14 @@ export const mapServerResponseToVerificationResult = (
     });
   });
 
-  // 2. 문서 순회 병합본 (순수 함수 구조인 reduce 활용)
-  // map을 쓰면서 외부의 변수를 사이드 이펙트(Side Effect)로 변형시키는 안티 패턴을 방지하기 위해,
-  // 하나의 완성된 결과물(acc)만 만들어 반환합니다.
+  // 2. 문서 종류별 그룹화 (여러 물리 파일을 하나의 논리 문서로)
+  const groupedDocs: Record<string, typeof serverDocs> = {};
+  serverDocs.forEach(doc => {
+    const docType = doc.documentClassification.documentType;
+    if (!groupedDocs[docType]) groupedDocs[docType] = [];
+    groupedDocs[docType].push(doc);
+  });
+
   const initialData = {
     processedDocs: [] as DocItem[],
     documentFields: {} as Record<string, ExtractedField[]>,
@@ -103,46 +111,55 @@ export const mapServerResponseToVerificationResult = (
     errorTargetDict: initialErrorTargetDict
   };
 
-  const { processedDocs, documentFields, documentsMap, errorTargetDict } = documents.reduce((acc, doc) => {
-    const docType = doc.documentClassification.documentType;
-    const flattened = flattenContent(doc.extraction.content);
+  // 3. 그룹화된 문서 순회 및 데이터 병합
+  const { processedDocs, documentFields, documentsMap, errorTargetDict } = Object.entries(groupedDocs).reduce((acc, [docType, docs]) => {
+    // pageNum 기준으로 정렬 (안전장치)
+    const sortedDocs = [...docs].sort((a, b) => {
+      const pA = a.pages?.[0]?.pageNum ?? 1;
+      const pB = b.pages?.[0]?.pageNum ?? 1;
+      return pA - pB;
+    });
+
+    // 모든 파일의 콘텐츠 병합 및 rawText 결합
+    let combinedRawText = '';
+    const mergedFields: ExtractedField[] = [];
+    const firstDoc = sortedDocs[0];
     
-    // 각 문서(파일)의 필드들이 에러 타겟인지 색별(마킹)하는 과정
-    const markedFields = flattened.map(field => {
-      
-      // [왜 정규식과 split으로 원본 키를 추출하나요?]
-      // UI 렌더링을 위해 만든 키(예: '연락처_비상연락망[0]')와 백엔드 에러 키(예: '비상연락망')의 모양이 다릅니다.
-      // 단순 비교로는 일치하지 않아 빨간불을 켤 수 없으므로, 인덱스 등을 떼어내고 진짜 이름(baseKey)만 추출합니다.
-      const parts = field.key.replace(ARRAY_INDEX_REGEX, '').split('_');
+    sortedDocs.forEach(doc => {
+      const flattened = flattenContent(doc.extraction.content);
+      mergedFields.push(...flattened.map(field => ({
+        ...field,
+        id: `field-${doc.fileId}-${field.id}` // 중복 타입 내의 필드 구분을 위해 fileId 포함 유지
+      })));
+      combinedRawText += (doc.rawText || '') + '\n';
+    });
+
+    // 필드 마킹 (Violation/Risk)
+    const docViolationFields = violationMap[docType] || new Set<string>();
+    const docRiskFields = riskMap[docType] || new Set<string>();
+
+    const markedFields = mergedFields.map(field => {
+      // (Why: .을 기준으로 분할하여 마지막 필드명을 추출합니다. 배열 인덱스[0] 등은 정규표현식으로 제거합니다.)
+      const parts = field.key.replace(ARRAY_INDEX_REGEX, '').split('.');
       const baseKey = parts[parts.length - 1];
-      
-      const docRiskFields = riskMap[docType] || new Set<string>();
-      const docViolationFields = violationMap[docType] || new Set<string>();
       
       const isViolation = docViolationFields.has(baseKey) || docViolationFields.has(field.key);
       const isRisk = docRiskFields.has(baseKey) || docRiskFields.has(field.key);
 
-      // [왜 errorTargetDict에 fileId를 추가하나요?]
-      // 백엔드는 단순히 "이 타입(예: 매매계약서)에 에러가 있다"고 통보하지만,
-      // 그 매매계약서 이미지가 1번 파일인지 2번 파일인지 정확한 대상을 찾아 O(1)로 연동하기 위해
-      // 여기서 백엔드 규칙을 실제 프론트엔드 UI 식별자인 fileId로 번역(매핑)해 두는 것입니다.
       if (isViolation) {
         if (!acc.errorTargetDict[field.key]) acc.errorTargetDict[field.key] = new Set();
-        acc.errorTargetDict[field.key].add(doc.fileId);
+        // 해당 필드가 속한 문서 종류(docType)를 타겟으로 기록 (UI 연동용)
+        acc.errorTargetDict[field.key].add(docType);
       }
 
       return {
         ...field,
-        id: `field-${doc.fileId}-${field.id}`,
         isViolationTarget: !!isViolation,
         isRiskTarget: !!isRisk,
-        isMatch: !isViolation // 초기 상태: 위반 타겟으로 색인된 필드면 무조건 false(빨간색/에러), 아니면 true
+        isMatch: !isViolation
       };
     });
 
-    acc.documentFields[doc.fileId] = markedFields;
-
-    // 문서 자체의 최종 상태 판별 (자식 필드들 중에 에러가 단 하나라도 있으면 REVIEW_NEEDED 격상)
     const hasViolation = markedFields.some(f => f.isViolationTarget);
     const hasRisk = markedFields.some(f => f.isRiskTarget);
 
@@ -155,14 +172,31 @@ export const mapServerResponseToVerificationResult = (
       status = 'RISK';
     }
 
-    const docItem: DocItem = { ...doc, id: doc.fileId, status, isRisk: hasRisk };
-    acc.documentsMap[doc.fileId] = docItem;
+    // DocItem 생성 (id를 docType으로 사용하여 UI에서 그룹 단위 제어)
+    const docItem: DocItem = { 
+      ...firstDoc, 
+      id: docType, 
+      status, 
+      isRisk: hasRisk,
+      // (Why: 백엔드에서 개별 문서 해상도를 주지 않을 경우 전역 해상도를 기본값으로 사용합니다.)
+      resolution: firstDoc.resolution || response.data.resolution,
+      rawText: combinedRawText.trim(),
+      // 병합된 문서에 포함된 모든 물리적 파일의 메타데이터 수집
+      files: sortedDocs.map(d => ({
+        fileId: d.fileId,
+        fileUrl: d.fileUrl,
+        pageNum: d.pages?.[0]?.pageNum ?? 1
+      }))
+    };
+    
+    acc.documentFields[docType] = markedFields;
+    acc.documentsMap[docType] = docItem;
     acc.processedDocs.push(docItem);
 
-    return acc; // 다음 순회를 위해 누산기 반환
+    return acc;
   }, initialData);
 
-  // 4. 카테고리(좌측 메뉴 등 표시용) 그룹화 및 목차 구조화
+  // 4. 카테고리 구성
   const categories: DocCategory[] = [];
   const groups = Array.from(new Set(processedDocs.map(d => d.documentClassification.documentGroup)));
   groups.forEach(group => {
@@ -172,8 +206,8 @@ export const mapServerResponseToVerificationResult = (
 
     categories.push({
       id: `cat-${group}`,
-      name: DOCUMENT_GROUP_LABELS[group] || '주택 및 권리관계', // 레이블이 선언되지 않은 새 그룹 시의 대비책 폴백
-      itemIds // 실제 포함된 파일들의 목록(fileId의 배열)을 주입
+      name: DOCUMENT_GROUP_LABELS[group] || '주택 및 권리관계',
+      itemIds
     });
   });
 

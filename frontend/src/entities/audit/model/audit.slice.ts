@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { MyDataResDto, HouseAuditResponseDto } from './types';
+import { VerificationServerResponse } from '@/entities/verification/model/types';
+import { MyDataResDto } from '@/entities/audit/model/types';
 
 /**
  * SSE 실시간 이벤트 단계 및 상태 관리
@@ -24,9 +25,10 @@ export interface AuditState {
 
   // 수신된 페이로드 데이터 저장
   data: {
-    houseAuditData: HouseAuditResponseDto['data'] | null;
-    creditData: MyDataResDto | null;
-    loanData: MyDataResDto | null;
+    ocrData: VerificationServerResponse | null;
+    houseAuditData: any | null; // 임시 any (추후 DTO 타입 연동)
+    creditData: any | null;
+    loanData: any | null;
   };
 
   // 에러 항목
@@ -44,6 +46,7 @@ const initialState: AuditState = {
     houseAudit: 'IDLE',
   },
   data: {
+    ocrData: null,
     houseAuditData: null,
     creditData: null,
     loanData: null,
@@ -72,7 +75,10 @@ const auditSlice = createSlice({
         state.currentMessage = action.payload.message;
       }
     },
-    setHouseAuditData: (state, action: PayloadAction<HouseAuditResponseDto['data']>) => {
+    setOcrData: (state, action: PayloadAction<VerificationServerResponse>) => {
+      state.data.ocrData = action.payload;
+    },
+    setHouseAuditData: (state, action: PayloadAction<any>) => {
       state.data.houseAuditData = action.payload;
     },
     setCreditData: (state, action: PayloadAction<Partial<MyDataResDto>>) => {
@@ -94,6 +100,7 @@ export const {
   setAllAuditDone, 
   setCurrentMessage, 
   updateStepStatus,
+  setOcrData,
   setHouseAuditData,
   setCreditData,
   setLoanData,
