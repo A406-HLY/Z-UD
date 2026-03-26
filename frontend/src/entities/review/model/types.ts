@@ -32,5 +32,7 @@ export interface ProcessedProduct {
   isApproved: boolean;
   ltvLimit: number;
   dsrLimit: number;
+  calculatedLimit: number;
+  limitParams: Array<{ label: string; value: string }>;
   items: ProcessedReviewItem[];
 }
