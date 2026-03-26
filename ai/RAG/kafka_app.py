@@ -9,10 +9,10 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 dotenv_path = os.path.join(current_dir, ".env")
 load_dotenv(dotenv_path)
 
-KAFKA_BROKER = os.getenv("KAFKA_BROKER_URL", "j14a406.p.ssafy.io:80")
-INPUT_TOPIC = os.getenv("KAFKA_INPUT_TOPIC", "report-request")
-OUTPUT_TOPIC = os.getenv("KAFKA_OUTPUT_TOPIC", "review-request")  # 유저 요청에 따라 review-request 또는 review-rquest
-GROUP_ID = os.getenv("KAFKA_GROUP_ID", "rag_consumer_group")
+KAFKA_BROKER = os.environ.get("KAFKA_BROKER_URL")
+INPUT_TOPIC = os.environ.get("KAFKA_INPUT_TOPIC")
+OUTPUT_TOPIC = os.environ.get("KAFKA_OUTPUT_TOPIC")  # 유저 요청에 따라 review-request 또는 review-rquest
+GROUP_ID = os.environ.get("KAFKA_GROUP_ID")
 
 # 기존 api.py에서 코어 로직 재사용
 from api import AppState, startup_event, search_rules
