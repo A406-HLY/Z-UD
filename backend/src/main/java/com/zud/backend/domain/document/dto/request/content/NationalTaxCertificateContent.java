@@ -20,7 +20,7 @@ public record NationalTaxCertificateContent(
 	@Schema(description = "성명")
 	DataField<String> name,
 	@Schema(description = "주민등록번호")
-	DataField<String> registrationNumber
+	DataField<String> residentRegistrationNumber
 ) implements DocumentContent {
 
 	@Override
@@ -34,8 +34,8 @@ public record NationalTaxCertificateContent(
 		if (name != null && name.value() != null) {
 			fields.put(CrossField.LOAN_APPLICANT_NAME, name.value());
 		}
-		if (registrationNumber != null && registrationNumber.value() != null) {
-			fields.put(CrossField.RESIDENT_REGISTRATION_NUMBER, registrationNumber.value());
+		if (residentRegistrationNumber != null && residentRegistrationNumber.value() != null) {
+			fields.put(CrossField.RESIDENT_REGISTRATION_NUMBER, residentRegistrationNumber.value());
 		}
 		return fields;
 	}

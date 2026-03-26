@@ -27,41 +27,41 @@ class ConsultationQueryServiceImplTest {
 	private ConsultationQueryServiceImpl consultationQueryService;
 
 	@Nested
-	@DisplayName("findById()")
-	class FindById {
+	@DisplayName("findByUuid()")
+	class FindByUuid {
 
 		@Test
-		@DisplayName("상담ID_존재시_상담_반환")
-		void 상담ID_존재시_상담_반환() {
+		@DisplayName("상담UUID_존재시_상담_반환")
+		void 상담UUID_존재시_상담_반환() {
 			// given
-			Long consultationId = 1L;
+			String uuid = "some-external-uuid";
 			Consultation consultation = Consultation.builder()
-				.id(consultationId)
+				.id(uuid)
 				.name("홍길동")
 				.build();
 
-			given(consultationRepository.findById(consultationId))
+			given(consultationRepository.findById(uuid))
 				.willReturn(Optional.of(consultation));
 
 			// when
-			Consultation result = consultationQueryService.findById(consultationId);
+			Consultation result = consultationQueryService.findByUuid(uuid);
 
 			// then
 			assertThat(result).isNotNull();
-			assertThat(result.getId()).isEqualTo(consultationId);
+			assertThat(result.getId()).isEqualTo(uuid);
 			assertThat(result.getName()).isEqualTo("홍길동");
 		}
 
 		@Test
-		@DisplayName("상담ID_미존재시_ConsultationException_발생")
-		void 상담ID_미존재시_ConsultationException_발생() {
+		@DisplayName("상담UUID_미존재시_ConsultationException_발생")
+		void 상담UUID_미존재시_ConsultationException_발생() {
 			// given
-			Long consultationId = 999L;
-			given(consultationRepository.findById(consultationId))
+			String uuid = "invalid-uuid";
+			given(consultationRepository.findById(uuid))
 				.willReturn(Optional.empty());
 
 			// when & then
-			assertThatThrownBy(() -> consultationQueryService.findById(consultationId))
+			assertThatThrownBy(() -> consultationQueryService.findByUuid(uuid))
 				.isInstanceOf(ConsultationException.class);
 		}
 	}

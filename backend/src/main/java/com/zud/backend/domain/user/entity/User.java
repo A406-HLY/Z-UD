@@ -1,13 +1,8 @@
 package com.zud.backend.domain.user.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.zud.backend.common.entity.BaseEntity;
 import com.zud.backend.domain.branch.entity.Branch;
-import com.zud.backend.domain.consultation.entity.Consultation;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -16,7 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -39,10 +33,6 @@ public class User extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "branch_id", nullable = false)
 	private Branch branch;
-
-	@Builder.Default
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	List<Consultation> consultations = new ArrayList<>();
 
 	@Column(name = "employee_number", unique = true, length = 100, nullable = false)
 	private String employeeNumber;

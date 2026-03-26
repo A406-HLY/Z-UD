@@ -28,6 +28,7 @@ public class DocumentValidator {
 
 	private static final List<DocumentTag> COMMON_REQUIRED_TAGS = List.of(
 		DocumentTag.FILE_001_RESIDENT_REGISTRATION,
+		DocumentTag.FILE_006_WITHHOLDING_TAX_CERTIFICATE,
 		DocumentTag.FILE_014_TITLE_DEED,
 		DocumentTag.FILE_015_BUILDING_REGISTER
 	);

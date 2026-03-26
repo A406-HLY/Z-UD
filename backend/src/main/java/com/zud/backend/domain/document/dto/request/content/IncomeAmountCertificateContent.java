@@ -19,18 +19,12 @@ public record IncomeAmountCertificateContent(
 	DataField<String> name,
 	@Schema(description = "주민등록번호")
 	DataField<String> residentRegistrationNumber,
-	@Schema(description = "상호")
-	DataField<String> businessName,
-	@Schema(description = "사업자등록번호")
-	DataField<String> businessRegistrationNumber,
 	@Schema(description = "발행일자")
 	DataField<String> issueDate,
 	@Schema(description = "귀속연도")
 	DataField<String> incomeYear,
 	@Schema(description = "소득금액")
-	DataField<Long> incomeAmount,
-	@Schema(description = "결정세액")
-	DataField<Long> determinedTaxAmount
+	DataField<Long> incomeAmount
 ) implements DocumentContent {
 
 	@Override
@@ -46,12 +40,6 @@ public record IncomeAmountCertificateContent(
 		}
 		if (residentRegistrationNumber != null && residentRegistrationNumber.value() != null) {
 			fields.put(CrossField.RESIDENT_REGISTRATION_NUMBER, residentRegistrationNumber.value());
-		}
-		if (businessName != null && businessName.value() != null) {
-			fields.put(CrossField.BUSINESS_NAME, businessName.value());
-		}
-		if (businessRegistrationNumber != null && businessRegistrationNumber.value() != null) {
-			fields.put(CrossField.BUSINESS_REGISTRATION_NUMBER, businessRegistrationNumber.value());
 		}
 		return fields;
 	}

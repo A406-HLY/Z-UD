@@ -4,7 +4,7 @@ import lombok.Builder;
 
 @Builder
 public record CustomerInfoResDto(
-	Long id,
+	String id,
 	String name
 ) {
 }
