@@ -5,6 +5,7 @@ import { VerificationServerResponse } from '@/entities/verification/model/types'
  * 실제 백엔드 응답 규격을 100% 재현한 13종 서류 풀 스케일 목업 데이터입니다.
  */
 export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
+  success: true,
   data: {
     // TODO: 백엔드 협의 결과에 따라 실제 해상도 수치로 교체 필요
     resolution: { width: 1240, height: 1754 },
@@ -620,280 +621,6 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
         ]
       },
       {
-        fileId: "FILE_008",
-        storageType: "OBJECT_STORAGE",
-        bucket: "loan-docs",
-        fileKey: "cases/CASE_001/raw/income_amount_certificate_01.pdf",
-        fileName: "income_amount_certificate_01.pdf",
-        fileUrl: "/test-docs/교육필증 (1).pdf",
-        mimeType: "application/pdf",
-        status: "SUCCESS",
-        errorCode: null,
-        errorMessage: null,
-        documentClassification: {
-          documentGroup: "INCOME_BUSINESS",
-          documentType: "INCOME_AMOUNT_CERTIFICATE",
-          documentTypeLabel: "소득금액증명원",
-          classificationConfidence: 0.98
-        },
-        extraction: {
-          content: {
-            issueNumber: {
-              value: "TAX-2026-445566",
-              confidence: 0.97,
-              evidence: {
-                pageNum: 1,
-                bbox: [390, 100, 610, 135],
-                rawText: "TAX-2026-445566",
-                confidence: 0.97
-              }
-            },
-            name: {
-              value: "홍길동",
-              confidence: 0.98,
-              evidence: {
-                pageNum: 1,
-                bbox: [170, 210, 260, 245],
-                rawText: "홍길동",
-                confidence: 0.98
-              }
-            },
-            residentRegistrationNumber: {
-              value: "900101-1******",
-              confidence: 0.95,
-              evidence: {
-                pageNum: 1,
-                bbox: [290, 210, 460, 245],
-                rawText: "900101-1******",
-                confidence: 0.95
-              }
-            },
-            issueDate: {
-              value: "2026-03-13",
-              confidence: 0.98,
-              evidence: {
-                pageNum: 1,
-                bbox: [420, 140, 560, 170],
-                rawText: "2026.03.13",
-                confidence: 0.98
-              }
-            },
-            incomeYear: {
-              value: "2025",
-              confidence: 0.97,
-              evidence: {
-                pageNum: 1,
-                bbox: [170, 340, 250, 372],
-                rawText: "2025",
-                confidence: 0.97
-              }
-            },
-            incomeAmount: {
-              value: 68500000,
-              confidence: 0.95,
-              evidence: {
-                pageNum: 1,
-                bbox: [320, 340, 500, 372],
-                rawText: "68,500,000",
-                confidence: 0.95
-              }
-            }
-          }
-        },
-        rawText: "소득금액증명원 전체 OCR 원문",
-        pages: [
-          {
-            pageNum: 1
-          }
-        ]
-      },
-      {
-        fileId: "FILE_009",
-        storageType: "OBJECT_STORAGE",
-        bucket: "loan-docs",
-        fileKey: "cases/CASE_001/raw/business_registration_certificate_01.pdf",
-        fileName: "business_registration_certificate_01.pdf",
-        fileUrl: "/test-docs/[삼성화재해상보험]사업보고서(2026.03.12).pdf",
-        mimeType: "application/pdf",
-        status: "SUCCESS",
-        errorCode: null,
-        errorMessage: null,
-        documentClassification: {
-          documentGroup: "INCOME_BUSINESS",
-          documentType: "BUSINESS_REGISTRATION_CERTIFICATE",
-          documentTypeLabel: "사업자등록증명원",
-          classificationConfidence: 0.98
-        },
-        extraction: {
-          content: {
-            issueNumber: {
-              value: "BR-2026-889900",
-              confidence: 0.97,
-              evidence: {
-                pageNum: 1,
-                bbox: [390, 108, 600, 140],
-                rawText: "BR-2026-889900",
-                confidence: 0.97
-              }
-            },
-            businessName: {
-              value: "제민상사",
-              confidence: 0.97,
-              evidence: {
-                pageNum: 1,
-                bbox: [180, 210, 320, 242],
-                rawText: "제민상사",
-                confidence: 0.97
-              }
-            },
-            businessRegistrationNumber: {
-              value: "123-45-67890",
-              confidence: 0.98,
-              evidence: {
-                pageNum: 1,
-                bbox: [340, 210, 510, 242],
-                rawText: "123-45-67890",
-                confidence: 0.98
-              }
-            },
-            name: {
-              value: "홍길동",
-              confidence: 0.96,
-              evidence: {
-                pageNum: 1,
-                bbox: [180, 260, 260, 292],
-                rawText: "홍길동",
-                confidence: 0.96
-              }
-            },
-            residentRegistrationNumber: {
-              value: null,
-              confidence: 0.99,
-              evidence: {
-                pageNum: 1,
-                bbox: null,
-                rawText: "",
-                confidence: 0.99
-              }
-            },
-            issueDate: {
-              value: "2026-03-13",
-              confidence: 0.98,
-              evidence: {
-                pageNum: 1,
-                bbox: [420, 145, 560, 175],
-                rawText: "2026.03.13",
-                confidence: 0.98
-              }
-            }
-          }
-        },
-        rawText: "사업자등록증명원 전체 OCR 원문",
-        pages: [
-          {
-            pageNum: 1
-          }
-        ]
-      },
-      {
-        fileId: "FILE_010",
-        storageType: "OBJECT_STORAGE",
-        bucket: "loan-docs",
-        fileKey: "cases/CASE_001/raw/vat_tax_base_certificate_01.pdf",
-        fileName: "vat_tax_base_certificate_01.pdf",
-        fileUrl: "/test-docs/교육필증 (1).pdf",
-        mimeType: "application/pdf",
-        status: "SUCCESS",
-        errorCode: null,
-        errorMessage: null,
-        documentClassification: {
-          documentGroup: "INCOME_BUSINESS",
-          documentType: "VAT_TAX_BASE_CERTIFICATE",
-          documentTypeLabel: "부가가치세과세표준증명",
-          classificationConfidence: 0.98
-        },
-        extraction: {
-          content: {
-            issueNumber: {
-              value: "VAT-2026-778899",
-              confidence: 0.97,
-              evidence: {
-                pageNum: 1,
-                bbox: [390, 108, 610, 142],
-                rawText: "VAT-2026-778899",
-                confidence: 0.97
-              }
-            },
-            name: {
-              value: "홍길동",
-              confidence: 0.96,
-              evidence: {
-                pageNum: 1,
-                bbox: [180, 210, 260, 242],
-                rawText: "홍길동",
-                confidence: 0.96
-              }
-            },
-            residentRegistrationNumber: {
-              value: null,
-              confidence: 0.99,
-              evidence: {
-                pageNum: 1,
-                bbox: null,
-                rawText: "",
-                confidence: 0.99
-              }
-            },
-            businessName: {
-              value: "제민상사",
-              confidence: 0.97,
-              evidence: {
-                pageNum: 1,
-                bbox: [180, 255, 320, 287],
-                rawText: "제민상사",
-                confidence: 0.97
-              }
-            },
-            businessRegistrationNumber: {
-              value: "123-45-67890",
-              confidence: 0.97,
-              evidence: {
-                pageNum: 1,
-                bbox: [340, 255, 510, 287],
-                rawText: "123-45-67890",
-                confidence: 0.97
-              }
-            },
-            issueDate: {
-              value: "2026-03-13",
-              confidence: 0.98,
-              evidence: {
-                pageNum: 1,
-                bbox: [420, 145, 560, 175],
-                rawText: "2026.03.13",
-                confidence: 0.98
-              }
-            },
-            taxableSalesAmount: {
-              value: 120500000,
-              confidence: 0.94,
-              evidence: {
-                pageNum: 1,
-                bbox: [390, 450, 590, 484],
-                rawText: "120,500,000",
-                confidence: 0.94
-              }
-            }
-          }
-        },
-        rawText: "부가가치세과세표준증명 전체 OCR 원문",
-        pages: [
-          {
-            pageNum: 1
-          }
-        ]
-      },
-      {
         fileId: "FILE_011",
         storageType: "OBJECT_STORAGE",
         bucket: "loan-docs",
@@ -1420,12 +1147,12 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
             },
             buyer: {
               name: {
-                value: "홍길동",
+                value: "홍길순",
                 confidence: 0.96,
                 evidence: {
                   pageNum: 1,
                   bbox: [430, 430, 510, 460],
-                  rawText: "홍길동",
+                  rawText: "홍길순",
                   confidence: 0.96
                 }
               }
@@ -1442,7 +1169,8 @@ export const MOCK_VERIFICATION_RESPONSE: VerificationServerResponse = {
     ],
     validationResult: {
       documentMissings: [
-        { documentType: "WITHHOLDING_TAX_CERTIFICATE", documentTypeLabel: "근로소득 원천징수영수증" }
+        // { documentType: "RESIDENT_REGISTRATION", documentTypeLabel: "주민등록등본" },
+        // { documentType: "WITHHOLDING_TAX_CERTIFICATE", documentTypeLabel: "근로소득 원천징수영수증" }
       ],
       violations: [
         { documentType: "SALE_CONTRACT", documentTypeLabel: "매매계약서", fields: ["buyer.name"] }, 
