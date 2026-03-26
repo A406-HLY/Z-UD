@@ -64,7 +64,9 @@ public class GzipRedisSerializer<T> implements RedisSerializer<T> {
 			ByteArrayOutputStream bos = new ByteArrayOutputStream(MIN_COMPRESS_SIZE);
 			GZIPOutputStream gos = new GZIPOutputStream(bos, MIN_COMPRESS_SIZE)
 		) {
-			StreamUtils.copy(original, gos);
+			gos.write(original);
+			gos.finish();
+			// StreamUtils.copy(original, gos);
 			return bos.toByteArray();
 		} catch (Exception _) {
 			throw new BusinessException(ErrorCode.GZIP_COMPRESS_ERROR);
@@ -77,7 +79,7 @@ public class GzipRedisSerializer<T> implements RedisSerializer<T> {
 			RawBufferByteArrayOutputStream out = new RawBufferByteArrayOutputStream(BUFFER_SIZE)
 		) {
 			StreamUtils.copy(gis, out);
-			return out.getRawByteArray();
+			return out.toByteArray();
 		} catch (Exception _) {
 			throw new BusinessException(ErrorCode.GZIP_DECOMPRESS_ERROR);
 		}
