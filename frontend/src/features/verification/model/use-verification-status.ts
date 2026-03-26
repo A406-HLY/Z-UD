@@ -1,6 +1,5 @@
 import { useParams } from 'react-router-dom';
 import { useAppSelector } from '@/app/store/hooks';
-import { useVerificationQuery } from '@/features/verification/api/use-verification-query';
 import { validateEssentialDocs } from '@/entities/verification/lib/doc-validator';
 
 /**
@@ -10,17 +9,21 @@ import { validateEssentialDocs } from '@/entities/verification/lib/doc-validator
  * 3. 엔티티 레이어의 순수 로직을 호출하여 서비스 차단(Dead-end) 여부 및 필수 누락 목록을 계산합니다.
  */
 export const useVerificationStatus = () => {
-  const { id } = useParams<{ id: string }>();
-  
-  // 1. 서버 데이터 조회 (TanStack Query)
-  const { data, isLoading, isError } = useVerificationQuery(id || '');
+  // 1. 상담 ID 조회 (URL 파라미터 우선, 없으면 Redux에서 가져옴)
+  useParams<{ consultationId: string }>();
 
-  // 2. 사용자 직업 정보 조회 (Redux)
-  // (Note: customer 슬라이스의 data.employmentType 필드를 참조합니다.)
+  // 2. 서버 데이터 조회 (Redux Audit 슬라이스)
+  const ocrData = useAppSelector(state => state.audit.data.ocrData);
+  const ocrStatus = useAppSelector(state => state.audit.steps.ocr);
+  
+  const isLoading = ocrStatus === 'LOADING' || ocrStatus === 'IDLE';
+  const isError = ocrStatus === 'ERROR';
+
+  // 3. 사용자 직업 정보 조회 (Redux)
   const employmentType = useAppSelector((state) => state.customer.data.employmentType);
 
   // 3. 필수 서류 누락 검증 (Derived State)
-  const validationResult = data?.data?.validationResult;
+  const validationResult = ocrData?.data?.validationResult;
   const { isBlocked, essentialMissings, otherMissings } = validateEssentialDocs(
     validationResult?.documentMissings || [],
     employmentType
@@ -38,6 +41,6 @@ export const useVerificationStatus = () => {
     /** 기타(선택적) 누락 서류 목록 */
     otherMissings,
     /** 원본 데이터 전체 (전송 시 병합용) */
-    originalData: data?.data,
+    originalData: ocrData?.data,
   };
 };

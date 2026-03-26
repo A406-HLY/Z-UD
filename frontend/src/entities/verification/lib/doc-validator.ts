@@ -6,7 +6,7 @@ import { ValidationMissing } from '../model/types';
  */
 const ESSENTIAL_DOC_LABELS = {
   COMMON: ['주민등록등본', '등기부등본', '건축물대장'],
-  EMPLOYEE: ['근로소득원천징수영수증'],
+  EMPLOYEE: ['근로소득 원천징수영수증'],
   BUSINESS: ['소득금액증명원'],
 } as const;
 
