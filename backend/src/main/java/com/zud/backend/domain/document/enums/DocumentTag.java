@@ -80,7 +80,7 @@ public enum DocumentTag {
 		LocalTaxItemCertificateContent.class),
 
 	@Schema(description = "등기권리증")
-	FILE_014_TITLE_DEED("TITLE_DEED", "등기권리증",
+	FILE_014_TITLE_DEED("TITLE_DEED", "등기사항전부증명서",
 		TitleDeedContent.class),
 
 	@Schema(description = "집합건축물대장")
@@ -88,7 +88,7 @@ public enum DocumentTag {
 		BuildingRegisterContent.class),
 
 	@Schema(description = "매매계약서")
-	FILE_016_SALE_OR_LEASE_CONTRACT("SALE_OR_LEASE_CONTRACT", "매매계약서",
+	FILE_016_SALE_CONTRACT("SALE_CONTRACT", "매매계약서",
 		SaleOrLeaseContractContent.class);
 
 	private final String documentType;
@@ -101,6 +101,6 @@ public enum DocumentTag {
 				return tag;
 			}
 		}
-		throw new IllegalArgumentException("Unknown document type: " + documentType);
+		return null;
 	}
 }

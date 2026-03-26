@@ -1,6 +1,7 @@
 package com.zud.backend.domain.document.validator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -25,14 +26,7 @@ import com.zud.backend.domain.document.enums.DocumentTag;
 
 @Component
 public class DocumentValidator {
-
-	private static final List<DocumentTag> COMMON_REQUIRED_TAGS = List.of(
-		DocumentTag.FILE_001_RESIDENT_REGISTRATION,
-		DocumentTag.FILE_006_WITHHOLDING_TAX_CERTIFICATE,
-		DocumentTag.FILE_014_TITLE_DEED,
-		DocumentTag.FILE_015_BUILDING_REGISTER
-	);
-
+	
 	private final Map<DocumentTag, DocumentContentValidator<?>> validatorMap;
 
 	public DocumentValidator(final List<DocumentContentValidator<?>> validators) {
@@ -73,7 +67,7 @@ public class DocumentValidator {
 			.collect(Collectors.toSet());
 
 		List<DocumentTag> requiredTags = Stream.concat(
-			COMMON_REQUIRED_TAGS.stream(),
+			Arrays.stream(DocumentTag.values()),
 			consultation.getEmploymentType().getRequiredDocumentTags().stream()
 		).toList();
 
@@ -88,6 +82,7 @@ public class DocumentValidator {
 		final Consultation consultation
 	) {
 		return documents.stream()
+			.filter(doc -> doc.extraction() != null && doc.extraction().content() != null)
 			.map(doc -> validateDocument(doc, consultation))
 			.filter(Objects::nonNull)
 			.toList();
