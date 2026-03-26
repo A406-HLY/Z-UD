@@ -29,6 +29,7 @@ export interface ValidationRisk {
 
 /** 백엔드 전체 응답 구조 */
 export interface VerificationServerResponse {
+  success: boolean; // (S14-FIX) 실제 API 규격에 맞춰 성공 여부 필드 추가
   data: {
     resolution: { width: number; height: number };
     documents: ServerDocItem[];
