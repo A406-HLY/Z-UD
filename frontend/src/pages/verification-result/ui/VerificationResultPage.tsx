@@ -1,4 +1,3 @@
-import { useParams } from 'react-router-dom';
 import { Header } from '@/widgets/header';
 import { LoanTabs } from '@/widgets/loan-tabs';
 import { CustomerInfoForm } from '@/widgets/customer-info-form';
@@ -6,33 +5,35 @@ import { LoanStepper } from '@/widgets/loan-stepper/ui/LoanStepper';
 import { VerificationRepository } from '@/widgets/verification-repository/ui/VerificationRepository';
 import { OcrFieldEditor } from '@/widgets/ocr-field-editor/ui/OcrFieldEditor';
 import { DocumentImageViewer } from '@/widgets/document-image-viewer/ui/DocumentImageViewer';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useVerificationController } from '@/features/verification/model/use-verification-controller';
 import { useGlobalFocusRecovery } from '@/features/verification/model/use-global-focus-recovery';
 import { useCrossWindowSync } from '@/features/verification/model/use-cross-window-sync';
-import { useEffect } from 'react';
 import { DeadEndPopup } from '@/features/verification/ui/DeadEndPopup';
-import { VerificationFooter } from '@/features/verification/ui/VerificationFooter';
+import { useVerificationStatus } from '@/features/verification/model/use-verification-status';
+import { useVerificationActions } from '@/features/verification/model/use-verification-actions';
 
 /**
  * @page verification-result
  * 서류 검증 결과 및 OCR 교정을 수행하는 업무 페이지입니다.
  */
 export const VerificationResultPage = () => {
-  const { id } = useParams<{ id: string }>();
-  const verificationId = id || 'v-12345'; // Fallback for safety
-
   const { 
     localResult, 
     selectedId, 
-    isLoading, 
+    isLoading: isControllerLoading, 
     focusedFieldKey,
+    counselId,
     setSelectedId, 
     setFocusedFieldKey,
     handleFieldChange,
     handleNextDocument,
     handlePrevDocument
-  } = useVerificationController(verificationId);
+  } = useVerificationController();
+
+  const { isBlocked, isLoading: isStatusLoading } = useVerificationStatus();
+  const { handleNextStep } = useVerificationActions();
+  const isLoading = isControllerLoading || isStatusLoading;
 
   // (Why: 전역 포커스 감시 로직을 훅으로 격리하여 페이지(UI) 코드를 조립 역할에 집중시킵니다.)
   useGlobalFocusRecovery({
@@ -61,15 +62,23 @@ export const VerificationResultPage = () => {
     }
   });
 
-  if (isLoading || !localResult) {
+  const nextStepButton = {
+    label: isBlocked ? '진행 불가 (서류 누락)' : '검증 완료 및 다음 단계로',
+    onClick: handleNextStep,
+    disabled: isBlocked || isLoading,
+    className: isBlocked ? 'bg-gray-100 text-gray-400 border-gray-200' : 'bg-[#004b93] text-white'
+  };
 
+  if (isLoading || !localResult) {
     return (
       <div className="h-screen flex flex-col bg-gray-50 font-sans overflow-hidden">
         <Header />
         <main className="flex-1 min-h-0 p-4 space-y-4 flex flex-col overflow-hidden">
           <section className="shrink-0"><LoanStepper /></section>
           <section className="shrink-0"><CustomerInfoForm /></section>
-          <section className="shrink-0"><LoanTabs /></section>
+          <section className="shrink-0">
+            <LoanTabs actionButton={nextStepButton} />
+          </section>
           <div className="flex-1 flex items-center justify-center font-black text-gray-300 animate-pulse uppercase tracking-[0.5em] py-20">
             Analyzing Document Consistency...
           </div>
@@ -94,7 +103,7 @@ export const VerificationResultPage = () => {
         </section>
         
         <section className="shrink-0">
-          <LoanTabs />
+          <LoanTabs actionButton={nextStepButton} />
         </section>
         
         <section className="flex-1 min-h-0 flex overflow-hidden border border-gray-300 bg-white rounded-sm">
@@ -134,16 +143,13 @@ export const VerificationResultPage = () => {
             pageNumber={pageNumber}
             onScaleChange={setScale}
             onPageChange={setPageNumber}
-            verificationId={verificationId}
+            verificationId={counselId || ''}
           />
         </section>
       </main>
 
       {/* [WHY: 필수 서류 누락 시 전역적으로 차단하는 전산 팝업] */}
       <DeadEndPopup />
-
-      {/* [WHY: 다음 단계 진행 제어 및 전체 프로그레스 표시] */}
-      <VerificationFooter />
     </div>
   );
 };
