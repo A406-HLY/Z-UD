@@ -26,7 +26,7 @@ import com.zud.backend.domain.document.enums.DocumentTag;
 
 @Component
 public class DocumentValidator {
-	
+
 	private final Map<DocumentTag, DocumentContentValidator<?>> validatorMap;
 
 	public DocumentValidator(final List<DocumentContentValidator<?>> validators) {
