@@ -25,6 +25,7 @@ public class ReportConverter {
 
 	public LoanReportReqMessage toMessage(LoanReportReqDto request) {
 		return new LoanReportReqMessage(
+			request.consultationId(),
 			LocalDateTime.now(),
 			request
 		);
