@@ -16,10 +16,10 @@ export interface Customer {
  * 초기 고객 정보 상태
  */
 export const INITIAL_CUSTOMER_STATE: Customer = {
-  name: '김싸피',
+  name: '홍길동',
   personalId: '990101-1234567',
   phoneNumber: '010-1234-5678',
-  loanPurpose: '주택 구매',
+  loanPurpose: '주택구입목적',
   employmentType: '직장인',
   desiredAmount: '100000000',
   houseCount: '0',

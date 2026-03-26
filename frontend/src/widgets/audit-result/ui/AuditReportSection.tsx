@@ -1,6 +1,6 @@
 import React from 'react';
 import { Check, AlertCircle } from 'lucide-react';
-import { AuditSummaryItem } from '@/entities/audit';
+import { AuditSummaryItem, MyDataResDto } from '@/entities/audit';
 import { LegacySpinner, Card } from '@/shared/ui';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -84,11 +84,11 @@ export const AuditReportSection: React.FC<AuditReportSectionProps> = ({ item, cl
 function renderCategoryContent(item: AuditSummaryItem, isLoading: boolean) {
   switch (item.id) {
     case 'credit-rating':
-      return <CreditDetail summary={item.summary} isLoading={isLoading} />;
+      return <CreditDetail details={item.details} isLoading={isLoading} />;
     case 'house-audit':
       return <HouseAuditDetail details={item.details} isLoading={isLoading} />;
     case 'loan-history':
-      return <LoanDetail isLoading={isLoading} />;
+      return <LoanDetail details={item.details} isLoading={isLoading} />;
     default:
       return (
         <div className="p-4 text-slate-400 text-[11px]">
@@ -100,14 +100,17 @@ function renderCategoryContent(item: AuditSummaryItem, isLoading: boolean) {
 
 // --- B2B 스타일 상세 컴포넌트 (데이터 필드별 개별 로딩 적용) ---
 
-const CreditDetail = ({ summary, isLoading }: { summary: string, isLoading: boolean }) => (
-  <div className="flex text-[12px] h-full tabular-nums border-b border-slate-100">
-    <div className="w-32 bg-slate-50/50 px-2.5 font-semibold text-slate-500 flex items-center border-r border-slate-100 uppercase tracking-tighter text-[10px]">신용 등급 조율</div>
-    <div className="flex-1 px-3 flex items-center bg-white font-bold text-[#004b93] text-[13px]">
-       {isLoading ? <div className="h-4 w-12 bg-slate-50 animate-pulse" /> : summary.split(' ')[0]}
+const CreditDetail = ({ details, isLoading }: { details: unknown, isLoading: boolean }) => {
+  const d = details as { ratingName?: string };
+  return (
+    <div className="flex text-[12px] h-full tabular-nums border-b border-slate-100">
+      <div className="w-32 bg-slate-50/50 px-2.5 font-semibold text-slate-500 flex items-center border-r border-slate-100 uppercase tracking-tighter text-[10px]">신용 등급 조율</div>
+      <div className="flex-1 px-3 flex items-center bg-white font-bold text-[#004b93] text-[13px]">
+        {isLoading ? <div className="h-4 w-12 bg-slate-50 animate-pulse" /> : (d?.ratingName || '-')}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const HouseAuditDetail = ({ details, isLoading }: { details: unknown, isLoading: boolean }) => {
   type HouseDetails = {
@@ -144,53 +147,71 @@ const HouseAuditDetail = ({ details, isLoading }: { details: unknown, isLoading:
   );
 };
 
-const LoanDetail = ({ isLoading }: { isLoading: boolean }) => (
-  <div className="flex flex-col h-full text-[11px] select-none">
-    <table className="w-full text-left table-fixed h-full border-separate border-spacing-0">
-      <thead className="bg-[#f8f9fa] border-b border-slate-200">
-        <tr className="h-[32px]">
-          <th className="px-3 border-b border-slate-200 font-semibold text-slate-500 w-[40%] text-[10.5px]">금융기관</th>
-          <th className="px-3 border-b border-slate-200 text-right font-semibold text-slate-500 w-[40%] text-[10.5px]">대출잔액 (원)</th>
-          <th className="px-3 border-b border-slate-200 text-center font-semibold text-slate-500 w-[20%] text-[10.5px]">상태</th>
-        </tr>
-      </thead>
-      <tbody className="bg-white">
-        {(isLoading ? Array(3).fill({}) : [
-           { bank: '신한은행', amount: '25,000,000', status: '정상' },
-           { bank: '국민은행', amount: '12,400,000', status: '정상' },
-           { bank: '농협은행', amount: '5,000,000', status: '상환' }
-        ]).map((loan, idx) => (
-          <tr key={idx} className="h-[32px] border-b border-slate-50 hover:bg-slate-50/30 transition-colors">
-            <td className="px-3 border-b border-slate-50 font-medium text-slate-600 truncate">
-               {isLoading ? <div className="h-3 w-16 bg-slate-100/80 rounded-[1px] animate-pulse" /> : loan.bank}
-            </td>
-            <td className="px-3 border-b border-slate-50 text-right font-mono font-bold text-slate-900">
-               {isLoading ? <div className="h-3 w-20 bg-slate-100/80 rounded-[1px] ml-auto animate-pulse" /> : loan.amount}
-            </td>
-            <td className="px-3 border-b border-slate-50 text-center">
-               {isLoading ? (
-                 <div className="h-3 w-8 bg-slate-100/80 rounded-[1px] mx-auto animate-pulse" />
-               ) : (
-                 <span className={cn(
-                   "text-[8.5px] font-black px-1.5 py-0.5 rounded-[1px] tracking-tight",
-                   loan.status === '정상' ? "bg-blue-50 text-[#004b93] border border-blue-100" : "bg-slate-50 text-slate-400 border border-slate-200"
-                 )}>
-                   {loan.status}
-                 </span>
-               )}
-            </td>
+const LoanDetail = ({ details, isLoading }: { details: unknown; isLoading: boolean }) => {
+  const d = (details as MyDataResDto) || {};
+  const products = d?.loanProducts || [];
+
+  // (Why) 데이터가 부족할 경우 레이아웃 유지를 위해 빈 행을 채워 넣습니다.
+  const displayProducts = isLoading ? Array(3).fill(null) : products.slice(0, 3);
+
+  return (
+    <div className="flex flex-col h-full text-[11px] select-none">
+      <table className="w-full text-left table-fixed h-full border-separate border-spacing-0">
+        <thead className="bg-[#f8f9fa] border-b border-slate-200">
+          <tr className="h-[32px]">
+            <th className="px-3 border-b border-slate-200 font-semibold text-slate-500 w-[40%] text-[10.5px]">계좌명/번호</th>
+            <th className="px-3 border-b border-slate-200 text-right font-semibold text-slate-500 w-[40%] text-[10.5px]">대출잔액 (원)</th>
+            <th className="px-3 border-b border-slate-200 text-center font-semibold text-slate-500 w-[20%] text-[10.5px]">연상환액</th>
           </tr>
-        ))}
-      </tbody>
-      <tfoot className="bg-[#f8f9fa]/80 font-bold border-t border-slate-200">
-        <tr className="h-[32px]">
-          <td className="px-3 text-slate-500 text-[10.5px]">합계</td>
-          <td className="px-3 text-right text-[#004b93] font-mono text-[12px]">
-            {isLoading ? <div className="h-3 w-20 bg-slate-100/80 rounded-[1px] ml-auto animate-pulse" /> : '42,400,000'}
-          </td>
-          <td className="px-3" />
-        </tr>
-      </tfoot>
-    </table>
-  </div>
-);
+        </thead>
+        <tbody className="bg-white">
+          {displayProducts.map((loan, idx) => (
+            <tr key={idx} className="h-[32px] border-b border-slate-50 hover:bg-slate-50/30 transition-colors">
+              <td className="px-3 border-b border-slate-50 font-medium text-slate-600 truncate">
+                {isLoading ? (
+                  <div className="h-3 w-16 bg-slate-100/80 rounded-[1px] animate-pulse" />
+                ) : (
+                  <div className="flex flex-col leading-tight">
+                    <span className="truncate">{loan?.accountName}</span>
+                    <span className="text-[9px] opacity-60 truncate font-mono">{loan?.accountNo}</span>
+                  </div>
+                )}
+              </td>
+              <td className="px-3 border-b border-slate-50 text-right font-mono font-bold text-slate-900">
+                {isLoading ? (
+                  <div className="h-3 w-20 bg-slate-100/80 rounded-[1px] ml-auto animate-pulse" />
+                ) : (
+                  loan?.remainingLoanBalance?.toLocaleString()
+                )}
+              </td>
+              <td className="px-3 border-b border-slate-50 text-center font-mono text-[10px] text-slate-600">
+                {isLoading ? (
+                  <div className="h-3 w-8 bg-slate-100/80 rounded-[1px] mx-auto animate-pulse" />
+                ) : (
+                  loan?.annualPrincipalAndInterestRepayment?.toLocaleString()
+                )}
+              </td>
+            </tr>
+          ))}
+          {/* (Why) 3개 미만일 때 빈 로우를 강제로 렌더링하여 고정 높이 160px를 유지합니다. */}
+          {!isLoading && displayProducts.length < 3 && Array(3 - displayProducts.length).fill(null).map((_, i) => (
+             <tr key={`empty-${i}`} className="h-[32px] border-b border-slate-50"><td colSpan={3} /></tr>
+          ))}
+        </tbody>
+        <tfoot className="bg-[#f8f9fa]/80 font-bold border-t border-slate-200">
+          <tr className="h-[32px]">
+            <td className="px-3 text-slate-500 text-[10.5px]">남은 잔액 합계</td>
+            <td className="px-3 text-right text-[#004b93] font-mono text-[12px]">
+              {isLoading ? (
+                <div className="h-3 w-20 bg-slate-100/80 rounded-[1px] ml-auto animate-pulse" />
+              ) : (
+                d?.totalRemainingLoanBalance?.toLocaleString() || '0'
+              )}
+            </td>
+            <td className="px-3" />
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  );
+};
