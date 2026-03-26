@@ -10,7 +10,7 @@ import com.bank.auth.dto.request.TokenIssueReqDto;
 import com.bank.auth.dto.request.TokenRefreshReqDto;
 import com.bank.auth.dto.request.TokenRevokeReqDto;
 import com.bank.auth.dto.response.TokenIssueResDto;
-import com.bank.auth.service.TokenService;
+import com.bank.auth.service.TokenFacadeService;
 import com.bank.common.response.BaseResponse;
 import com.bank.common.util.ResponseUtils;
 
@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class TokenController {
 
-	private final TokenService tokenService;
+	private final TokenFacadeService tokenFacadeService;
 
 	@Operation(summary = "토큰 발급", description = "사용자 인증 완료 후 JWT Access/Refresh Token을 발급합니다.")
 	@PostMapping("/issue")
@@ -35,7 +35,7 @@ public class TokenController {
 		@Valid @RequestBody final TokenIssueReqDto reqDto,
 		final HttpServletRequest httpServletRequest
 	) {
-		TokenIssueResDto response = tokenService.issueToken(reqDto, httpServletRequest);
+		TokenIssueResDto response = tokenFacadeService.issueToken(reqDto, httpServletRequest);
 		return ResponseUtils.created(response);
 	}
 
@@ -45,7 +45,7 @@ public class TokenController {
 		@Valid @RequestBody final TokenRefreshReqDto reqDto,
 		final HttpServletRequest httpServletRequest
 	) {
-		TokenIssueResDto response = tokenService.reissueAccessToken(reqDto, httpServletRequest);
+		TokenIssueResDto response = tokenFacadeService.reissueAccessToken(reqDto, httpServletRequest);
 		return ResponseUtils.ok(response);
 	}
 
@@ -55,7 +55,7 @@ public class TokenController {
 		@Valid @RequestBody final TokenRevokeReqDto reqDto,
 		final HttpServletRequest httpServletRequest
 	) {
-		tokenService.revokeToken(reqDto, httpServletRequest);
+		tokenFacadeService.revokeToken(reqDto, httpServletRequest);
 		return ResponseUtils.noContent();
 	}
 

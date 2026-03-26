@@ -19,6 +19,7 @@ import com.bank.auth.dto.request.TokenRevokeReqDto;
 import com.bank.auth.dto.response.TokenIssueResDto;
 import com.bank.auth.entity.AuditLog;
 import com.bank.auth.enums.TokenAction;
+import com.bank.auth.enums.TokenType;
 import com.bank.auth.service.command.RefreshTokenCommandService;
 import com.bank.auth.service.command.TokenBlacklistCommandService;
 import com.bank.auth.service.query.RefreshTokenQueryService;
@@ -37,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class TokenService {
+public class TokenFacadeService {
 
 	private static final String ISSUER = "zud-auth";
 	public static final String HTTP_HEADER_X_FORWARDED_FOR = "X-Forwarded-For";
@@ -60,8 +61,8 @@ public class TokenService {
 		long accessTtl = oAuthProperties.accessTokenTtl().toSeconds();
 		long refreshTtl = oAuthProperties.refreshTokenTtl().toSeconds();
 
-		String accessToken = encodeToken(user, UUID.randomUUID().toString(), accessTtl, "access");
-		String refreshToken = encodeToken(user, UUID.randomUUID().toString(), refreshTtl, "refresh");
+		String accessToken = encodeToken(user, UUID.randomUUID().toString(), accessTtl, TokenType.ACCESS.getValue());
+		String refreshToken = encodeToken(user, UUID.randomUUID().toString(), refreshTtl, TokenType.REFRESH.getValue());
 		refreshTokenCommandService.save(user.getEmployeeNumber(), refreshToken, refreshTtl);
 
 		saveAuditLog(user.getEmployeeNumber(), TokenAction.TOKEN_ISSUE, extractIp(servletRequest));
@@ -78,7 +79,8 @@ public class TokenService {
 		Long userId = refreshJwt.getClaim("userId");
 
 		long accessTtl = oAuthProperties.accessTokenTtl().toSeconds();
-		String newAccessToken = encodeTokenById(employeeNumber, userId, UUID.randomUUID().toString(), accessTtl, "access");
+		String newAccessToken = encodeTokenById(employeeNumber, userId, UUID.randomUUID().toString(), accessTtl,
+			TokenType.ACCESS.getValue());
 
 		saveAuditLog(employeeNumber, TokenAction.TOKEN_REFRESH, extractIp(servletRequest));
 		log.info("[Token] 액세스 토큰 갱신 완료 - employeeNumber: {}", employeeNumber);
