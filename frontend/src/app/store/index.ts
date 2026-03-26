@@ -2,6 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/auth.slice';
 import customerReducer from '@/entities/customer/model/slice';
 import auditReducer from '@/entities/audit/model/audit.slice';
+import verificationReducer from '@/entities/verification/model/slice';
 
 /**
  * 전역 Redux 스토어
@@ -13,6 +14,7 @@ export const store = configureStore({
     auth: authReducer,
     customer: customerReducer,
     audit: auditReducer,
+    verification: verificationReducer,
   },
   devTools: import.meta.env.MODE !== 'production', // 개발 환경에서만 DevTools 활성화
 });

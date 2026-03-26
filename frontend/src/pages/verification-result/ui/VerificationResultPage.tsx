@@ -11,6 +11,8 @@ import { useVerificationController } from '@/features/verification/model/use-ver
 import { useGlobalFocusRecovery } from '@/features/verification/model/use-global-focus-recovery';
 import { useCrossWindowSync } from '@/features/verification/model/use-cross-window-sync';
 import { useEffect } from 'react';
+import { DeadEndPopup } from '@/features/verification/ui/DeadEndPopup';
+import { VerificationFooter } from '@/features/verification/ui/VerificationFooter';
 
 /**
  * @page verification-result
@@ -112,7 +114,9 @@ export const VerificationResultPage = () => {
             status={selectedDoc?.status || 'APPROVED'}
             isRisk={selectedDoc?.isRisk}
             selectedId={selectedId}
-            onFieldChange={handleFieldChange}
+            onFieldChange={(key, value) => {
+              if (selectedId) handleFieldChange(selectedId, key, value);
+            }}
             onFocus={setFocusedFieldKey}
             onRequestNextDocument={handleNextDocument}
           />
@@ -134,6 +138,12 @@ export const VerificationResultPage = () => {
           />
         </section>
       </main>
+
+      {/* [WHY: 필수 서류 누락 시 전역적으로 차단하는 전산 팝업] */}
+      <DeadEndPopup />
+
+      {/* [WHY: 다음 단계 진행 제어 및 전체 프로그레스 표시] */}
+      <VerificationFooter />
     </div>
   );
 };
