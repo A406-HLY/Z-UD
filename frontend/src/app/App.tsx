@@ -5,6 +5,7 @@ import { Provider as ReduxProvider } from 'react-redux';
 import { router } from './router/routes';
 import { queryClient } from './providers/query-client';
 import { store } from './store';
+import { GlobalSseSubscriber } from '@/entities/audit/ui/GlobalSseSubscriber';
 
 import './styles/index.css';
 
@@ -15,6 +16,7 @@ function App() {
   return (
     <ReduxProvider store={store}>
       <QueryClientProvider client={queryClient}>
+        <GlobalSseSubscriber />
         <RouterProvider router={router} />
       </QueryClientProvider>
     </ReduxProvider>

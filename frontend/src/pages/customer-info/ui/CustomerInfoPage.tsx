@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Settings } from 'lucide-react';
 import { Header } from '@/widgets/header';
@@ -8,12 +8,14 @@ import { LoanStepper } from '@/widgets/loan-stepper/ui/LoanStepper';
 import { AuditReportSection, AuditProgressModal } from '@/widgets/audit-result';
 import { 
   useHouseAuditQuery, 
+  useMyDataAuditQuery,
   mapHouseAuditToUiModel, 
+  mapMyDataToUiModel,
   AuditSummaryItem,
   HouseAuditResponseDto,
   AuditStatus
 } from '@/entities/audit';
-import { SseAuditStatus, resetAuditState } from '@/entities/audit/model/audit.slice';
+import { SseAuditStatus, resetAuditState, setAllAuditDone, updateStepStatus, setHouseAuditData, setCreditData, setLoanData } from '@/entities/audit/model/audit.slice';
 import { useAppSelector, useAppDispatch } from '@/app/store/hooks';
 
 /**
@@ -35,11 +37,45 @@ export const CustomerInfoPage = () => {
     propertyAddress: '강원특별자치도 원주시 일산동 천사로 130 신진빌리지 6층 601호',
   }), []);
 
-  const { data: houseData } = useHouseAuditQuery(auditParams);
+  const { data: houseData, isLoading: isHouseLoading, isSuccess: isHouseSuccess } = useHouseAuditQuery(auditParams);
 
+  // (Why) 주택 심사 정보도 REST 응답이 먼저 올 경우, SSE 이벤트를 기다리지 않고 즉시 완료 상태로 동기화합니다.
+  useEffect(() => {
+    if (isHouseSuccess && houseData?.data) {
+      dispatch(updateStepStatus({ step: 'houseAudit', status: 'SUCCESS', message: '주택 심사 완료 (REST)' }));
+      dispatch(setHouseAuditData(houseData.data));
+    }
+  }, [isHouseSuccess, houseData, dispatch]);
+
+  // (Why) 고객명을 기반으로 마이데이터(신용/대출) 통합 조회를 실행합니다.
   // (Why) 백엔드 SSE 이벤트를 모사하던 기존 방식 대신, 이제 전역 store에서 실시간 상태와 수신 데이터를 가져옵니다.
   const { isAllAuditDone, steps, data } = useAppSelector(state => state.audit);
   const houseDataPayload = data.houseAuditData;
+
+  const customerName = useAppSelector(state => state.customer.data.name);
+  const { data: myData, isLoading: isMyDataLoading, isSuccess: isMyDataSuccess } = useMyDataAuditQuery(customerName);
+
+  // (Why) MyData API는 응답이 매우 빠르므로(약 1초), SSE 이벤트를 기다리지 않고 REST 응답 성공 즉시 Redux 상태에 반영합니다.
+  useEffect(() => {
+    if (isMyDataSuccess && myData) {
+      dispatch(updateStepStatus({ step: 'credit', status: 'SUCCESS', message: '신용 정보 조회 완료 (REST)' }));
+      dispatch(updateStepStatus({ step: 'loanHistory', status: 'SUCCESS', message: '대출 정보 조회 완료 (REST)' }));
+      dispatch(setCreditData(myData));
+      dispatch(setLoanData(myData));
+    }
+  }, [isMyDataSuccess, myData, dispatch]);
+
+  // (Why) 모든 세부 심사항목(신용, 대출, 주택)이 완료된 경우, 최종 REPORT_COMPLETED 이벤트를 기다리지 않고 즉시 완료 처리합니다.
+  useEffect(() => {
+    const isActuallyDone = 
+      steps.credit === 'SUCCESS' && 
+      steps.loanHistory === 'SUCCESS' && 
+      steps.houseAudit === 'SUCCESS';
+
+    if (isActuallyDone && !isAllAuditDone) {
+      dispatch(setAllAuditDone(true));
+    }
+  }, [steps, isAllAuditDone, dispatch]);
 
   // (Why) 백엔드 API 미준비 또는 데이터 부재 시를 위한 주택 심사 기본 모의 데이터
   const mockHouseData = useMemo<HouseAuditResponseDto>(() => ({
@@ -66,23 +102,35 @@ export const CustomerInfoPage = () => {
   }), [isDevBranchNearest]);
 
   const auditItems = useMemo<AuditSummaryItem[]>(() => {
-    // 수신된 실제 데이터가 우선이며, 서버 통신이 실패하거나 도달하지 않은 경우 목업/임시 데이터를 표시합니다.
-    const effectiveHouseData = houseDataPayload || houseData || mockHouseData;
+    // 1. 주택 심사 데이터 구성
+    const effectiveHouseData = houseDataPayload || houseData?.data || mockHouseData?.data;
     const houseItems = effectiveHouseData ? mapHouseAuditToUiModel(effectiveHouseData) : [];
     
-    // (P2) SSE가 완료(SUCCESS) 된 경우 실제 데이터 값을 요약문으로 노출
-    const creditSummary = steps.credit === 'SUCCESS' && data.creditData ? data.creditData.summary || 'A (최우수)' : '조회 중...';
-    const loanSummary = steps.loanHistory === 'SUCCESS' && data.loanData ? data.loanData.summary || '3건의 부채 확인' : '조회 중...';
+    // 2. 마이데이터(신용/대출) 데이터 구성
+    // (Why) SSE로 수신된 데이터(data.creditData/loanData)가 있으면 최우선으로 사용하고, 없으면 REST API(myData) 결과를 사용합니다.
+    const effectiveMyData = data.creditData || data.loanData || myData;
+    const myDataItems = effectiveMyData ? mapMyDataToUiModel(effectiveMyData) : [];
 
     // (Why) "IDLE(대기)" 상태면 UI에서는 로딩 스켈레톤이나 초기 아이콘을 보여주도록 최하단 단계에서 깔끔하게 LOADING으로 통합합니다.
-    const mapStatus = (s: SseAuditStatus): AuditStatus => s === 'IDLE' ? 'LOADING' : s;
+    // (P1) 피드백 반영: REST API 데이터 유무와 상관없이 실시간 SSE 진행 상태(steps)를 기준으로 상태를 표시합니다.
+    const mapStatus = (s: SseAuditStatus, queryLoading: boolean): AuditStatus => 
+      (s === 'IDLE' || queryLoading) ? 'LOADING' : s;
 
+    // (Why) 개별 항목의 상태와 요약을 통합 모델로 매핑합니다.
     return [
-      { id: 'credit-rating', title: '신용등급 조회', summary: creditSummary, status: mapStatus(steps.credit) },
-      { id: 'loan-history', title: '기존 대출 내역', summary: loanSummary, status: mapStatus(steps.loanHistory) },
-      ...houseItems.map(item => ({ ...item, status: mapStatus(steps.houseAudit) })),
+      ...myDataItems.map(item => ({
+        ...item,
+        status: mapStatus(
+          item.id === 'credit-rating' ? steps.credit : steps.loanHistory, 
+          isMyDataLoading
+        )
+      })),
+      ...houseItems.map(item => ({ 
+        ...item, 
+        status: mapStatus(steps.houseAudit, isHouseLoading) 
+      })),
     ];
-  }, [houseData, houseDataPayload, mockHouseData, steps, data]);
+  }, [houseData, houseDataPayload, mockHouseData, myData, isMyDataLoading, isHouseLoading, steps, data]);
 
   // (Why) 모든 조회가 완료되었고, 'ERROR' 상태인 항목이 하나도 없을 때만 다음 단계로 진행 허용
   const canProceed = isAllAuditDone && !auditItems.some(item => item.status === 'ERROR');
