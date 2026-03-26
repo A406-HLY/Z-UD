@@ -127,3 +127,27 @@ export interface VerificationResult {
   riskMap: Record<string, Set<string>>;      // docType -> fields
   missingSet: Set<string>;                   // docTypes
 }
+
+/** 
+ * [Why: Redux 전역 상태에 저장될 사용자의 작업 중인(Work-in-Progress) 수정 데이터를 정의합니다. 
+ * 무거운 전체 객체가 아닌 평탄화된 키 기반의 데이터만 저장하여 성능과 동기화 효율을 높입니다.]
+ */
+export interface VerificationEdits {
+  /** 평탄화된 키(Dot Notation) 기반의 수정된 값들 (예: "userInfo.name": "홍길동") */
+  values: Record<string, any>;
+  /** 해당 문서의 최종 수정 일시 (ISO 8601 형식) */
+  lastModified: string;
+}
+
+/** 
+ * Redux 'verification' 슬라이스의 전체 상태 구조 
+ * (Why: 페이지 이동 간 사용자 수정 내역을 보존하고 현재 활세션 상태를 관리하기 위함)
+ */
+export interface VerificationState {
+  /** 
+   * 문서ID(`docId`)를 키로 하는 수정 데이터 저장소 
+   */
+  edits: Record<string, VerificationEdits>;
+  /** 현재 사용자 화면에서 활성화된(선택된) 문서의 고유 ID */
+  activeDocumentId: string | null;
+}
