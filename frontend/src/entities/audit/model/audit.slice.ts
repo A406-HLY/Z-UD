@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { MyDataResDto, HouseAuditResponseDto } from './types';
 
 /**
  * SSE 실시간 이벤트 단계 및 상태 관리
@@ -23,9 +24,9 @@ export interface AuditState {
 
   // 수신된 페이로드 데이터 저장
   data: {
-    houseAuditData: any | null; // 임시 any (추후 DTO 타입 연동)
-    creditData: any | null;
-    loanData: any | null;
+    houseAuditData: HouseAuditResponseDto['data'] | null;
+    creditData: MyDataResDto | null;
+    loanData: MyDataResDto | null;
   };
 
   // 에러 항목
@@ -71,14 +72,14 @@ const auditSlice = createSlice({
         state.currentMessage = action.payload.message;
       }
     },
-    setHouseAuditData: (state, action: PayloadAction<any>) => {
+    setHouseAuditData: (state, action: PayloadAction<HouseAuditResponseDto['data']>) => {
       state.data.houseAuditData = action.payload;
     },
-    setCreditData: (state, action: PayloadAction<any>) => {
-      state.data.creditData = action.payload;
+    setCreditData: (state, action: PayloadAction<Partial<MyDataResDto>>) => {
+      state.data.creditData = { ...state.data.creditData, ...action.payload } as MyDataResDto;
     },
-    setLoanData: (state, action: PayloadAction<any>) => {
-      state.data.loanData = action.payload;
+    setLoanData: (state, action: PayloadAction<Partial<MyDataResDto>>) => {
+      state.data.loanData = { ...state.data.loanData, ...action.payload } as MyDataResDto;
     },
     addErrorMessage: (state, action: PayloadAction<string>) => {
       state.errorMessages.push(action.payload);

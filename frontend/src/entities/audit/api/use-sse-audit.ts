@@ -65,23 +65,42 @@ export const useSseAudit = (counselId: string | undefined, isTriggered: boolean)
       const payload = JSON.parse(e.data);
       dispatch(setHouseAuditData(payload.data));
       dispatch(updateStepStatus({ step: 'houseAudit', status: 'SUCCESS', message: payload.message || '주택 심사 완료' }));
-      checkAllDone();
-    });
-    eventSource.addEventListener('HOUSE_AUDIT_PRICE_CHECK_COMPLETED', () => {
-      dispatch(setCurrentMessage('주택 시세 조회 완료'));
-    });
-    eventSource.addEventListener('HOUSE_AUDIT_NEAREST_BRANCH_CHECK_COMPLETED', () => {
-      dispatch(setCurrentMessage('가까운 관할 지점 매칭 완료'));
     });
     eventSource.addEventListener('HOUSE_AUDIT_FAILED', () => {
       dispatch(updateStepStatus({ step: 'houseAudit', status: 'ERROR', message: '주택 심사 실패' }));
       dispatch(addErrorMessage('주택 심사 중 오류가 발생했습니다.'));
     });
 
+    // 주택 심사 세부 단계 (Status 전이는 없으며 메시지만 업데이트)
+    eventSource.addEventListener('HOUSE_AUDIT_PRICE_CHECK_STARTED', () => dispatch(setCurrentMessage('주택 시세 조회 시작...')));
+    eventSource.addEventListener('HOUSE_AUDIT_PRICE_CHECK_COMPLETED', () => dispatch(setCurrentMessage('주택 시세 조회 완료')));
+    eventSource.addEventListener('HOUSE_AUDIT_PRICE_CHECK_FAILED', () => dispatch(addErrorMessage('주택 시세 조회 중 실패했습니다.')));
+
+    eventSource.addEventListener('HOUSE_AUDIT_ILLEGAL_BUILDING_CHECK_STARTED', () => dispatch(setCurrentMessage('위반 건축물 검사 시작...')));
+    eventSource.addEventListener('HOUSE_AUDIT_ILLEGAL_BUILDING_CHECK_COMPLETED', () => dispatch(setCurrentMessage('위반 건축물 검사 완료')));
+    eventSource.addEventListener('HOUSE_AUDIT_ILLEGAL_BUILDING_CHECK_FAILED', () => dispatch(addErrorMessage('위반 건축물 검증에 실패했습니다.')));
+
+    eventSource.addEventListener('HOUSE_AUDIT_NEAREST_BRANCH_CHECK_STARTED', () => dispatch(setCurrentMessage('관할 지점 확인 중...')));
+    eventSource.addEventListener('HOUSE_AUDIT_NEAREST_BRANCH_CHECK_COMPLETED', () => dispatch(setCurrentMessage('관할 지점 조회 완료')));
+    eventSource.addEventListener('HOUSE_AUDIT_NEAREST_BRANCH_CHECK_FAILED', () => dispatch(addErrorMessage('관할 지점 조회에 실패했습니다.')));
+
     // 4. 마이데이터/신용(Credit/Loan) 이벤트
     eventSource.addEventListener('MY_DATA_AUDIT_STARTED', () => {
       dispatch(setCurrentMessage('마이데이터 스크래핑 시작...'));
     });
+    eventSource.addEventListener('MY_DATA_AUDIT_COMPLETED', () => {
+      dispatch(setCurrentMessage('마이데이터 심사 전체 완료'));
+    });
+    eventSource.addEventListener('MY_DATA_AUDIT_FAILED', () => {
+      dispatch(addErrorMessage('마이데이터 심사 통합 조회에 실패했습니다.'));
+    });
+
+    // 마이데이터 회원 확인
+    eventSource.addEventListener('MY_DATA_MEMBER_LOOKUP_STARTED', () => dispatch(setCurrentMessage('마이데이터 회원 여부 조회 중...')));
+    eventSource.addEventListener('MY_DATA_MEMBER_LOOKUP_COMPLETED', () => dispatch(setCurrentMessage('마이데이터 회원 확인 완료')));
+    eventSource.addEventListener('MY_DATA_MEMBER_LOOKUP_FAILED', () => dispatch(addErrorMessage('마이데이터 회원 조회 중 오류가 발생했습니다.')));
+
+    // 신용등급
     eventSource.addEventListener('MY_DATA_CREDIT_RATING_LOOKUP_STARTED', () => {
       dispatch(updateStepStatus({ step: 'credit', status: 'LOADING', message: '신용등급 조회 중...' }));
     });
@@ -90,6 +109,12 @@ export const useSseAudit = (counselId: string | undefined, isTriggered: boolean)
       dispatch(setCreditData(payload.data));
       dispatch(updateStepStatus({ step: 'credit', status: 'SUCCESS', message: payload.message || '신용등급 조회 완료' }));
     });
+    eventSource.addEventListener('MY_DATA_CREDIT_RATING_LOOKUP_FAILED', () => {
+      dispatch(updateStepStatus({ step: 'credit', status: 'ERROR', message: '신용등급 조회 실패' }));
+      dispatch(addErrorMessage('신용등급 조회에 실패했습니다.'));
+    });
+
+    // 대출 상품
     eventSource.addEventListener('MY_DATA_LOAN_PRODUCTS_LOOKUP_STARTED', () => {
       dispatch(updateStepStatus({ step: 'loanHistory', status: 'LOADING', message: '기존 대출 내역 조회 중...' }));
     });
@@ -97,9 +122,12 @@ export const useSseAudit = (counselId: string | undefined, isTriggered: boolean)
       const payload = JSON.parse(e.data);
       dispatch(setLoanData(payload.data));
       dispatch(updateStepStatus({ step: 'loanHistory', status: 'SUCCESS', message: payload.message || '대출 내역 조회 완료' }));
-      checkAllDone();
     });
-    
+    eventSource.addEventListener('MY_DATA_LOAN_PRODUCTS_LOOKUP_FAILED', () => {
+      dispatch(updateStepStatus({ step: 'loanHistory', status: 'ERROR', message: '대출 내역 조회 실패' }));
+      dispatch(addErrorMessage('대출 내역 조회 중 오류가 발생했습니다.'));
+    });
+
     // 최종 레포트 완료
     eventSource.addEventListener('REPORT_COMPLETED', () => {
       dispatch(setAllAuditDone(true));
@@ -120,11 +148,6 @@ export const useSseAudit = (counselId: string | undefined, isTriggered: boolean)
       dispatch(setSseConnected(false));
     };
   }, [counselId, isTriggered, dispatch]);
-
-  // (Why) 주요 심사(신용, 대출내역, 주택)가 모두 끝났는지 내부적으로 평가하는 헬퍼 함수
-  const checkAllDone = () => {
-    // Note: 실제 운영에서는 REPORT_COMPLETED 이벤트가 트리거되므로 이 프론트엔드 체크 로직은 보조적인 수단입니다.
-  };
 
   useEffect(() => {
     const cleanup = connectSse();
