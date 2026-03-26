@@ -99,7 +99,8 @@ public class ReportResultSaveServiceImpl implements ReportResultSaveService {
 			BigDecimal ltvRatioRaw = extractPercentNumber(ltvRatioSourceNode);
 			BigDecimal ltvRatioForCalculation = normalizeLtvRatio(ltvRatioRaw);
 			BigDecimal maximumClaimAmount = sumMaximumClaimAmount(productObject.path("seniorRights").path("value"));
-			BigDecimal totalRemainingLoanBalance = extractNumber(productObject.path("totalRemainingLoanBalance").path("value"));
+			BigDecimal totalRemainingLoanBalance = extractNumber(
+				productObject.path("totalRemainingLoanBalance").path("value"));
 
 			ObjectNode ltvBasedLoanLimitNode = objectMapper.createObjectNode();
 			putDecimalOrNull(ltvBasedLoanLimitNode, "collateralMarketPrice", collateralMarketPrice);
@@ -183,7 +184,8 @@ public class ReportResultSaveServiceImpl implements ReportResultSaveService {
 			putNodeOrNull(dsrBasedLoanLimitNode, "stressDSR", stressDsrSourceNode);
 			putDecimalOrNull(dsrBasedLoanLimitNode, "repaymentPeriodYears", REPAYMENT_PERIOD_YEARS);
 
-			if (dsrRatioForCalculation == null || annualIncomeTotal == null || annualPrincipalAndInterestRepayment == null
+			if (dsrRatioForCalculation == null || annualIncomeTotal == null
+				|| annualPrincipalAndInterestRepayment == null
 				|| interestRateForCalculation == null || stressDsrForCalculation == null) {
 				dsrBasedLoanLimitNode.putNull("value");
 				productObject.set("dsrBasedLoanLimit", dsrBasedLoanLimitNode);
@@ -259,7 +261,7 @@ public class ReportResultSaveServiceImpl implements ReportResultSaveService {
 			}
 			try {
 				return new BigDecimal(normalized);
-			} catch (NumberFormatException ignored) {
+			} catch (NumberFormatException _) {
 				return null;
 			}
 		}
@@ -286,7 +288,7 @@ public class ReportResultSaveServiceImpl implements ReportResultSaveService {
 			}
 			try {
 				return new BigDecimal(normalized);
-			} catch (NumberFormatException ignored) {
+			} catch (NumberFormatException _) {
 				return null;
 			}
 		}

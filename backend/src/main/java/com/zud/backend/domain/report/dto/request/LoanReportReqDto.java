@@ -115,47 +115,56 @@ public record LoanReportReqDto(
 	public record HouseholdMember(
 		String name,
 		String residentRegistrationNumber
-	) { }
+	) {
+	}
 
 	public record Spouse(
 		Boolean exists,
 		String name,
 		String residentRegistrationNumber
-	) { }
+	) {
+	}
 
 	public record DepositAmount(
 		@JsonFormat(pattern = "yyyy-MM-dd")
 		LocalDate depositDate,
 		Long depositAmount
-	) { }
+	) {
+	}
 
 	public record TaxItem(
 		String taxItemName,
 		Long taxAmount,
 		String remark
-	) { }
+	) {
+	}
 
 	public record SeniorRight(
 		Long maximumClaimAmount
-	) { }
+	) {
+	}
 
 	public record FloorStatus(
 		String floor,
 		String usage,
 		BigDecimal area
-	) { }
+	) {
+	}
 
 	public record Seller(
 		String name
-	) { }
+	) {
+	}
 
 	public record Buyer(
 		String name
-	) { }
+	) {
+	}
 
 	public record MoveInHousehold(
 		String headOfHouseholdName,
 		@JsonFormat(pattern = "yyyy-MM-dd")
 		LocalDate moveInDate
-	) { }
+	) {
+	}
 }
