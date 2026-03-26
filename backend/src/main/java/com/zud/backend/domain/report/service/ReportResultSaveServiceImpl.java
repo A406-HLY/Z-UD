@@ -119,7 +119,7 @@ public class ReportResultSaveServiceImpl implements ReportResultSaveService {
 				.subtract(maximumClaimAmount)
 				.subtract(totalRemainingLoanBalance);
 
-			putDecimalOrNull(ltvBasedLoanLimitNode, "value", ltvBasedLoanLimit);
+			putRoundedIntegerOrNull(ltvBasedLoanLimitNode, "value", ltvBasedLoanLimit);
 			productObject.set("ltvBasedLoanLimit", ltvBasedLoanLimitNode);
 		}
 	}
@@ -130,6 +130,14 @@ public class ReportResultSaveServiceImpl implements ReportResultSaveService {
 			return;
 		}
 		target.put(key, value);
+	}
+
+	private void putRoundedIntegerOrNull(ObjectNode target, String key, BigDecimal value) {
+		if (value == null) {
+			target.putNull(key);
+			return;
+		}
+		target.put(key, value.setScale(0, RoundingMode.HALF_UP));
 	}
 
 	private void putNodeOrNull(ObjectNode target, String key, JsonNode source) {
@@ -194,7 +202,7 @@ public class ReportResultSaveServiceImpl implements ReportResultSaveService {
 				.multiply(REPAYMENT_PERIOD_YEARS)
 				.divide(denominator, 10, RoundingMode.HALF_UP);
 
-			putDecimalOrNull(dsrBasedLoanLimitNode, "value", dsrBasedLoanLimit);
+			putRoundedIntegerOrNull(dsrBasedLoanLimitNode, "value", dsrBasedLoanLimit);
 			productObject.set("dsrBasedLoanLimit", dsrBasedLoanLimitNode);
 		}
 	}
