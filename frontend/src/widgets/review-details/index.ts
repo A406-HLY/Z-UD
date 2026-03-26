@@ -1,0 +1,1 @@
+export { ReviewDetailsList } from './ui/ReviewDetailsList';
