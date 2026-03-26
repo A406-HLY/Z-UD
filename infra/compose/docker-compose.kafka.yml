@@ -1,0 +1,61 @@
+name: kafka
+
+services:
+  kafka:
+    image: apache/kafka:4.2.0
+    container_name: kafka
+    restart: unless-stopped
+    ports:
+      - "80:80"
+
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+
+      # Kafka client listener: 80
+      KAFKA_LISTENERS: PLAINTEXT://:80,CONTROLLER://:9093
+
+      # 외부 클라이언트가 받을 주소도 80
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://j14a406.p.ssafy.io:80
+
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_NUM_PARTITIONS: 3
+
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+
+  kafka-init:
+    image: apache/kafka:4.2.0
+    container_name: kafka-init
+    depends_on:
+      - kafka
+    entrypoint: ["/bin/bash", "-c"]
+    command: >
+      "
+      until /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:80 --list >/dev/null 2>&1; do
+        echo 'waiting for kafka...';
+        sleep 2;
+      done &&
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:80 --create --if-not-exists --topic report-request --partitions 3 --replication-factor 1 &&
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:80 --create --if-not-exists --topic review-request --partitions 3 --replication-factor 1 &&
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:80 --create --if-not-exists --topic report-response --partitions 3 --replication-factor 1 &&
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:80 --create --if-not-exists --topic ocr-request --partitions 3 --replication-factor 1 &&
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:80 --create --if-not-exists --topic ocr-response --partitions 3 --replication-factor 1 &&
+      echo 'Topics created'
+      "
+    restart: "no"
+
+volumes:
+  kafka_data:
