@@ -79,31 +79,31 @@ def main():
             req_id = payload.get("consultationId", payload.get("counselId", payload.get("UUID", "N/A")))
             print(f"\n[RECEIVED] Message from {INPUT_TOPIC} | ID: {req_id}")
         
-        try:
-            # api.py의 search_rules 로직 그대로 실행 (RAG 검색 수행 및 JSON 조합)
-            response_obj = search_rules(payload)
-            
-            # Pydantic 모델을 딕셔너리로 덤프
-            # model_dump() is available in v2, dict() in v1. 
-            if hasattr(response_obj, "model_dump"):
-                result_dict = response_obj.model_dump()
-            else:
-                result_dict = response_obj.dict()
-            
-            # 처리 결과 생산
-            val_bytes = json.dumps(result_dict, ensure_ascii=False).encode('utf-8')
-            producer.produce(OUTPUT_TOPIC, value=val_bytes, callback=delivery_report)
-            producer.poll(0)
-            producer.flush()
-            
-            print(f"[SUCCESS] Evaluated and pushed response to {OUTPUT_TOPIC} | ID: {req_id}")
-            
-        except Exception as e:
-            # HTTPException 등 에러 디테일 출력
-            error_detail = getattr(e, "detail", str(e))
-            print(f"[ERROR] Failed to process message ID: {req_id}")
-            print(f"[ERROR] Reason: {error_detail}")
-            traceback.print_exc()
+            try:
+                # api.py의 search_rules 로직 그대로 실행 (RAG 검색 수행 및 JSON 조합)
+                response_obj = search_rules(payload)
+                
+                # Pydantic 모델을 딕셔너리로 덤프
+                # model_dump() is available in v2, dict() in v1. 
+                if hasattr(response_obj, "model_dump"):
+                    result_dict = response_obj.model_dump()
+                else:
+                    result_dict = response_obj.dict()
+                
+                # 처리 결과 생산
+                val_bytes = json.dumps(result_dict, ensure_ascii=False).encode('utf-8')
+                producer.produce(OUTPUT_TOPIC, value=val_bytes, callback=delivery_report)
+                producer.poll(0)
+                producer.flush()
+                
+                print(f"[SUCCESS] Evaluated and pushed response to {OUTPUT_TOPIC} | ID: {req_id}")
+                
+            except Exception as e:
+                # HTTPException 등 에러 디테일 출력
+                error_detail = getattr(e, "detail", str(e))
+                print(f"[ERROR] Failed to process message ID: {req_id}")
+                print(f"[ERROR] Reason: {error_detail}")
+                traceback.print_exc()
 
     except KeyboardInterrupt:
         print("\n[*] Service stopped by user")
