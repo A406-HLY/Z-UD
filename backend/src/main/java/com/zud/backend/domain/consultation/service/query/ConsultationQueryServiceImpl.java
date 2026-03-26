@@ -24,7 +24,7 @@ public class ConsultationQueryServiceImpl implements ConsultationQueryService {
 	public Consultation findByUuid(final String uuid) {
 		Consultation consultation = consultationRepository.findById(uuid)
 			.orElseThrow(() -> new ConsultationException(ErrorCode.CONSULTATION_NOT_FOUND));
-		log.info("상담 조회 완료: id={}", consultation.getId());
+		log.info("[Consultation] 상담 조회 완료: id: {}", consultation.getId());
 		return consultation;
 	}
 }
