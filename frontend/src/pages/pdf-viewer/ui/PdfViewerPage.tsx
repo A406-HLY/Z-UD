@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { useVerificationQuery } from '@/features/verification/api/use-verification-query';
+import { useAppSelector } from '@/app/store/hooks';
 import { mapServerResponseToVerificationResult } from '@/entities/verification/model/verification.mapper';
 import { useCrossWindowSync } from '@/features/verification/model/use-cross-window-sync';
 import { DocumentImageViewer } from '@/widgets/document-image-viewer/ui/DocumentImageViewer';
@@ -12,8 +12,10 @@ import { DocumentImageViewer } from '@/widgets/document-image-viewer/ui/Document
 export const PdfViewerPage = () => {
   const { id } = useParams<{ id: string }>();
   
-  // 1. 서버 데이터 조회 (캐시된 데이터 활용)
-  const { data: serverResponse, isLoading } = useVerificationQuery(id || '');
+  // 1. 서버 데이터 조회 (Redux Audit 슬라이스 활용)
+  const ocrData = useAppSelector(state => state.audit.data.ocrData);
+  const ocrStatus = useAppSelector(state => state.audit.steps.ocr);
+  const isLoading = ocrStatus === 'LOADING' || ocrStatus === 'IDLE';
 
   // 2. 초기 상태 로드 (Query Parameter 활용)
   const [searchParams] = useSearchParams();
@@ -45,9 +47,9 @@ export const PdfViewerPage = () => {
 
   // 4. 데이터 매핑
   const localResult = useMemo(() => {
-    if (!serverResponse || !id) return null;
-    return mapServerResponseToVerificationResult(serverResponse, id);
-  }, [serverResponse, id]);
+    if (!ocrData || !id) return null;
+    return mapServerResponseToVerificationResult(ocrData, id);
+  }, [ocrData, id]);
 
   if (isLoading || !localResult) {
     return (
