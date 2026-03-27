@@ -35,6 +35,7 @@ public class SecurityConfig {
 		"/grafana/**",
 		"/api/v1/documents",
 		"/api/v1/documents/**",
+		"/apo/v1/notifications/**",
 		"/actuator/health",
 		"/actuator/health/**",
 		"/actuator/prometheus"
