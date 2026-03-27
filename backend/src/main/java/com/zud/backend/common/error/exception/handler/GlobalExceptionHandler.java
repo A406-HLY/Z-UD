@@ -25,6 +25,7 @@ import com.zud.backend.common.response.ErrorResponse;
 import com.zud.backend.common.util.LoggingUtils;
 import com.zud.backend.domain.consultation.exception.ConsultationException;
 import com.zud.backend.domain.document.exception.DocumentException;
+import com.zud.backend.domain.rule.exception.RuleException;
 import com.zud.backend.domain.user.exception.UserException;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -208,6 +209,16 @@ public class GlobalExceptionHandler {
 		HttpServletRequest request
 	) {
 		LoggingUtils.logException("ConsultationException 발생", ex, request);
+		ErrorResponse response = ErrorResponse.of(ex.getErrorCode(), request);
+		return ResponseEntity.status(ex.getErrorCode().getHttpStatus()).body(BaseResponse.fail(response));
+	}
+
+	@ExceptionHandler(RuleException.class)
+	public ResponseEntity<BaseResponse<ErrorResponse>> handleRuleException(
+		RuleException ex,
+		HttpServletRequest request
+	) {
+		LoggingUtils.logException("RuleException 발생", ex, request);
 		ErrorResponse response = ErrorResponse.of(ex.getErrorCode(), request);
 		return ResponseEntity.status(ex.getErrorCode().getHttpStatus()).body(BaseResponse.fail(response));
 	}
