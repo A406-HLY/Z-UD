@@ -46,7 +46,7 @@ export const ProductTabs = () => {
                   }
             }
           >
-            <span>{prod.productKey}</span>
+            <span>{prod.productName || prod.productKey}</span>
             {/* 거절 탭인 경우 경고 도트 표시 */}
             {!prod.isApproved && (
               <span className={clsx(

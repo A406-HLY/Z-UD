@@ -89,17 +89,14 @@ export const selectProcessedProducts = createSelector(
     if (!data || !data.result) return [];
 
     const products: ProcessedProduct[] = Object.entries(data.result).map(([productKey, productData]) => {
-      const items: ProcessedReviewItem[] = Object.entries(productData).map(([key, item]) => ({
+      // (Change) productData.aiResults에서 심사 항목을 추출합니다.
+      const items: ProcessedReviewItem[] = Object.entries(productData.aiResults).map(([key, item]) => ({
         ...item,
         key
       }));
 
       // 거절 항목 1개라도 있으면 미승인 처리 (상수 활용)
       const isApproved = !items.some(item => item.result === APPROVAL_STATUS.REJECT);
-
-      let ltvRatioValue = 0;
-      let dsrRatioValue = 0;
-      let marketPrice = 0;
 
       // 상품 내 항목 정렬: 거절이 위로 오도록
       const sortedItems = [...items].sort((a, b) => {
@@ -108,45 +105,36 @@ export const selectProcessedProducts = createSelector(
         return 0; // 원본 순서 유지
       });
 
-      // LTV, DSR 핵심 파라미터 및 시세 추출 (지능형 스캔)
-      sortedItems.forEach(item => {
-        const nameKo = item.name_ko;
-        
-        // 1. LTV/DSR 비율 추출 (목업에서는 'LTV 비율' 이라는 문자열로 들어오기도 함)
-        if (nameKo.includes('LTV 비율')) {
-           // 실제 운영 데이터에서는 숫자로 들어올 것을 가정하나, 목업 대응을 위해 파싱 로직 가미
-           ltvRatioValue = typeof item.value === 'number' ? item.value : 70; // fallback 70
-        }
-        if (nameKo.includes('DSR 비율')) {
-           dsrRatioValue = typeof item.value === 'number' ? item.value : 40; // fallback 40
-        }
+      // API 한도 데이터 언패킹 (수동 계산 제거)
+      const ltvLimitNum = productData.ltvBasedLoanLimit
+         ? parseInt(productData.ltvBasedLoanLimit.LTVRatio.replace('%', '')) || 0
+         : 0;
+      const dsrLimitNum = productData.dsrBasedLoanLimit
+         ? parseInt(productData.dsrBasedLoanLimit.DSRRatio.replace('%', '')) || 0
+         : 0;
+      
+      const marketPrice = productData.ltvBasedLoanLimit?.collateralMarketPrice || 0;
+      const calculatedLimit = productData.ltvBasedLoanLimit?.value 
+         ? productData.ltvBasedLoanLimit.value * 100000000 // 예: value: 6 (단위: 억) -> 600,000,000
+         : 0;
 
-        // 2. 담보 시세 추출
-        if (nameKo === '담보 시세' || nameKo === '최근 실거래가') {
-          if (typeof item.value === 'number') {
-            marketPrice = Math.max(marketPrice, item.value);
-          }
-        }
-      });
-
-      // 3. 한도 산출 로직 (Entity Layer에서 처리)
-      const calculatedLimit = isApproved && marketPrice > 0 
-        ? Math.floor((marketPrice * (ltvRatioValue / 100)) / 1000000) * 1000000 // 백만원 단위 절사
-        : 0;
-
-      // 4. 시각화용 파라미터 셋 구성
-      const limitParams = [
-        { label: "평가 시세 (Market)", value: `${marketPrice.toLocaleString()} 원` },
-        { label: "설정비율 (LTV)", value: `${ltvRatioValue}%` },
-        { label: "상환능력 (DSR)", value: `${dsrRatioValue}%` },
-        { label: "최종 산출 한도", value: `${calculatedLimit.toLocaleString()} 원` }
-      ];
+      // 시각화용 파라미터 셋 구성 (JSON 구조 그대로 매핑)
+      const limitParams = [];
+      if (productData.ltvBasedLoanLimit) {
+         limitParams.push({ label: "평가 시세 (Market Price)", value: `${productData.ltvBasedLoanLimit.collateralMarketPrice.toLocaleString()} 원` });
+         limitParams.push({ label: "적용 LTV (Loan To Value)", value: productData.ltvBasedLoanLimit.LTVRatio });
+      }
+      if (productData.dsrBasedLoanLimit) {
+         limitParams.push({ label: "연간 소득 (Annual Income)", value: `${productData.dsrBasedLoanLimit.annualIncomeTotal.toLocaleString()} 원` });
+         limitParams.push({ label: "적용 DSR (Debt Service Ratio)", value: productData.dsrBasedLoanLimit.DSRRatio });
+      }
 
       return {
         productKey,
+        productName: productData.productName || productKey, // UI 한국어 노출용
         isApproved,
-        ltvLimit: ltvRatioValue,
-        dsrLimit: dsrRatioValue,
+        ltvLimit: ltvLimitNum,
+        dsrLimit: dsrLimitNum,
         calculatedLimit,
         limitParams,
         items: sortedItems

@@ -12,10 +12,37 @@ export interface ReviewItem {
   reason: string;
 }
 
-// 2. 항목 이름(키)이 무엇이든 동적으로 다 받아내는 대출 상품 구조
-export type LoanProduct = Record<string, ReviewItem>;
+// 2. 한도 상세 정보 타입
+export interface LtvLoanLimit {
+  collateralMarketPrice: number;
+  LTVRatio: string;
+  maximumClaimAmount: number;
+  totalRemainingLoanBalance: number;
+  value: number;
+}
 
-// 3. API 전체 응답 최상위 구조
+export interface DsrLoanLimit {
+  DSRRatio: string;
+  annualIncomeTotal: number;
+  annualPrincipalAndInterestRepayment: number;
+  interestRate: string;
+  stressRateAdjustment: string;
+  stressDSR: string;
+  repaymentPeriodYears: number;
+  value: number;
+}
+
+// 3. 대출 상품 구조 (계층형)
+export interface LoanProduct {
+  productName?: string;
+  interestRate?: string;
+  repaymentPeriod?: string;
+  ltvBasedLoanLimit?: LtvLoanLimit;
+  dsrBasedLoanLimit?: DsrLoanLimit;
+  aiResults: Record<string, ReviewItem>; // 심사 조항들은 이 객체 내부로 그룹화
+}
+
+// 4. API 전체 응답 최상위 구조
 export interface ConsultationResponse {
   consultationId: string;
   result: Record<string, LoanProduct>;
@@ -29,6 +56,7 @@ export interface ProcessedReviewItem extends ReviewItem {
 
 export interface ProcessedProduct {
   productKey: string;
+  productName?: string;
   isApproved: boolean;
   ltvLimit: number;
   dsrLimit: number;

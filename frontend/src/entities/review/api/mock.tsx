@@ -1,28 +1,32 @@
-// 1. 타입 인터페이스 정의
-export interface ReviewItem {
-  name_ko: string;
-  value: unknown;
-  matched_articles: string[];
-  result: '승인' | '거절' | '자료 보완 요망' | '검토 요망' | '상관 없음';
-  reason: string;
-}
-
-export type LoanProduct = Record<string, ReviewItem>;
-
-export interface ConsultationResponse {
-  consultationId: string;
-  result: {
-    ssadimdol: LoanProduct;
-    ssageumjari: LoanProduct;
-  };
-}
+import { ConsultationResponse } from '../model/types';
 
 // 2. 타입이 적용된 더미 데이터 객체
 export const dummyConsultationData: ConsultationResponse = {
   consultationId: "CONS-2026-EMP-001",
   result: {
     ssadimdol: {
-      creditRating: {
+      productName: "싸딤돌",
+      interestRate: "15%",
+      repaymentPeriod: "30년",
+      ltvBasedLoanLimit: {
+        collateralMarketPrice: 900000000,
+        LTVRatio: "35%",
+        maximumClaimAmount: 100000000,
+        totalRemainingLoanBalance: 150000000,
+        value: 6
+      },
+      dsrBasedLoanLimit: {
+        DSRRatio: "40%",
+        annualIncomeTotal: 70000000,
+        annualPrincipalAndInterestRepayment: 14400000,
+        interestRate: "10%",
+        stressRateAdjustment: "0.6%",
+        stressDSR: "3%",
+        repaymentPeriodYears: 30,
+        value: 8
+      },
+      aiResults: {
+        creditRating: {
         name_ko: "신용등급",
         value: "A",
         matched_articles: [
@@ -279,9 +283,14 @@ export const dummyConsultationData: ConsultationResponse = {
         result: "검토 요망",
         reason: "제12조, 제13조 규정에 따른 DSR 비율 산출 시 수치 대신 'DSR 비율' 문자가 전달되어 정확한 평가가 필요합니다."
       }
-    },
-    ssageumjari: {
-      creditRating: {
+    }
+  },
+  ssageumjari: {
+      productName: "싸금자리",
+      interestRate: "4.5%",
+      repaymentPeriod: "40년",
+      aiResults: {
+        creditRating: {
         name_ko: "신용등급",
         value: "A",
         matched_articles: [
@@ -535,6 +544,7 @@ export const dummyConsultationData: ConsultationResponse = {
         ],
         result: "검토 요망",
         reason: "제11조, 제12조 규정에 따른 DSR 비율 산출 시 수치 대신 'DSR 비율' 문자가 전달되어 정확한 평가가 필요합니다."
+      }
       }
     }
   }
