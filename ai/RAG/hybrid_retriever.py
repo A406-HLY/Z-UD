@@ -19,8 +19,9 @@ class HybridRetriever:
         texts = [doc.get('original_text', doc.get('text', '')) for doc in documents]
         return self.model.encode(texts)
 
-    def retrieve(self, query_text, target_field, documents, doc_vectors, top_k=5, threshold=0.65):
-        q_vec = self.model.encode([query_text])[0]
+    def retrieve(self, query_text, target_field, documents, doc_vectors, top_k=5, threshold=0.65, q_vec=None):
+        if q_vec is None:
+            q_vec = self.model.encode([query_text])[0]
         mapped_concept_key = None
         for c_key, c_data in self.concept_dict.items():
             all_t = [c_key] + c_data.get('synonyms', [])

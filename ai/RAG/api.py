@@ -24,6 +24,7 @@ class AppState:
     evaluation_template = {}
     category_map = {}
     product_map = {}
+    query_vectors_cache = {}
 
     @classmethod
     def load_maps(cls):
@@ -42,6 +43,31 @@ class AppState:
         if os.path.exists(loan_products_path):
             with open(loan_products_path, 'r', encoding='utf-8') as f:
                 cls.product_map = json.load(f)
+
+    @classmethod
+    def init_query_vectors(cls):
+        """Pre-embeds all static queries from the schema to achieve 0s lookup latency."""
+        if not cls.retrievers or not cls.query_map:
+            return
+        
+        # Grab any retriever's model since weights are identical
+        if cls.query_vectors_cache:
+            return # Already initialized
+            
+        print('[Startup] Pre-embedding static search queries to memory cache...')
+        model = list(cls.retrievers.values())[0].model
+        
+        queries = []
+        kor_keys = []
+        for kor_key, query_text in cls.query_map.items():
+            queries.append(query_text)
+            kor_keys.append(kor_key)
+            
+        q_vecs = model.encode(queries)
+        for i, kor_key in enumerate(kor_keys):
+            cls.query_vectors_cache[kor_key] = q_vecs[i]
+        print(f'[Startup] Successfully pre-embedded {len(queries)} static search queries.')
+
 AppState.load_maps()
 
 def startup_event():
@@ -70,6 +96,8 @@ def startup_event():
     except Exception as e:
         print(f'[Startup Warning] DB Load failed entirely: {e}. Falling back to normal pipeline...')
         _update_pipeline()
+
+    AppState.init_query_vectors()
 
 def _update_pipeline(raw_text=None):
     total_chunks = 0
@@ -219,7 +247,8 @@ def search_rules(user_data: dict):
         for doc_name, retriever in AppState.retrievers.items():
             doc_documents = AppState.grouped_documents[doc_name]
             doc_vectors = AppState.grouped_doc_vectors[doc_name]
-            retrieved = retriever.retrieve(query_text=base_query, target_field=field, documents=doc_documents, doc_vectors=doc_vectors, top_k=None, threshold=0.95)
+            q_vec_cached = AppState.query_vectors_cache.get(field)
+            retrieved = retriever.retrieve(query_text=base_query, target_field=field, documents=doc_documents, doc_vectors=doc_vectors, top_k=None, threshold=0.95, q_vec=q_vec_cached)
             all_matched_chunks = []
             for r in retrieved:
                 chunk = r['chunk']
