@@ -3,13 +3,13 @@
  */
 export interface Customer {
   name: string;        // 고객 성함
-  personalId: string;  // 주민등록번호
+  residentRegistrationNumber: string;  // 주민등록번호
   phoneNumber: string; // 전화번호
   loanPurpose: string; // 대출 목적
   employmentType: string; // 근로 형태
-  desiredAmount: string;  // 희망 금액
-  houseCount: string;     // 보유 주택 개수
-  counselId: string;      // 상담 ID (UUID, String 형식으로 백엔드 규격 통일)
+  targetLoanAmount: string;  // 희망 금액
+  ownedHouseCount: string;     // 보유 주택 개수
+  consultationId: string;      // 상담 ID (UUID, String 형식으로 백엔드 규격 통일)
 }
 
 /**
@@ -17,11 +17,11 @@ export interface Customer {
  */
 export const INITIAL_CUSTOMER_STATE: Customer = {
   name: '홍길동',
-  personalId: '990101-1234567',
+  residentRegistrationNumber: '990101-1234567',
   phoneNumber: '010-1234-5678',
   loanPurpose: '주택구입목적',
   employmentType: '직장인',
-  desiredAmount: '100000000',
-  houseCount: '0',
-  counselId: '',
+  targetLoanAmount: '100000000',
+  ownedHouseCount: '0',
+  consultationId: '',
 };

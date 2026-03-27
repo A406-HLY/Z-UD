@@ -10,16 +10,16 @@ import { fetchVerificationResult } from '@/entities/verification/api/verificatio
  */
 export const Header = () => {
   const user = useAppSelector((state) => state.auth.user);
-  const counselId = useAppSelector((state) => state.customer.data.counselId);
+  const consultationId = useAppSelector((state) => state.customer.data.consultationId);
   const dispatch = useAppDispatch();
 
   const handleMockTrigger = async () => {
-    console.log('[MOCK] 🚀 Triggered! counselId:', counselId || 'TEMP_ID');
+    console.log('[MOCK] 🚀 Triggered! consultationId:', consultationId || 'TEMP_ID');
     dispatch(updateStepStatus({ step: 'ocr', status: 'LOADING' }));
     
     try {
       console.log('[MOCK] 🛰️ Fetching verification results...');
-      const response = await fetchVerificationResult(counselId || 'TEMP_ID');
+      const response = await fetchVerificationResult(consultationId || 'TEMP_ID');
       console.log('[MOCK] ✅ Data fetched successfully:', response);
       
       // (S14-FIX) Mapper가 { data: { ... } } 구조를 기대하므로, 

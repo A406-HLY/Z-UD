@@ -25,14 +25,14 @@ interface CreateConsultationRequest {
  */
 const mapToBackendRequest = (customer: Customer): CreateConsultationRequest => {
   // (Why) 금액 문자열에서 콤마(,)를 제거하고 숫자로 변환합니다.
-  const amount = parseInt(customer.desiredAmount.replace(/,/g, ''), 10) || 0;
-  const houseCount = parseInt(customer.houseCount, 10) || 0;
+  const amount = parseInt(customer.targetLoanAmount.replace(/,/g, ''), 10) || 0;
+  const houseCount = parseInt(customer.ownedHouseCount, 10) || 0;
 
   // (Why) 프론트엔드 옵션을 백엔드 Enum(영문 대문자)으로 매핑합니다.
   return {
-    consultationId: customer.counselId || undefined,
+    consultationId: customer.consultationId,
     name: customer.name,
-    residentRegistrationNumber: customer.personalId,
+    residentRegistrationNumber: customer.residentRegistrationNumber,
     phoneNumber: customer.phoneNumber,
     employmentType: EMPLOYMENT_TYPE_MAP[customer.employmentType as EmploymentType] || 'EMPLOYEE',
     targetLoanAmount: amount,

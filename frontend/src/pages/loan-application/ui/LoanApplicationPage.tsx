@@ -19,7 +19,7 @@ import { DocumentTransferModal } from '@/features/document-sync/ui/DocumentTrans
  */
 export const LoanApplicationPage = () => {
   const navigate = useNavigate();
-  const counselId = useAppSelector((state) => state.customer.data.counselId);
+  const consultationId = useAppSelector((state) => state.customer.data.consultationId);
   const customerName = useAppSelector((state) => state.customer.data.name);
   const isSubmitting = useAppSelector((state) => state.customer.isSubmitting);
 
@@ -33,7 +33,7 @@ export const LoanApplicationPage = () => {
 
   /** "다음 단계" 진행 핸들러 */
   const handleNextStep = () => {
-    if (!counselId) {
+    if (!consultationId) {
       alert('상담 ID가 존재하지 않습니다. 고객 정보를 먼저 저장해 주세요.');
       return;
     }
@@ -48,7 +48,7 @@ export const LoanApplicationPage = () => {
     );
 
     uploadDocuments(
-      { counselId, mode: 'selected', sequenceIds },
+      { consultationId, mode: 'selected', sequenceIds },
       {
         onSuccess: () => {
           navigate('/verification-result');

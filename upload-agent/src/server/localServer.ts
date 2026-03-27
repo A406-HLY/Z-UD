@@ -51,16 +51,16 @@ export class LocalServer {
 
     /**
      * 특정 파일을 선택하여 전송 프로세스를 시작하기 위한 트리거 엔드포인트.
-     * 백엔드 API 명세에 따른 필수 파라미터(counselId)를 요구함.
-     * (Why) 백엔드 규격 변경에 따라 counselId를 string(UUID)으로 수용하도록 수정되었습니다.
+     * 백엔드 API 명세에 따른 필수 파라미터(consultationId)를 요구함.
+     * (Why) 백엔드 규격 변경에 따라 consultationId를 string(UUID)으로 수용하도록 수정되었습니다.
      */
     this.app.post('/api/upload/start', async (req: Request, res: Response): Promise<any> => {
-      const { mode = 'all', sequenceIds, counselId, accessToken } = req.body;
+      const { mode = 'all', sequenceIds, consultationId, accessToken } = req.body;
       
       // (Debug) 프론트엔드에서 보낸 요청 데이터 확인
-      logger.info(`Upload start requested: mode=${mode}, counselId=${counselId}, tokenPresent=${!!accessToken}, sequenceIds=${JSON.stringify(sequenceIds)}`);
-      if (!counselId || typeof counselId !== 'string') {
-        return res.status(400).json(ApiResponseWrapper.error('MISSING_COUNSEL_ID', null, 'counselId is required and must be a string (UUID).'));
+      logger.info(`Upload start requested: mode=${mode}, consultationId=${consultationId}, tokenPresent=${!!accessToken}, sequenceIds=${JSON.stringify(sequenceIds)}`);
+      if (!consultationId || typeof consultationId !== 'string') {
+        return res.status(400).json(ApiResponseWrapper.error('MISSING_CONSULTATION_ID', null, 'consultationId is required and must be a string (UUID).'));
       }
 
       if (mode !== 'all' && mode !== 'selected') {
@@ -76,14 +76,14 @@ export class LocalServer {
         }
       }
 
-      logger.info(`Frontend requested to start upload process (mode: ${mode}, counselId: ${counselId}).`);
+      logger.info(`Frontend requested to start upload process (mode: ${mode}, consultationId: ${consultationId}).`);
       
       try {
         /**
          * 업로드 유효성 검사를 시작 단계에서 수행하여 프론트에 즉각적인 피드백을 제공함.
          * 실제 업로드 프로세스는 내부적으로 비동기 순차 처리를 수행함.
          */
-        await UploadManager.startUploading(mode, sequenceIds, counselId, accessToken);
+        await UploadManager.startUploading(mode, sequenceIds, consultationId, accessToken);
         res.json(ApiResponseWrapper.success(null, 'Upload process completed or started successfully'));
       } catch (err: unknown) {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error during upload start';

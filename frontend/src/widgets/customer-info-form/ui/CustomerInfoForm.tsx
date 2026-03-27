@@ -40,10 +40,10 @@ export const CustomerInfoForm = () => {
         <div className="flex flex-col w-full gap-y-2 animate-fade-in">
           {/** (Why) 1920x1080 해상도 최적화를 위한 초소형 레이아웃 유지 */}
           {/* 상담 ID 표시 */}
-          {form.counselId && (
+          {form.consultationId && (
             <div className="w-full mb-0.5 p-1.5 bg-slate-100 border border-slate-200 rounded-none flex justify-between items-center transition-all hover:bg-slate-200/50">
               <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">Counsel_Session_ID</span>
-              <span className="text-[10px] text-slate-700 font-mono font-bold leading-none">{form.counselId}</span>
+              <span className="text-[10px] text-slate-700 font-mono font-bold leading-none">{form.consultationId}</span>
             </div>
           )}
 

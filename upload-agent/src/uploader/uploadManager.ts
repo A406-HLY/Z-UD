@@ -45,11 +45,11 @@ export class UploadManager {
 
   /**
    * 업로드 프로세스를 시작합니다.
-   * (Why) counselId는 백엔드 업로드 시 필수 식별자이며, 신규 규격에 따라 string 타입을 사용합니다.
+   * (Why) consultationId는 백엔드 업로드 시 필수 식별자이며, 신규 규격에 따라 string 타입을 사용합니다.
    */
-  public static async startUploading(mode: 'all' | 'selected' = 'all', sequenceIds?: number[], counselId?: string, accessToken?: string): Promise<void> {
-    if (!counselId) {
-      throw new Error('counselId is required for backend upload.');
+  public static async startUploading(mode: 'all' | 'selected' = 'all', sequenceIds?: number[], consultationId?: string, accessToken?: string): Promise<void> {
+    if (!consultationId) {
+      throw new Error('consultationId is required for backend upload.');
     }
 
     if (this.isUploading) {
@@ -59,7 +59,7 @@ export class UploadManager {
 
     this.isUploading = true;
     try {
-      await this.processQueue(mode, sequenceIds, counselId, accessToken);
+      await this.processQueue(mode, sequenceIds, consultationId, accessToken);
     } finally {
       this.isUploading = false;
       logger.info('Upload process finished or paused.');
@@ -71,7 +71,7 @@ export class UploadManager {
    * (Why) 백엔드의 사전 메타데이터 검증을 통해 Presigned URL을 대량 발급받은 뒤, 
    * 스토리지에 클라이언트(에이전트)가 순차 직접 전송(Direct Upload)하는 구조입니다.
    */
-  private static async processQueue(mode: 'all' | 'selected', sequenceIds: number[] | undefined, counselId: string, accessToken?: string): Promise<void> {
+  private static async processQueue(mode: 'all' | 'selected', sequenceIds: number[] | undefined, consultationId: string, accessToken?: string): Promise<void> {
     let filesToUpload: QueuedFile[] = [];
 
     if (mode === 'all') {
@@ -100,7 +100,7 @@ export class UploadManager {
       return;
     }
 
-    logger.info(`Starting upload process for ${filesToUpload.length} files (mode: ${mode}, counselId: ${counselId})...`);
+    logger.info(`Starting upload process for ${filesToUpload.length} files (mode: ${mode}, consultationId: ${consultationId})...`);
 
     // 1. API 명세서에 맞는 FileMetaDto 구성 및 즉각적인 상태 전이
     const fileMetas: FileMetaDto[] = filesToUpload.map(file => {
@@ -115,7 +115,7 @@ export class UploadManager {
     // 2. Presigned URL 대량 발급 요청
     let presignedUrls: PresignedUrlDto[];
     try {
-       presignedUrls = await BackendApiClient.getPresignedUrls(counselId, fileMetas, accessToken);
+       presignedUrls = await BackendApiClient.getPresignedUrls(consultationId, fileMetas, accessToken);
     } catch (error) {
        logger.error('Failed to get Presigned URLs. Halting upload process.');
        filesToUpload.forEach(f => FileQueueStore.updateFileStatus(f.sequenceId, 'FAILED', 'URL 발급 실패'));
@@ -167,9 +167,9 @@ export class UploadManager {
     // (Why) 에이전트 내 이벤트 처리의 마지막 단계로, 백엔드가 OCR 처리를 시작할 수 있도록 종료 시점을 명확히 알려줍니다.
     if (uploadResults.length > 0) {
       try {
-        await BackendApiClient.notifyUploadCompletions(counselId, uploadResults, accessToken);
+        await BackendApiClient.notifyUploadCompletions(consultationId, uploadResults, accessToken);
       } catch (notifyError) {
-        logger.error(`Failed to notify backend of upload completions for counselId: ${counselId}`, notifyError);
+        logger.error(`Failed to notify backend of upload completions for consultationId: ${consultationId}`, notifyError);
       }
     }
   }

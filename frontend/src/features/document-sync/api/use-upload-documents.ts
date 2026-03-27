@@ -3,7 +3,7 @@ import { startAgentUpload } from './agent.api';
 import { useAppSelector } from '../../../app/store/hooks';
 
 interface UploadParams {
-  counselId: string;
+  consultationId: string;
   mode: 'all' | 'selected';
   sequenceIds?: number[];
 }
@@ -16,8 +16,8 @@ export const useUploadDocuments = () => {
   const accessToken = useAppSelector((state) => state.auth.user?.accessToken);
 
   return useMutation({
-    mutationFn: ({ counselId, mode, sequenceIds }: UploadParams) => 
-      startAgentUpload(counselId, mode, sequenceIds, accessToken),
+    mutationFn: ({ consultationId, mode, sequenceIds }: UploadParams) => 
+      startAgentUpload(consultationId, mode, sequenceIds, accessToken),
     onSuccess: () => {
       console.log('Upload process triggered successfully.');
     },

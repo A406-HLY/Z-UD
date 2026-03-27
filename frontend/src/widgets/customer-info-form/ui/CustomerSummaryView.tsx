@@ -25,11 +25,11 @@ export const CustomerSummaryView = ({ form, onEdit }: CustomerSummaryViewProps) 
               </span>
               <span className={clsx(
                 "font-bold",
-                field === 'name' || field === 'desiredAmount' ? "text-slate-900" : "text-slate-600 font-mono"
+                field === 'name' || field === 'targetLoanAmount' ? "text-slate-900" : "text-slate-600 font-mono"
               )}>
                 {form[field as keyof Customer] || '-'}
               </span>
-              {field === 'desiredAmount' && <span className="text-[9px] text-slate-400 ml-0.5">원</span>}
+              {field === 'targetLoanAmount' && <span className="text-[9px] text-slate-400 ml-0.5">원</span>}
             </div>
             {idx < REQUIRED_FIELDS.length - 1 && <div className="w-px h-2.5 bg-slate-200 ml-2" />}
           </div>

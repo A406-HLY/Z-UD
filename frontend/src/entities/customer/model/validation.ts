@@ -2,9 +2,8 @@ import { Customer } from './types';
 
 /**
  * 주민등록번호 형식이 올바른지 확인합니다. (14자리: 000000-0000000)
- * (Why) 금융 거래의 식별자로서 정확한 14자리 문자열 규격을 충족해야 합니다.
  */
-export const isValidPersonalId = (id: string): boolean => {
+export const isValidResidentRegistrationNumber = (id: string): boolean => {
   return id.length === 14;
 };
 
@@ -27,15 +26,14 @@ export const isValidPhoneNumber = (num: string): boolean => {
 export const validateCustomer = (data: Customer): Partial<Record<keyof Customer, boolean>> => {
   const errors: Partial<Record<keyof Customer, boolean>> = {};
 
-  // (Why) 1단계: 필수적으로 요구되는 항목의 존재 여부를 체크합니다.
   const requiredFields: (keyof Customer)[] = [
     'name', 
-    'personalId', 
+    'residentRegistrationNumber', 
     'phoneNumber', 
     'loanPurpose', 
     'employmentType', 
-    'desiredAmount', 
-    'houseCount'
+    'targetLoanAmount', 
+    'ownedHouseCount'
   ];
 
   requiredFields.forEach((field) => {
@@ -45,11 +43,8 @@ export const validateCustomer = (data: Customer): Partial<Record<keyof Customer,
     }
   });
 
-  // (Why) 2단계: 값이 존재하더라도 금융 비즈니스 규격(길이 등)에 맞는지 심화 검층을 수행합니다.
-  // 이미 에러가 발생한 필드는 추가 검사를 생략하여 불필요한 연산을 줄입니다.
-  
-  if (!errors.personalId && data.personalId && !isValidPersonalId(data.personalId)) {
-    errors.personalId = true;
+  if (!errors.residentRegistrationNumber && data.residentRegistrationNumber && !isValidResidentRegistrationNumber(data.residentRegistrationNumber)) {
+    errors.residentRegistrationNumber = true;
   }
 
   if (!errors.phoneNumber && data.phoneNumber && !isValidPhoneNumber(data.phoneNumber)) {
@@ -61,10 +56,6 @@ export const validateCustomer = (data: Customer): Partial<Record<keyof Customer,
 
 /**
  * 개별 필드가 '완성(Complete)' 상태인지 확인합니다.
- * (Why) 단순히 값이 있는지를 넘어, 진행률에 반영될 수 있는 최소한의 품질을 충족했는지 판단합니다.
- * 
- * @param field 필드 이름
- * @param value 필드 값
  */
 export const isFieldComplete = (field: keyof Customer, value: string): boolean => {
   if (!value || !value.trim()) return false;
@@ -72,11 +63,11 @@ export const isFieldComplete = (field: keyof Customer, value: string): boolean =
   switch (field) {
     case 'name':
       return value.trim().length >= 2;
-    case 'personalId':
-      return isValidPersonalId(value);
+    case 'residentRegistrationNumber':
+      return isValidResidentRegistrationNumber(value);
     case 'phoneNumber':
       return isValidPhoneNumber(value);
-    case 'desiredAmount':
+    case 'targetLoanAmount':
       return value.replace(/[^\d]/g, '') !== '0' && value.length > 0;
     default:
       return value.trim().length > 0;

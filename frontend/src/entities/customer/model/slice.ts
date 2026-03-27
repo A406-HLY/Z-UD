@@ -28,8 +28,8 @@ const customerSlice = createSlice({
     updateCustomerData: (state, action: PayloadAction<Partial<Customer>>) => {
       state.data = { ...state.data, ...action.payload };
     },
-    setCounselId: (state, action: PayloadAction<string>) => {
-      state.data.counselId = action.payload;
+    setConsultationId: (state, action: PayloadAction<string>) => {
+      state.data.consultationId = action.payload;
     },
     setIsPollingActive: (state, action: PayloadAction<boolean>) => {
       state.isPollingActive = action.payload;
@@ -40,5 +40,5 @@ const customerSlice = createSlice({
   },
 });
 
-export const { updateCustomerData, setCounselId, setIsPollingActive, setIsSubmitting } = customerSlice.actions;
+export const { updateCustomerData, setConsultationId, setIsPollingActive, setIsSubmitting } = customerSlice.actions;
 export default customerSlice.reducer;

@@ -20,18 +20,18 @@ import { fetchVerificationResult } from '@/entities/verification/api/verificatio
  * (Why) 네이티브 EventSource를 사용하되, 인증 토큰을 쿼리 파라미터(accessToken)로 전달합니다.
  * fetch 기반이나 XHR 폴리필보다 네이티브 API가 Vite 프록시 환경에서 가장 안정적인 스트리밍을 보장합니다.
  */
-export const useSseAudit = (counselId: string | undefined, isTriggered: boolean) => {
+export const useSseAudit = (consultationId: string | undefined, isTriggered: boolean) => {
   const dispatch = useAppDispatch();
   const { isSseConnected } = useAppSelector((state) => state.audit);
   const accessToken = useAppSelector((state) => state.auth.user?.accessToken);
 
   // (Why) 값을 ref로 보관하여 useCallback 의존성에서 제거합니다.
   const accessTokenRef = useRef(accessToken);
-  const counselIdRef = useRef(counselId);
+  const consultationIdRef = useRef(consultationId);
   const eventSourceRef = useRef<EventSource | null>(null);
 
   useEffect(() => { accessTokenRef.current = accessToken; }, [accessToken]);
-  useEffect(() => { counselIdRef.current = counselId; }, [counselId]);
+  useEffect(() => { consultationIdRef.current = consultationId; }, [consultationId]);
 
   /**
    * OCR 완료 이벤트 비동기 핸들러
@@ -39,9 +39,9 @@ export const useSseAudit = (counselId: string | undefined, isTriggered: boolean)
   const handleOcrCompleted = useCallback(async (payload: { message?: string }) => {
     dispatch(updateStepStatus({ step: 'ocr', status: 'LOADING' }));
     try {
-      const currentCounselId = counselIdRef.current;
-      if (!currentCounselId) return;
-      const ocrResult = await fetchVerificationResult(currentCounselId);
+      const currentConsultationId = consultationIdRef.current;
+      if (!currentConsultationId) return;
+      const ocrResult = await fetchVerificationResult(currentConsultationId);
       dispatch(setOcrData(ocrResult));
       dispatch(updateStepStatus({ step: 'ocr', status: 'SUCCESS', message: payload.message || 'OCR 분석 완료' }));
     } catch (error) {
@@ -52,7 +52,7 @@ export const useSseAudit = (counselId: string | undefined, isTriggered: boolean)
   }, [dispatch]);
 
   const connectSse = useCallback(() => {
-    if (!counselId || !isTriggered) return;
+    if (!consultationId || !isTriggered) return;
 
     // (Why) 이전 연결이 있으면 먼저 종료합니다.
     eventSourceRef.current?.close();
@@ -186,7 +186,7 @@ export const useSseAudit = (counselId: string | undefined, isTriggered: boolean)
       eventSource.close();
       dispatch(setSseConnected(false));
     };
-  }, [counselId, isTriggered, dispatch, handleOcrCompleted]);
+  }, [consultationId, isTriggered, dispatch]);
 
   useEffect(() => {
     const cleanup = connectSse();

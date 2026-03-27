@@ -36,31 +36,31 @@ export const LOAN_PURPOSE_MAP: Record<LoanPurposeOption, string> = {
 /** (Why) 진척도 계산 및 필수 유효성 검사 기준이 되는 필드 목록입니다. */
 export const REQUIRED_FIELDS: (keyof Customer)[] = [
   'name',
-  'personalId',
+  'residentRegistrationNumber',
   'phoneNumber',
   'loanPurpose',
   'employmentType',
-  'desiredAmount',
-  'houseCount',
+  'targetLoanAmount',
+  'ownedHouseCount',
 ];
 
 /** (Why) UI 하드코딩을 방지하기 위한 레이블 상술입니다. */
 export const CUSTOMER_FORM_LABELS = {
   name: '고객 성함',
-  personalId: '주민번호',
+  residentRegistrationNumber: '주민번호',
   phoneNumber: '전화번호',
   loanPurpose: '대출 목적',
   employmentType: '근로 형태',
-  desiredAmount: '희망 금액',
-  houseCount: '보유 주택',
+  targetLoanAmount: '희망 금액',
+  ownedHouseCount: '보유 주택',
 } as const;
 
 export const CUSTOMER_FORM_PLACEHOLDERS = {
   name: '이름',
-  personalId: '주민번호 13자리',
+  residentRegistrationNumber: '주민번호 13자리',
   phoneNumber: '010-0000-0000',
   loanPurpose: '본인의 목적을 선택하세요',
   employmentType: '근로 형태 선택',
-  desiredAmount: '100,000,000',
-  houseCount: '0',
+  targetLoanAmount: '100,000,000',
+  ownedHouseCount: '0',
 } as const;

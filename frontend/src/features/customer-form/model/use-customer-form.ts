@@ -7,7 +7,7 @@ import {
   formatCurrency 
 } from '@/shared/lib/utils/format-utils';
 import { 
-  setCounselId, 
+  setConsultationId, 
   setIsPollingActive, 
   setIsSubmitting,
   updateCustomerData 
@@ -19,11 +19,10 @@ import { createConsultation } from '@/entities/customer/api/customer.api';
 
 /** 
  * (P3) switch 문을 대체하기 위한 필드별 포맷터 매핑 객체입니다. 
- * (Why) 새로운 도메인 필드가 추가되어도 switch 문 확장 없이 매핑 추가만으로 대응이 가능합니다.
  */
 const FIELD_FORMATTERS: Partial<Record<string, (val: string, prev?: string) => string>> = {
   name: formatName,
-  personalId: formatPersonalId,
+  residentRegistrationNumber: formatPersonalId,
   phoneNumber: formatPhoneNumber,
   currency: formatCurrency,
   number: (val) => {
@@ -114,10 +113,10 @@ export const useCustomerForm = () => {
       
       if (response.success && response.data) {
         // (Why) 백엔드에서 생성된 정식 상담 ID(id 필드)를 전역 상태에 반영합니다.
-        const newCounselId = response.data.id;
-        dispatch(setCounselId(newCounselId));
+        const newConsultationId = response.data.id;
+        dispatch(setConsultationId(newConsultationId));
         
-        console.log('[System] Consultation registered with Backend UUID:', newCounselId);
+        console.log('[System] Consultation registered with Backend UUID:', newConsultationId);
         dispatch(setIsPollingActive(!isPollingActive));
       } else {
         console.error('[System] Failed to register consultation:', response.error?.message);

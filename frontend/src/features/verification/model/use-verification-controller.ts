@@ -18,7 +18,7 @@ export const useVerificationController = () => {
 
   // 1. Redux 및 API 레이어에서 데이터 수집
   const customerInfo = useAppSelector(state => state.customer.data);
-  const counselId = customerInfo.counselId; // (S14-FIX) URL 대신 리덕스에서 ID를 가져옵니다.
+  const consultationId = customerInfo.consultationId; // (Refactored) consultationId 사용
   const edits = useAppSelector(state => state.verification.edits);
   const selectedId = useAppSelector(state => state.verification.activeDocumentId);
   
@@ -35,10 +35,10 @@ export const useVerificationController = () => {
 
   // 3. 하이브리드 상태 계산 (Derived State)
   const localResult = useMemo(() => {
-    if (!ocrData || !counselId) return null;
+    if (!ocrData || !consultationId) return null;
     
     // (A) 초기 매핑: 서버 응답 객체를 UI에 적합한 트리/맵 구조로 변환
-    const result = mapServerResponseToVerificationResult(ocrData, counselId);
+    const result = mapServerResponseToVerificationResult(ocrData, consultationId);
     
     // (B) Redux 수정본 적용 (Multi-Document 지원)
     Object.entries(edits).forEach(([docId, docEdits]) => {
@@ -75,7 +75,7 @@ export const useVerificationController = () => {
     });
 
     return result;
-  }, [ocrData, edits, customerInfo, counselId]);
+  }, [ocrData, edits, customerInfo, consultationId, ocrStatus]);
 
   // (Why: 선택된 문서가 없을 경우 첫 번째 유효한 문서를 자동으로 활성화합니다.)
   useEffect(() => {
@@ -114,7 +114,7 @@ export const useVerificationController = () => {
     isLoading,
     isError,
     focusedFieldKey,
-    counselId, // Page에서 필요할 수 있으므로 반환합니다.
+    consultationId, // Page에서 필요할 수 있으므로 반환합니다.
     setSelectedId: onSelectDocument, 
     setFocusedFieldKey,
     handleFieldChange: onFieldUpdate,

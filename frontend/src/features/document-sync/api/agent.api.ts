@@ -27,13 +27,13 @@ export const fetchAgentFiles = async (): Promise<AgentFile[]> => {
 
 /**
  * 에이전트에게 백엔드 전송 프로세스 시작을 요청합니다.
- * @param counselId 상담 ID
+ * @param consultationId 상담 ID
  * @param mode 'all' | 'selected'
  * @param sequenceIds 선택된 파일의 sequenceId 목록 (mode가 'selected'일 때 필드 필수)
  * @param accessToken [NEW] Redux 메모리에서 주입받은 인증 토큰
  */
 export const startAgentUpload = async (
-  counselId: string, 
+  consultationId: string, 
   mode: 'all' | 'selected' = 'all', 
   sequenceIds?: number[],
   accessToken?: string
@@ -43,7 +43,7 @@ export const startAgentUpload = async (
   await agentClient.post('/api/upload/start', {
     mode,
     sequenceIds,
-    counselId,
+    consultationId,
     accessToken,
   });
 };

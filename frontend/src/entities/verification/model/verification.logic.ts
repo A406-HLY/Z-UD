@@ -89,7 +89,7 @@ export const checkIsResolved = (
 
     const customerValue = 
       isNameField ? customerInfo.name : 
-      isIdField ? customerInfo.personalId : 
+      isIdField ? customerInfo.residentRegistrationNumber : 
       customerInfo.phoneNumber;
     
     return customerValue === value;

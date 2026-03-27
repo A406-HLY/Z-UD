@@ -24,7 +24,7 @@ export const VerificationResultPage = () => {
     selectedId, 
     isLoading: isControllerLoading, 
     focusedFieldKey,
-    counselId,
+    consultationId,
     setSelectedId, 
     setFocusedFieldKey,
     handleFieldChange,
@@ -147,7 +147,7 @@ export const VerificationResultPage = () => {
             pageNumber={pageNumber}
             onScaleChange={setScale}
             onPageChange={setPageNumber}
-            verificationId={counselId || ''}
+            verificationId={consultationId || ''}
           />
         </section>
       </main>
