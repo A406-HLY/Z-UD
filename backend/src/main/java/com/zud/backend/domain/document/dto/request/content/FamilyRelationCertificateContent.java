@@ -20,24 +20,12 @@ public record FamilyRelationCertificateContent(
 	@Schema(description = "본인 주민등록번호")
 	DataField<String> residentRegistrationNumber,
 	@Schema(description = "배우자 정보")
-	Spouse spouse
+	DataField<String> spouse
 ) implements DocumentContent {
 
 	@Override
 	public DocumentTag getDocumentTag() {
 		return DocumentTag.FILE_003_FAMILY_RELATION_CERTIFICATE;
-	}
-
-	@Schema(description = "배우자 정보")
-	@Builder
-	public record Spouse(
-		@Schema(description = "배우자 존재 여부")
-		DataField<Boolean> exists,
-		@Schema(description = "배우자 성명")
-		DataField<String> name,
-		@Schema(description = "배우자 주민등록번호")
-		DataField<String> residentRegistrationNumber
-	) {
 	}
 
 	@Override
