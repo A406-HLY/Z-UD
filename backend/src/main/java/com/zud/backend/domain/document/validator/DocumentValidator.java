@@ -59,9 +59,7 @@ public class DocumentValidator {
 		final Consultation consultation
 	) {
 		Set<DocumentTag> submittedTags = documents.stream()
-			.map(DocumentDto::extraction)
-			.filter(Objects::nonNull)
-			.map(DocumentDto.ExtractionDetail::content)
+			.map(DocumentDto::content)
 			.filter(Objects::nonNull)
 			.map(DocumentContent::getDocumentTag)
 			.collect(Collectors.toSet());
@@ -82,14 +80,14 @@ public class DocumentValidator {
 		final Consultation consultation
 	) {
 		return documents.stream()
-			.filter(doc -> doc.extraction() != null && doc.extraction().content() != null)
+			.filter(doc -> doc.content() != null)
 			.map(doc -> validateDocument(doc, consultation))
 			.filter(Objects::nonNull)
 			.toList();
 	}
 
 	private DocumentViolation validateDocument(final DocumentDto doc, final Consultation consultation) {
-		DocumentContent content = doc.extraction().content();
+		DocumentContent content = doc.content();
 		DocumentTag tag = content.getDocumentTag();
 
 		DocumentContentValidator<?> validator = validatorMap.get(tag);
@@ -158,11 +156,11 @@ public class DocumentValidator {
 		Map<CrossField, Map<DocumentTag, String>> result = new EnumMap<>(CrossField.class);
 
 		for (DocumentDto doc : documents) {
-			if (doc.extraction() == null || doc.extraction().content() == null) {
+			if (doc.content() == null) {
 				continue;
 			}
 
-			DocumentContent content = doc.extraction().content();
+			DocumentContent content = doc.content();
 			DocumentTag tag = content.getDocumentTag();
 			Map<CrossField, String> crossFields = content.getCrossCheckFields();
 

@@ -35,20 +35,10 @@ public record TitleDeedContent(
 	@Schema(description = "소유자명")
 	DataField<String> ownerName,
 	@Schema(description = "임차보증금")
-	Deposit deposit,
+	DataField<Long> deposit,
 	@Schema(description = "선순위권리내역")
 	List<SeniorRight> seniorRights
 ) implements DocumentContent {
-
-	@Schema(description = "임차보증금")
-	@Builder
-	public record Deposit(
-		@Schema(description = "임차보증금 금액")
-		DataField<Boolean> hasDeposit,
-		@Schema(description = "임차보증금 금액")
-		DataField<Long> depositAmount
-	) {
-	}
 
 	@Override
 	public DocumentTag getDocumentTag() {

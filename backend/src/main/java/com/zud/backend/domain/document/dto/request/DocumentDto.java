@@ -13,6 +13,7 @@ import tools.jackson.databind.annotation.JsonDeserialize;
 @Builder
 @JsonDeserialize(using = DocumentDtoDeserializer.class)
 public record DocumentDto(
+	String consultationId,
 	String fileId,
 	String storageType,
 	String bucket,
@@ -20,14 +21,16 @@ public record DocumentDto(
 	String fileName,
 	String fileUrl,
 	String mimeType,
-	String status,
-	String errorCode,
-	String errorMessage,
+	String processStartedAt,
+	String processFinishedAt,
 	@Valid @NotNull DocumentClassification documentClassification,
-	@Valid ExtractionDetail extraction,
-	List<ReviewItem> reviewItems,
+	String documentType,
+	String documentTypeLabel,
+	List<Integer> pageNums,
+	@Valid DocumentContent content,
 	String rawText,
-	List<PageInfo> pages
+	String status,
+	String error
 ) {
 	@Builder
 	public record DocumentClassification(
@@ -35,27 +38,27 @@ public record DocumentDto(
 		String documentType,
 		String documentTypeLabel,
 		Double classificationConfidence,
-		String classificationModel
+		String classificationStatus,
+		String classificationMethod,
+		String classificationStrategy,
+		Boolean reviewRequired,
+		Double scoreGap,
+		String titleText,
+		String issuerText,
+		String documentNumberText,
+		List<String> keyClues,
+		FallbackClassification fallbackClassification
 	) {
 	}
 
 	@Builder
-	public record ExtractionDetail(
-		String model,
-		DocumentContent content
-	) {
-	}
-
-	@Builder
-	public record ReviewItem(
-		String reviewCode,
-		String reviewMessage
-	) {
-	}
-
-	@Builder
-	public record PageInfo(
-		Integer pageNum
+	public record FallbackClassification(
+		String documentType,
+		Double confidence,
+		List<String> keyClues,
+		Double elapsedSec,
+		String rawOutput,
+		String classificationCropMode
 	) {
 	}
 }
