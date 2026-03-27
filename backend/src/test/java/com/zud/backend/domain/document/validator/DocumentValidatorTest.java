@@ -48,7 +48,7 @@ class DocumentValidatorTest {
 		com.zud.backend.domain.document.dto.request.content.DocumentContent content
 	) {
 		return DocumentDto.builder()
-			.extraction(DocumentDto.ExtractionDetail.builder().content(content).build())
+			.content(content)
 			.build();
 	}
 
@@ -147,8 +147,7 @@ class DocumentValidatorTest {
 				.build();
 
 			SaleOrLeaseContractContent contract = SaleOrLeaseContractContent.builder()
-				.buyer(SaleOrLeaseContractContent.Party.builder()
-					.name(strField("홍길동")).build())
+				.buyer(strField("홍길동"))
 				.build();
 
 			Consultation consultation = Consultation.builder()
