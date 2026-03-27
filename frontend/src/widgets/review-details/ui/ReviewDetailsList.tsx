@@ -11,7 +11,8 @@ import {
 } from '@/entities/review/model/review.slice';
 import { formatValueForUI } from '@/entities/review/lib/formatUtils';
 import { clsx } from 'clsx';
-import { FileText, Filter, ArrowUpDown } from 'lucide-react';
+import { FileText, ArrowUpDown } from 'lucide-react';
+import { APPROVAL_STATUS } from '@/shared/config/constants';
 
 /**
  * @widget review-details
@@ -84,7 +85,7 @@ export const ReviewDetailsList = () => {
           <div className="p-8 text-center text-slate-400 font-bold text-[11px]">조건에 맞는 항목이 없습니다.</div>
         ) : (
           items.map((item, idx) => (
-            <div key={idx} className={clsx("flex border-b border-gray-200 hover:bg-slate-50 transition-colors group", item.result === '거절' && "bg-red-50/40")}>
+            <div key={idx} className={clsx("flex border-b border-gray-200 hover:bg-slate-50 transition-colors group", item.result === APPROVAL_STATUS.REJECT && "bg-red-50/40")}>
               {/* 항목명 */}
               <div className="w-[30%] px-2 py-2 border-r border-gray-200 flex flex-col justify-center">
                 <span className="font-bold text-slate-800 text-[10px]">{item.name_ko}</span>
@@ -95,8 +96,8 @@ export const ReviewDetailsList = () => {
               <div className="w-[15%] px-2 py-2 border-r border-gray-200 flex items-center justify-center">
                 <span className={clsx(
                   "px-2 py-0.5 text-[9px] font-black uppercase text-center w-full shadow-sm border",
-                  item.result === '승인' ? "text-blue-700 bg-blue-50 border-blue-200" : 
-                  item.result === '거절' ? "text-red-700 bg-red-100 border-red-300" :
+                  item.result === APPROVAL_STATUS.PASS ? "text-blue-700 bg-blue-50 border-blue-200" : 
+                  item.result === APPROVAL_STATUS.REJECT ? "text-red-700 bg-red-100 border-red-300" :
                   "text-orange-700 bg-orange-50 border-orange-200"
                 )}>
                   {item.result}
@@ -105,7 +106,7 @@ export const ReviewDetailsList = () => {
               
               {/* 입력값 & 사유 */}
               <div className="flex-1 px-2 py-2 border-r border-gray-200 text-[10px] flex flex-col justify-center">
-                <div className={clsx("font-medium mb-1", item.result === '거절' ? "text-red-600" : "text-slate-600")}>
+                <div className={clsx("font-medium mb-1", item.result === APPROVAL_STATUS.REJECT ? "text-red-600" : "text-slate-600")}>
                   {item.reason || '관리 기준 충족'}
                 </div>
                 <div className="text-[9px] text-slate-500 font-mono bg-slate-100 px-1 py-0.5 rounded-sm self-start inline-block border border-slate-200">

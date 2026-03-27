@@ -1,6 +1,7 @@
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { selectProcessedProducts, selectSelectedProductKey, setSelectedProductKey } from '@/entities/review/model/review.slice';
 import { clsx } from 'clsx';
+import { APPROVAL_STATUS, UI_LIMITS } from '@/shared/config/constants';
 
 /**
  * @widget review-summary
@@ -15,7 +16,7 @@ export const ProductTabs = () => {
 
   return (
     <div className="bg-[#e4ebf1] flex border-b border-gray-400 shrink-0 select-none overflow-x-auto">
-      {products.slice(0, 5).map(prod => {
+      {products.slice(0, UI_LIMITS.MAX_VISIBLE_TABS).map(prod => {
         const isSelected = selectedTab === prod.productKey;
         
         // 미선택 탭 테두리 색상: 승인(초록) / 거절(빨강)

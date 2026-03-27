@@ -35,6 +35,10 @@ const ProgressBar = ({ label, current, max, colorClass }: { label: string, curre
   );
 };
 
+import { REGULATION_MAX } from '@/shared/config/constants';
+
+// ... ( cn 유틸리티 및 ProgressBar 정의 생략 )
+
 /**
  * @widget review-summary
  * 한도 산출 근거 시각화 컴포넌트
@@ -43,14 +47,6 @@ export const LimitVisualizationCard = () => {
   const currentProduct = useAppSelector(selectCurrentProduct);
 
   if (!currentProduct) return null;
-
-  // Mock param data (실제로는 currentProduct 내부 혹은 전역 상태에서 산출된 파라미터 활용)
-  const params = [
-    { label: "감정 평가 금액 (담보가치)", value: "500,000,000 원" },
-    { label: "선순위 채권액", value: "0 원" },
-    { label: "임대차 보증금", value: "0 원" },
-    { label: "소액 임차 보증금 (차감 반영)", value: "37,000,000 원" }
-  ];
 
   return (
     <div className="bg-white border border-gray-300 shadow-sm mb-4 animate-fade-in">
@@ -63,12 +59,22 @@ export const LimitVisualizationCard = () => {
       
       <div className="p-4 grid grid-cols-2 gap-6 bg-slate-50">
         <div className="flex flex-col justify-center border-r border-slate-300 pr-6">
-          <ProgressBar label="LTV (담보인정 비율)" current={currentProduct.ltvLimit || 0} max={70} colorClass="bg-blue-600" />
-          <ProgressBar label="DSR (총부채원리금 상환비율)" current={currentProduct.dsrLimit || 0} max={40} colorClass="bg-[#003366]" />
+          <ProgressBar 
+            label="LTV (담보인정 비율)" 
+            current={currentProduct.ltvLimit || 0} 
+            max={REGULATION_MAX.LTV} 
+            colorClass="bg-blue-600" 
+          />
+          <ProgressBar 
+            label="DSR (총부채원리금 상환비율)" 
+            current={currentProduct.dsrLimit || 0} 
+            max={REGULATION_MAX.DSR} 
+            colorClass="bg-[#003366]" 
+          />
         </div>
         
         <div className="border border-slate-300 bg-white flex flex-col text-[10px] shadow-sm">
-          {params.map((p, i) => (
+          {currentProduct.limitParams.map((p, i) => (
             <div key={i} className="flex border-b border-slate-200 last:border-0 hover:bg-slate-50 transition-colors">
                <div className="w-[55%] p-2 border-r border-slate-200 text-[#445566] font-bold bg-[#f1f5f9] tracking-tight">{p.label}</div>
                <div className="w-[45%] p-2 text-right font-mono font-bold text-slate-800 flex items-center justify-end">{p.value}</div>

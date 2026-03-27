@@ -4,6 +4,8 @@ import { selectCurrentProduct } from '@/entities/review/model/review.slice';
 import { ChevronDown, ChevronUp, AlertCircle, CheckCircle } from 'lucide-react';
 import { clsx } from 'clsx';
 
+import { APPROVAL_STATUS } from '@/shared/config/constants';
+
 /**
  * @widget review-summary
  * 상태 요약 및 핵심 결과 컴포넌트
@@ -14,11 +16,8 @@ export const StatusSummaryBoard = () => {
 
   if (!currentProduct) return null;
 
-  const rejectedItems = currentProduct.items.filter(i => i.result === '거절');
+  const rejectedItems = currentProduct.items.filter(i => i.result === APPROVAL_STATUS.REJECT);
   const hasRejects = rejectedItems.length > 0;
-  
-  // mock max limit for visualization (가상의 단위 보정 로직 적용)
-  const maxLimit = currentProduct.ltvLimit > 0 ? (currentProduct.ltvLimit * 5000000) : 300000000;
   
   return (
     <div className="bg-white border border-gray-300 shadow-sm rounded-none mb-4 animate-fade-in">
@@ -42,7 +41,7 @@ export const StatusSummaryBoard = () => {
         
         <div className="text-right">
           <div className="text-xl font-black text-[#003366] tracking-tighter">
-            {currentProduct.isApproved ? `${maxLimit.toLocaleString()} KRW` : '0 KRW'}
+            {currentProduct.isApproved ? `${currentProduct.calculatedLimit.toLocaleString()} KRW` : '0 KRW'}
           </div>
           {!currentProduct.isApproved && <div className="text-[9px] text-red-500 mt-0.5 font-bold">심사 부적격으로 한도 산출 불가</div>}
         </div>
