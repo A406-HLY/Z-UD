@@ -33,7 +33,7 @@ export const CUSTOMER_FIELDS_CONFIG: FieldConfig[] = [
     label: CUSTOMER_FORM_LABELS.residentRegistrationNumber,
     placeholder: CUSTOMER_FORM_PLACEHOLDERS.residentRegistrationNumber,
     component: 'input',
-    formatType: 'residentRegistrationNumber',
+    formatType: 'personalId',
     className: 'h-8 w-full max-w-[140px]',
   },
   {
