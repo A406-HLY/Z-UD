@@ -12,6 +12,14 @@ export interface ReviewItem {
   reason: string;
 }
 
+// 1-1. 상품 메타 데이터를 위한 간소화된 아이템 구조 (결과/사유 생략 가능)
+export interface LoanMetaItem {
+  name_ko: string;
+  value: unknown;
+  search_query?: string;
+  matched_articles?: string[];
+}
+
 // 2. 한도 상세 정보 타입
 export interface LtvLoanLimit {
   collateralMarketPrice: number;
@@ -37,6 +45,7 @@ export interface LoanProduct {
   productName?: string;
   interestRate?: string;
   repaymentPeriod?: string;
+  stressDSR?: LoanMetaItem; // (New) 스트레스 DSR 메타 정보
   ltvBasedLoanLimit?: LtvLoanLimit;
   dsrBasedLoanLimit?: DsrLoanLimit;
   aiResults: Record<string, ReviewItem>; // 심사 조항들은 이 객체 내부로 그룹화
