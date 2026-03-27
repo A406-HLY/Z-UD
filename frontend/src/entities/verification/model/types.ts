@@ -27,17 +27,14 @@ export interface ValidationRisk {
   fields: string[];
 }
 
-/** 백엔드 전체 응답 구조 */
+/** OCR 서버 데이터 (도메인 모델) */
 export interface VerificationServerResponse {
-  success: boolean; // (S14-FIX) 실제 API 규격에 맞춰 성공 여부 필드 추가
-  data: {
-    resolution: { width: number; height: number };
-    documents: ServerDocItem[];
-    validationResult: {
-      documentMissings: ValidationMissing[];
-      violations: ValidationViolation[];
-      risks: ValidationRisk[];
-    };
+  // (Why) ApiResponse<T> 래퍼와 혼동을 피하기 위해 도메인 필드만 남깁니다.
+  resolution?: { width: number; height: number };
+  documents: ServerDocItem[];
+  validationResult: {
+    documentMissings: ValidationMissing[];
+    violations: ValidationViolation[];
   };
 }
 
@@ -82,18 +79,22 @@ export interface ServerDocItem {
   mimeType?: string;
   documentClassification: DocumentClassification;
   status: string;
-  errorCode: string | null;
-  errorMessage: string | null;
-  extraction: {
-    content: Record<string, unknown>; // 타입 안전성을 위해 any에서 unknown으로 변경
-  };
-  // TODO: 백엔드 협의 필요 - 문서별 원본 해상도(width, height) 전달 방식 확정 후 반영 예정
+  // (Note) errorCode/errorMessage 대신 error 필드로 통합될 수 있으므로 유연하게 대응합니다.
+  errorCode?: string | null;
+  errorMessage?: string | null;
+  error?: string | null;
+  
+  // (Why) extraction 계층을 거치지 않고 직접 content로 접근하도록 변경되었습니다.
+  content: Record<string, unknown>; 
+  
   resolution?: { width: number; height: number };
   rawText?: string;
-  pages?: Array<{ pageNum: number }>;
+  // (Why) 백엔드 필드명이 pageNums로 변경되었습니다.
+  pageNums?: number[];
+  pages?: Array<{ pageNum: number }>; // 레거시 지원을 위해 유지
 }
 
-export interface DocItem extends Omit<ServerDocItem, 'extraction'> {
+export interface DocItem extends ServerDocItem {
   id: string; // docType을 id로 매핑하여 사용
   status: DocumentStatus;
   isRisk: boolean;
@@ -125,7 +126,6 @@ export interface VerificationResult {
   errorTargetDict: Record<string, Set<string>>;
   // 빠른 조회를 위한 맵들
   violationMap: Record<string, Set<string>>; // docType -> fields
-  riskMap: Record<string, Set<string>>;      // docType -> fields
   missingSet: Set<string>;                   // docTypes
 }
 
@@ -135,7 +135,7 @@ export interface VerificationResult {
  */
 export interface VerificationEdits {
   /** 평탄화된 키(Dot Notation) 기반의 수정된 값들 (예: "userInfo.name": "홍길동") */
-  values: Record<string, any>;
+  values: Record<string, unknown>;
   /** 해당 문서의 최종 수정 일시 (ISO 8601 형식) */
   lastModified: string;
 }

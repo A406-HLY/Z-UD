@@ -47,12 +47,12 @@ export const useVerificationController = () => {
         Object.entries(docEdits.values).forEach(([path, value]) => {
           const field = targetFields.find(f => f.key === path);
           if (field) {
-            field.value = value;
+            field.value = value as string | number | boolean | null; 
             field.isModified = true;
             
             field.isMatch = checkIsResolved(
               path, 
-              value, 
+              String(value), 
               customerInfo, 
               result.errorTargetDict, 
               result.documentFields,
@@ -75,7 +75,7 @@ export const useVerificationController = () => {
     });
 
     return result;
-  }, [ocrData, edits, customerInfo, counselId, ocrStatus]);
+  }, [ocrData, edits, customerInfo, counselId]);
 
   // (Why: 선택된 문서가 없을 경우 첫 번째 유효한 문서를 자동으로 활성화합니다.)
   useEffect(() => {

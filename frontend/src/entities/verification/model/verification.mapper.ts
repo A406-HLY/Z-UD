@@ -4,8 +4,12 @@ import {
   DocCategory, 
   DocumentStatus,
   ExtractedField,
-  DocItem
+  DocItem,
+  ServerDocItem
 } from './types';
+
+/** 표준 A4 해상도 기본값 (백엔드 미전달 시 사용) */
+const DEFAULT_A4_RESOLUTION = { width: 1240, height: 1754 };
 
 const ARRAY_INDEX_REGEX = /\[\d+\]/g;
 
@@ -35,7 +39,7 @@ const flattenContent = (content: unknown, prefix = '', labelPrefix = ''): Extrac
     const fieldKey = prefix ? `${prefix}.${key}` : key;
     const displayLabel = labelPrefix ? `${labelPrefix} > ${key}` : key;
 
-    const isFieldObject = (val: unknown): val is { value: string | number | boolean | null; confidence?: number; evidence?: any } => {
+    const isFieldObject = (val: unknown): val is { value: string | number | boolean | null; confidence?: number; evidence?: unknown } => {
       return typeof val === 'object' && val !== null && 'value' in val;
     };
 
@@ -50,7 +54,7 @@ const flattenContent = (content: unknown, prefix = '', labelPrefix = ''): Extrac
         isViolationTarget: false,
         isRiskTarget: false,
         isModified: false,
-        evidence: item.evidence
+        evidence: item.evidence as ExtractedField['evidence']
       });
     } else if (Array.isArray(item)) {
       item.forEach((subItem, index) => {
@@ -72,32 +76,29 @@ export const mapServerResponseToVerificationResult = (
   response: VerificationServerResponse,
   id: string
 ): VerificationResult => {
-  const { documents: serverDocs, validationResult } = response.data;
+  // (Why) response 자체가 도메인 데이터 객체(VerificationServerResponse)이므로 직접 구조분해를 수행합니다.
+  const { documents: serverDocs, validationResult = { documentMissings: [], violations: [] }, resolution } = response;
 
   // 1. 빠른 조회를 위한 중간 맵들 생성
-  const missingSet = new Set(validationResult.documentMissings.map(m => m.documentType));
+  const missingSet = new Set((validationResult.documentMissings || []).map(m => m.documentType));
   
   const violationMap: Record<string, Set<string>> = {};
-  validationResult.violations.forEach(v => {
+  (validationResult.violations || []).forEach(v => {
     if (!violationMap[v.documentType]) violationMap[v.documentType] = new Set();
-    v.fields.forEach(f => violationMap[v.documentType].add(f));
+    (v.fields || []).forEach(f => violationMap[v.documentType].add(f));
   });
 
-  const riskMap: Record<string, Set<string>> = {};
-  validationResult.risks.forEach(r => {
-    if (!riskMap[r.documentType]) riskMap[r.documentType] = new Set();
-    r.fields.forEach(f => riskMap[r.documentType].add(f));
-  });
+  // (Note) risks 필드는 백엔드 사양 변경에 따라 더 이상 처리하지 않습니다.
 
   const initialErrorTargetDict: Record<string, Set<string>> = {};
-  validationResult.violations.forEach(v => {
-    v.fields.forEach(field => {
+  (validationResult.violations || []).forEach(v => {
+    (v.fields || []).forEach(field => {
       if (!initialErrorTargetDict[field]) initialErrorTargetDict[field] = new Set<string>();
     });
   });
 
   // 2. 문서 종류별 그룹화 (여러 물리 파일을 하나의 논리 문서로)
-  const groupedDocs: Record<string, typeof serverDocs> = {};
+  const groupedDocs: Record<string, ServerDocItem[]> = {};
   serverDocs.forEach(doc => {
     const docType = doc.documentClassification.documentType;
     if (!groupedDocs[docType]) groupedDocs[docType] = [];
@@ -115,8 +116,8 @@ export const mapServerResponseToVerificationResult = (
   const { processedDocs, documentFields, documentsMap, errorTargetDict } = Object.entries(groupedDocs).reduce((acc, [docType, docs]) => {
     // pageNum 기준으로 정렬 (안전장치)
     const sortedDocs = [...docs].sort((a, b) => {
-      const pA = a.pages?.[0]?.pageNum ?? 1;
-      const pB = b.pages?.[0]?.pageNum ?? 1;
+      const pA = a.pageNums?.[0] ?? a.pages?.[0]?.pageNum ?? 1;
+      const pB = b.pageNums?.[0] ?? b.pages?.[0]?.pageNum ?? 1;
       return pA - pB;
     });
 
@@ -126,7 +127,10 @@ export const mapServerResponseToVerificationResult = (
     const firstDoc = sortedDocs[0];
     
     sortedDocs.forEach(doc => {
-      const flattened = flattenContent(doc.extraction.content);
+      // (Why) extraction.content 대신 최상위 content 필드를 우선적으로 참조합니다.
+      const contentData = doc.content || {};
+      const flattened = flattenContent(contentData);
+      
       mergedFields.push(...flattened.map(field => ({
         ...field,
         id: `field-${doc.fileId}-${field.id}` // 중복 타입 내의 필드 구분을 위해 fileId 포함 유지
@@ -134,42 +138,35 @@ export const mapServerResponseToVerificationResult = (
       combinedRawText += (doc.rawText || '') + '\n';
     });
 
-    // 필드 마킹 (Violation/Risk)
+    // 필드 마킹 (Violation)
     const docViolationFields = violationMap[docType] || new Set<string>();
-    const docRiskFields = riskMap[docType] || new Set<string>();
 
     const markedFields = mergedFields.map(field => {
-      // (Why: .을 기준으로 분할하여 마지막 필드명을 추출합니다. 배열 인덱스[0] 등은 정규표현식으로 제거합니다.)
       const parts = field.key.replace(ARRAY_INDEX_REGEX, '').split('.');
       const baseKey = parts[parts.length - 1];
       
       const isViolation = docViolationFields.has(baseKey) || docViolationFields.has(field.key);
-      const isRisk = docRiskFields.has(baseKey) || docRiskFields.has(field.key);
 
       if (isViolation) {
         if (!acc.errorTargetDict[field.key]) acc.errorTargetDict[field.key] = new Set();
-        // 해당 필드가 속한 문서 종류(docType)를 타겟으로 기록 (UI 연동용)
         acc.errorTargetDict[field.key].add(docType);
       }
 
       return {
         ...field,
         isViolationTarget: !!isViolation,
-        isRiskTarget: !!isRisk,
+        isRiskTarget: false, // 리스크 필드는 더 이상 사용하지 않음
         isMatch: !isViolation
       };
     });
 
     const hasViolation = markedFields.some(f => f.isViolationTarget);
-    const hasRisk = markedFields.some(f => f.isRiskTarget);
 
     let status: DocumentStatus = 'APPROVED';
     if (missingSet.has(docType)) {
       status = 'MISSING';
     } else if (hasViolation) {
       status = 'REVIEW_NEEDED';
-    } else if (hasRisk) {
-      status = 'RISK';
     }
 
     // DocItem 생성 (id를 docType으로 사용하여 UI에서 그룹 단위 제어)
@@ -177,15 +174,16 @@ export const mapServerResponseToVerificationResult = (
       ...firstDoc, 
       id: docType, 
       status, 
-      isRisk: hasRisk,
-      // (Why: 백엔드에서 개별 문서 해상도를 주지 않을 경우 전역 해상도를 기본값으로 사용합니다.)
-      resolution: firstDoc.resolution || response.data.resolution,
+      isRisk: false, // 리스크 개념 제거
+      // (Why) 백엔드에서 해상도를 주지 않을 경우 프론트엔드 기본값(A4)을 사용합니다.
+      resolution: firstDoc.resolution || resolution || DEFAULT_A4_RESOLUTION,
       rawText: combinedRawText.trim(),
       // 병합된 문서에 포함된 모든 물리적 파일의 메타데이터 수집
       files: sortedDocs.map(d => ({
         fileId: d.fileId,
         fileUrl: d.fileUrl,
-        pageNum: d.pages?.[0]?.pageNum ?? 1
+        // (Why) pageNums 배열 또는 기존 pages 객체를 모두 지원하도록 유연하게 대응합니다.
+        pageNum: d.pageNums?.[0] ?? d.pages?.[0]?.pageNum ?? 1
       }))
     };
     
@@ -219,7 +217,6 @@ export const mapServerResponseToVerificationResult = (
     documentFields,
     errorTargetDict,
     violationMap,
-    riskMap,
     missingSet
   };
 };

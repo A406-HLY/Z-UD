@@ -23,7 +23,7 @@ export const useVerificationStatus = () => {
   const employmentType = useAppSelector((state) => state.customer.data.employmentType);
 
   // 3. 필수 서류 누락 검증 (Derived State)
-  const validationResult = ocrData?.data?.validationResult;
+  const validationResult = ocrData?.validationResult;
   const { isBlocked, essentialMissings, otherMissings } = validateEssentialDocs(
     validationResult?.documentMissings || [],
     employmentType
@@ -41,6 +41,6 @@ export const useVerificationStatus = () => {
     /** 기타(선택적) 누락 서류 목록 */
     otherMissings,
     /** 원본 데이터 전체 (전송 시 병합용) */
-    originalData: ocrData?.data,
+    originalData: ocrData,
   };
 };

@@ -13,6 +13,6 @@ export const fetchVerificationResult = async (consultationId: string): Promise<V
     `/documents/extraction-results/${consultationId}`
   );
   
-  // (Why) 공통 응답 규격(ApiResponse)에서 실제 데이터부만 추출하여 반환합니다.
+  // (Why) 공통 응답 규격(ApiResponse)에서 실제 도메인 데이터부(VerificationServerResponse)만 추출하여 반환합니다.
   return response.data.data;
 };
