@@ -1,0 +1,88 @@
+server:
+  port: 9000
+
+spring:
+  application:
+    name: zud-auth
+  web:
+    resources:
+      add-mappings: false
+  datasource:
+    url: jdbc:postgresql://${SSO_DB_HOST}:${SSO_DB_PORT}/${SSO_DB_NAME}
+    driver-class-name: org.postgresql.Driver
+    username: ${SSO_DB_USERNAME}
+    password: ${SSO_DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 10
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      auto-commit: false
+  data:
+    redis:
+      host: ${SSO_REDIS_HOST}
+      port: ${SSO_REDIS_PORT}
+      password: ${SSO_REDIS_PASSWORD}
+  jpa:
+    open-in-view: false
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        show_sql: false
+        format_sql: false
+        use_sql_comments: false
+        criteria:
+          literal_handling_mode: bind
+        query:
+          in_clause_parameter_padding: true
+        connection:
+          provider_disables_autocommit: true
+  threads:
+    virtual:
+      enabled: on
+  jmx:
+    enabled: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 100MB
+
+springdoc:
+  swagger-ui:
+    display-request-duration: true
+    operations-sorter: alpha
+    try-it-out-enabled: true
+    tags-sorter: alpha
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
+
+logging:
+  level:
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: ERROR
+
+management:
+  endpoints:
+    access:
+      default: read-only
+    web:
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      access: read-only
+      show-details: when_authorized
+    prometheus:
+      access: read-only
+
+auth:
+  oauth:
+    client-id: ${SSO_OSSO_CLIENT_ID:zud-client}
+    client-secret: ${SSO_OSSO_CLIENT_SECRET:zud-secret}
+    access-token-ttl: ${SSO_OSSO_ACCESS_TOKEN_TTL:PT1H}
+    refresh-token-ttl: ${SSO_OSSO_REFRESH_TOKEN_TTL:P30D}
+    allowed-origins: ${SSO_OSSO_ALLOWED_ORIGINS:http://localhost:3000,http://127.0.0.1:3000}
+  rsa:
+    key-identifier: ${SSO_RSA_KEY_IDENTIFIER:zud}

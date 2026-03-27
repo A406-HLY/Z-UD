@@ -24,8 +24,8 @@ class FileValidatorTest {
 	class ValidateMeta {
 
 		@Test
-		@DisplayName("유효한_PDF_메타정보이면_예외없이_통과")
-		void 유효한_PDF_메타정보이면_예외없이_통과() {
+		@DisplayName("유효한_Pdf_메타정보이면_예외없이_통과")
+		void 유효한_Pdf_메타정보이면_예외없이_통과() {
 			// given
 			FileMetaDto fileMeta = createFileMeta("test.pdf", "application/pdf", 1024 * 1024L);
 
@@ -35,8 +35,8 @@ class FileValidatorTest {
 		}
 
 		@Test
-		@DisplayName("허용되지_않은_확장자이면_FILE_EXTENSION_NOT_ALLOWED_예외")
-		void 허용되지_않은_확장자이면_FILE_EXTENSION_NOT_ALLOWED_예외() {
+		@DisplayName("허용되지_않은_확장자이면_FileExtensionNotAllowed_예외")
+		void 허용되지_않은_확장자이면_FileExtensionNotAllowed_예외() {
 			// given
 			FileMetaDto fileMeta = createFileMeta("test.jpg", "image/jpeg", 1024L);
 
@@ -47,8 +47,8 @@ class FileValidatorTest {
 		}
 
 		@Test
-		@DisplayName("contentType_불일치이면_FILE_MIME_TYPE_MISMATCH_예외")
-		void contentType_불일치이면_FILE_MIME_TYPE_MISMATCH_예외() {
+		@DisplayName("contentType_불일치이면_FileMimeTypeMismatch_예외")
+		void contentType_불일치이면_FileMimeTypeMismatch_예외() {
 			// given
 			FileMetaDto fileMeta = createFileMeta("test.pdf", "image/jpeg", 1024L);
 
@@ -59,8 +59,8 @@ class FileValidatorTest {
 		}
 
 		@Test
-		@DisplayName("파일_크기_초과이면_FILE_SIZE_EXCEEDED_예외")
-		void 파일_크기_초과이면_FILE_SIZE_EXCEEDED_예외() {
+		@DisplayName("파일_크기_초과이면_FileSizeExceeded_예외")
+		void 파일_크기_초과이면_FileSizeExceeded_예외() {
 			// given
 			FileMetaDto fileMeta = createFileMeta("test.pdf", "application/pdf", 11 * 1024 * 1024L);
 
@@ -82,8 +82,8 @@ class FileValidatorTest {
 		}
 
 		@Test
-		@DisplayName("확장자_없는_파일명이면_FILE_EXTENSION_NOT_ALLOWED_예외")
-		void 확장자_없는_파일명이면_FILE_EXTENSION_NOT_ALLOWED_예외() {
+		@DisplayName("확장자_없는_파일명이면_FileExtensionNotAllowed_예외")
+		void 확장자_없는_파일명이면_FileExtensionNotAllowed_예외() {
 			// given
 			FileMetaDto fileMeta = createFileMeta("testfile", "application/pdf", 1024L);
 

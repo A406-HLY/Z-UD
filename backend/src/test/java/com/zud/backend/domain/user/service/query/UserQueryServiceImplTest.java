@@ -75,8 +75,8 @@ class UserQueryServiceImplTest {
 	class FindById {
 
 		@Test
-		@DisplayName("ID_존재시_User_반환")
-		void ID_존재시_User_반환() {
+		@DisplayName("아이디_존재시_User_반환")
+		void 아이디_존재시_User_반환() {
 			// given
 			Long userId = 1L;
 			User user = createUser(userId, "EMP001");
@@ -91,8 +91,8 @@ class UserQueryServiceImplTest {
 		}
 
 		@Test
-		@DisplayName("ID_미존재시_UserException_발생")
-		void ID_미존재시_UserException_발생() {
+		@DisplayName("아이디_미존재시_UserException_발생")
+		void 아이디_미존재시_UserException_발생() {
 			// given
 			Long userId = 999L;
 			given(userRepository.findById(userId)).willReturn(Optional.empty());

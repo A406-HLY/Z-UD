@@ -1,26 +1,36 @@
 package com.zud.backend.domain.auth.converter;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-
+import com.zud.backend.domain.auth.dto.request.LoginReqDto;
+import com.zud.backend.domain.auth.dto.request.TokenIssueReqDto;
+import com.zud.backend.domain.auth.dto.request.TokenRefreshReqDto;
 import com.zud.backend.domain.auth.dto.response.LoginSuccessResDto;
-import com.zud.backend.domain.auth.enums.SessionConstants;
+import com.zud.backend.domain.auth.dto.response.TokenIssueResDto;
+import com.zud.backend.domain.branch.entity.Branch;
 import com.zud.backend.domain.user.converter.UserConverter;
-import com.zud.backend.domain.user.entity.User;
 
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class AuthConverter {
 
-	public LoginSuccessResDto toLoginSuccessDto(final User user) {
+	public TokenIssueReqDto toTokenIssueReqDto(final LoginReqDto reqDto) {
+		return TokenIssueReqDto.builder()
+			.employeeNumber(reqDto.employeeNumber())
+			.password(reqDto.password())
+			.build();
+	}
+
+	public TokenRefreshReqDto toTokenRefreshReqDto(final String refreshToken) {
+		return TokenRefreshReqDto.builder()
+			.refreshToken(refreshToken)
+			.build();
+	}
+
+	public LoginSuccessResDto toLoginSuccessDto(final TokenIssueResDto tokenDto, final Branch branch) {
 		return LoginSuccessResDto.builder()
-			.userInfoDto(UserConverter.toUserInfoDto(user))
-			.branchInfoDto(UserConverter.toBranchInfoDto(user))
-			.sessionExpiry(ZonedDateTime.now(ZoneId.of("Asia/Seoul"))
-				.plusHours(SessionConstants.EXPIRATION_HOUR_TIME)
-				.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+			.userInfoDto(UserConverter.toUserInfoDto(tokenDto))
+			.branchInfoDto(UserConverter.toBranchInfoDto(branch))
+			.expiresIn(tokenDto.expiresIn())
 			.build();
 	}
 }

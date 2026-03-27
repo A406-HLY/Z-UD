@@ -36,6 +36,7 @@ public class CorsConfig {
 	);
 
 	private static final List<String> EXPOSED_HEADERS = List.of(
+		"Authorization",
 		"Set-Cookie"
 	);
 

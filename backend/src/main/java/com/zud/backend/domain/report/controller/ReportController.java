@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.zud.backend.common.annotation.Authentication;
 import com.zud.backend.common.config.swagger.ApiErrorResponse;
+import com.zud.backend.common.response.BaseResponse;
+import com.zud.backend.common.util.ResponseUtils;
 import com.zud.backend.domain.report.dto.request.LoanReportReqDto;
 import com.zud.backend.domain.report.dto.response.LoanReportGenerateResDto;
 import com.zud.backend.domain.report.dto.response.LoanReportResultResDto;
@@ -32,20 +34,22 @@ public class ReportController {
 	@PostMapping
 	@Operation(summary = "대출 리포트 생성 요청", description = "입력 정보를 기반으로 대출 리포트 생성을 비동기로 요청한다.")
 	@ApiErrorResponse
-	public ResponseEntity<LoanReportGenerateResDto> generateReport(
+	public ResponseEntity<BaseResponse<LoanReportGenerateResDto>> generateReport(
 		@Authentication Long userId,
 		@RequestBody LoanReportReqDto request
 	) {
-		return ResponseEntity.ok(reportFacadeService.generateLoanReport(userId, request));
+		LoanReportGenerateResDto response = reportFacadeService.generateLoanReport(userId, request);
+		return ResponseUtils.ok(response);
 	}
 
 	@GetMapping("/{consultationId}")
 	@Operation(summary = "대출 리포트 결과 조회", description = "consultationId로 리포트 생성 결과를 조회한다.")
 	@ApiErrorResponse
-	public ResponseEntity<LoanReportResultResDto> getReportResult(
+	public ResponseEntity<BaseResponse<LoanReportResultResDto>> getReportResult(
 		@Parameter(description = "리포트 상담 ID")
 		@PathVariable String consultationId
 	) {
-		return ResponseEntity.ok(reportFacadeService.getReportResult(consultationId));
+		LoanReportResultResDto response = reportFacadeService.getReportResult(consultationId);
+		return ResponseUtils.ok(response);
 	}
 }

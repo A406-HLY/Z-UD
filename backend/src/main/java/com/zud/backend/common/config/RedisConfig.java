@@ -16,7 +16,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zud.backend.common.config.properties.RedisProperties;
 import com.zud.backend.common.serializer.GzipRedisSerializer;
-import com.zud.backend.domain.auth.session.UserSession;
 import com.zud.backend.domain.document.redis.OcrExtractionResultCache;
 import com.zud.backend.domain.report.redis.LoanReportResultCache;
 
@@ -38,14 +37,7 @@ public class RedisConfig {
 			redisProperties.port()
 		);
 		config.setPassword(redisProperties.password());
-
 		return new LettuceConnectionFactory(config);
-	}
-
-	@Bean
-	public RedisTemplate<String, UserSession> sessionRedisTemplate() {
-		return createGzipJsonRedisTemplate(objectMapper, new TypeReference<>() {
-		});
 	}
 
 	@Bean
@@ -67,8 +59,8 @@ public class RedisConfig {
 	}
 
 	private <V> RedisTemplate<String, V> createGzipJsonRedisTemplate(
-		ObjectMapper objectMapper,
-		TypeReference<V> typeRef
+		final ObjectMapper objectMapper,
+		final TypeReference<V> typeRef
 	) {
 		RedisTemplate<String, V> redisTemplate = new RedisTemplate<>();
 		redisTemplate.setConnectionFactory(redisConnectionFactory());

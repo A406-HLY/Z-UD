@@ -9,11 +9,11 @@ import lombok.Builder;
 @Schema(description = "로그인 성공 응답 DTO")
 @Builder
 public record LoginSuccessResDto(
-	@Schema(description = "사용자 정보")
+	@Schema(description = "사용자 정보 (userId, name)")
 	UserInfoDto userInfoDto,
 	@Schema(description = "지점 정보")
 	BranchInfoDto branchInfoDto,
-	@Schema(description = "세션 만료 시간 (ISO 8601)", example = "2026-03-11T21:00:00+09:00")
-	String sessionExpiry
+	@Schema(description = "Access Token 만료 시간 (초), 실제 Access Token은 Authorization 헤더로 전달")
+	Long expiresIn
 ) {
 }
