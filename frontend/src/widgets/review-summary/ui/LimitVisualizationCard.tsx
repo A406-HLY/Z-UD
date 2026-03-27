@@ -1,5 +1,5 @@
 import { useAppSelector } from '@/app/store/hooks';
-import { selectCurrentProduct } from '@/entities/review/model/review.slice';
+import { selectCurrentProduct } from '@/entities/review/model/review.selectors';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
