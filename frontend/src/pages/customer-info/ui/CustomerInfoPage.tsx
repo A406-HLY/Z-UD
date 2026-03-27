@@ -17,6 +17,9 @@ import {
 } from '@/entities/audit';
 import { SseAuditStatus, resetAuditState, setAllAuditDone, updateStepStatus, setHouseAuditData, setCreditData, setLoanData } from '@/entities/audit/model/audit.slice';
 import { useAppSelector, useAppDispatch } from '@/app/store/hooks';
+import { useCallback } from 'react';
+import { useCreateReport } from '@/features/verification/api/use-create-report';
+import { createReportRequestPayload } from '@/entities/verification/model/report-factory';
 
 /**
  * @page customer-info
@@ -143,12 +146,59 @@ export const CustomerInfoPage = () => {
     [auditItems]
   );
 
+  // 1. 리포트 관련 상태 및 훅 추출
+  const customerData = useAppSelector(state => state.customer.data);
+  const edits = useAppSelector(state => state.verification.edits);
+  const { mutate: createReport, isPending: isSubmitting } = useCreateReport();
+
+  /** 
+   * 최종 심사 승인 및 리포트 이동 핸들러 
+   * (Why) 복잡한 Selector 대신 필요 시점에 직접 Redux 상태를 모아 팩토리 함수를 호출합니다.
+   */
+  const handleFinalSubmit = useCallback(() => {
+    try {
+      // (Step 1) 여러 문서에 흩어진 수정 내역 병합
+      const allEditsValues: Record<string, any> = {};
+      Object.values(edits).forEach(docEdit => {
+        Object.assign(allEditsValues, docEdit.values);
+      });
+
+      // (Step 2) 최종 페이로드 조립
+      // (Note) creditData/loanData는 SSE(data.creditData/loanData)가 없을 경우 REST API(myData) 결과물을 Backup으로 사용합니다.
+      const payload = createReportRequestPayload(
+        data.ocrData as any,
+        allEditsValues,
+        customerData,
+        data.creditData || myData, // Credit
+        data.loanData || myData    // Loan
+      );
+
+      // (Step 3) API 호출 및 이동
+      createReport(payload, {
+        onSuccess: () => navigate('/review-report'),
+        onError: (err) => alert(`리포트 생성 실패: ${err.message}`)
+      });
+    } catch (error) {
+      console.error('리포트 조립 중 오류:', error);
+      alert('데이터 조립 중 오류가 발생했습니다.');
+    }
+  }, [data, edits, customerData, myData, createReport, navigate]);
+
   /** 상단 네비게이션바(LoanTabs) 우측 액션 버튼 정의 */
   const actionButton = useMemo(() => {
     if (!isAllAuditDone) return { label: '심사 중...', onClick: () => {}, disabled: true, className: 'bg-slate-100 text-slate-400' };
+    
+    // (Why) 심사 부격격 시에는 가심사 종료 단계로 안내합니다.
     if (!canProceed) return { label: '가심사 종료', onClick: () => navigate('/verification-result'), className: 'bg-red-600 text-white' };
-    return { label: '심사 시작 (보고서)', onClick: () => navigate('/review-report'), className: 'bg-[#004b93] text-white' };
-  }, [isAllAuditDone, canProceed, navigate]);
+    
+    // (Why) 전송 중 상태(isSubmitting)를 버튼에 반영합니다.
+    return { 
+      label: isSubmitting ? '전송 중...' : '심사 시작 (보고서)', 
+      onClick: handleFinalSubmit, 
+      disabled: isSubmitting,
+      className: 'bg-[#004b93] text-white hover:bg-[#003a72]' 
+    };
+  }, [isAllAuditDone, canProceed, navigate, isSubmitting, handleFinalSubmit]);
 
   return (
     <div className="min-h-screen bg-[#f1f3f5] flex flex-col font-sans pb-10">

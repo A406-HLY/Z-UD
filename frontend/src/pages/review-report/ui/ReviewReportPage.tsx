@@ -1,4 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/app/store';
 import { Header } from '@/widgets/header';
 import { CustomerInfoForm } from '@/widgets/customer-info-form';
 import { LoanStepper } from '@/widgets/loan-stepper/ui/LoanStepper';
@@ -7,20 +9,24 @@ import { ProductTabs, StatusSummaryBoard, LimitVisualizationCard } from '@/widge
 import { ReviewDetailsList } from '@/widgets/review-details';
 import { DocumentImageViewer } from '@/widgets/document-image-viewer/ui/DocumentImageViewer';
 import { useReviewReportController } from '@/features/review/model/use-review-report-controller';
+import { createReportRequestPayload } from '@/entities/verification/model/report-factory';
 import { MOCK_PDF_FILES } from '@/shared/config/pdfConfig';
 
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { LoanTabs } from '@/widgets/loan-tabs';
-
-// (Why) 모든 하드코딩 데이터는 src/shared/config 및 src/entities/review/api/mock.tsx 로 이관되었습니다.
-
+import { useCreateReport } from '@/features/verification/api/use-create-report';
 
 /**
  * @page review-report
  * 심사레포트 단계 최상위 화면 (데이터 연동 및 Split 뷰 스켈레톤)
  */
 export const ReviewReportPage = () => {
-  const consultationId = "CONS-2026-EMP-001";
+  // 0. Redux 상태 구독 (지연 조립을 위한 원천 데이터)
+  const customerData = useSelector((state: RootState) => state.customer.data);
+  const { ocrData, creditData, loanData } = useSelector((state: RootState) => state.audit.data);
+  const edits = useSelector((state: RootState) => state.verification.edits);
+
+  const consultationId = customerData.consultationId || "CONS-2026-TEMP-001";
   const { 
     isLoading, 
     isError, 
@@ -30,6 +36,9 @@ export const ReviewReportPage = () => {
     pdfScale, 
     setPdfScale 
   } = useReviewReportController(consultationId);
+
+  // 1. API Mutation 훅 초기화
+  const { mutate: createReport, isPending: isSubmitting } = useCreateReport();
 
   // 1. Split View 조절 로직
   const [leftWidthPercent, setLeftWidthPercent] = useState<number>(55);
@@ -56,13 +65,38 @@ export const ReviewReportPage = () => {
     document.addEventListener('mouseup', handleMouseUp);
   }, []);
 
+  // 3. 최종 데이터 조립 핸들러 (Simulation)
+  const handleFinalSubmit = useCallback(() => {
+    // (Why) 여러 문서에 흩어진 수정 내역을 하나의 평탄화된 객체로 병합합니다.
+    const allEditsValues: Record<string, any> = {};
+    Object.values(edits).forEach(docEdit => {
+      Object.assign(allEditsValues, docEdit.values);
+    });
+
+    try {
+      // 팩토리 함수를 호출하여 최종 API 페이로드 생성
+      const payload = createReportRequestPayload(
+        ocrData as any,
+        allEditsValues,
+        customerData,
+        creditData,
+        loanData
+      );
+
+      console.log('🚀 [Simulation] 최종 가심사 리포트 페이로드:', payload);
+      
+      // (Why) 실제 API 호출을 수행합니다. useMutation 기반이므로 비동기 전처리는 훅 내부에서 담당합니다.
+      createReport(payload);
+    } catch (err) {
+      console.error('❌ 데이터 조립 중 오류 발생:', err);
+    }
+  }, [ocrData, customerData, creditData, loanData, edits, createReport]);
+
   // 4. 전산 액션 버튼 정의
   const approvalButton = {
-    label: '최종 심사 승언 및 전송',
-    onClick: () => {
-      alert('최종 심사 승인이 완료되었습니다.');
-    },
-    disabled: isLoading,
+    label: isSubmitting ? '전송 중...' : '최종 심사 승언 및 전송',
+    onClick: handleFinalSubmit,
+    disabled: isLoading || isSubmitting,
     className: 'bg-[#003366] text-white hover:bg-[#002244]'
   };
 

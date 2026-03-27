@@ -48,7 +48,7 @@ export const LoanApplicationPage = () => {
     );
 
     uploadDocuments(
-      { consultationId, mode: 'selected', sequenceIds },
+      { consultationId: consultationId, mode: 'selected', sequenceIds },
       {
         onSuccess: () => {
           navigate('/verification-result');
