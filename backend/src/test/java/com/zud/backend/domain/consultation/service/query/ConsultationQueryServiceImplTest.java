@@ -31,8 +31,8 @@ class ConsultationQueryServiceImplTest {
 	class FindByUuid {
 
 		@Test
-		@DisplayName("상담UUID_존재시_상담_반환")
-		void 상담UUID_존재시_상담_반환() {
+		@DisplayName("상담Uuid_존재시_상담_반환")
+		void 상담Uuid_존재시_상담_반환() {
 			// given
 			String uuid = "some-external-uuid";
 			Consultation consultation = Consultation.builder()
@@ -53,8 +53,8 @@ class ConsultationQueryServiceImplTest {
 		}
 
 		@Test
-		@DisplayName("상담UUID_미존재시_ConsultationException_발생")
-		void 상담UUID_미존재시_ConsultationException_발생() {
+		@DisplayName("상담Uuid_미존재시_ConsultationException_발생")
+		void 상담Uuid_미존재시_ConsultationException_발생() {
 			// given
 			String uuid = "invalid-uuid";
 			given(consultationRepository.findById(uuid))

@@ -41,7 +41,6 @@ class ConsultationFacadeServiceImplTest {
 	@InjectMocks
 	private ConsultationFacadeServiceImpl consultationFacadeService;
 
-
 	private CustomerInfoReqDto createDefaultReqDto() {
 		return new CustomerInfoReqDto(
 			"홍길동",
@@ -86,7 +85,6 @@ class ConsultationFacadeServiceImplTest {
 			// given
 			CustomerInfoReqDto reqDto = createDefaultReqDto();
 
-
 			given(consultationCommandService.save(any(Consultation.class)))
 				.willAnswer(invocation -> {
 					Consultation c = invocation.getArgument(0);
@@ -102,13 +100,10 @@ class ConsultationFacadeServiceImplTest {
 			assertThat(result.name()).isEqualTo("홍길동");
 		}
 
-
-
 		@Test
 		@DisplayName("등록시_상담_저장_호출_및_필드_매핑_확인")
 		void 등록시_상담_저장_호출_및_필드_매핑_확인() {
 			CustomerInfoReqDto reqDto = createDefaultReqDto();
-
 
 			given(consultationCommandService.save(any(Consultation.class)))
 				.willAnswer(invocation -> {
@@ -144,14 +139,14 @@ class ConsultationFacadeServiceImplTest {
 		void 본인_상담_이관요청시_저장_호출() {
 			// given
 			Consultation consultation = Consultation.create(
-				USER_ID,
-				"홍길동",
-				"010-1234-5678",
-				"900101-1234567",
-				EmploymentType.EMPLOYEE,
-				300_000_000L,
-				LoanPurpose.HOME_PURCHASE,
-				1)
+					USER_ID,
+					"홍길동",
+					"010-1234-5678",
+					"900101-1234567",
+					EmploymentType.EMPLOYEE,
+					300_000_000L,
+					LoanPurpose.HOME_PURCHASE,
+					1)
 				.toBuilder()
 				.id(CONSULTATION_ID)
 				.build();
@@ -173,14 +168,14 @@ class ConsultationFacadeServiceImplTest {
 		void 타인_상담_이관요청시_접근거부_예외_발생() {
 			// given
 			Consultation consultation = Consultation.create(
-				99L,
-				"홍길동",
-				"010-1234-5678",
-				"900101-1234567",
-				EmploymentType.EMPLOYEE,
-				300_000_000L,
-				LoanPurpose.HOME_PURCHASE,
-				1)
+					99L,
+					"홍길동",
+					"010-1234-5678",
+					"900101-1234567",
+					EmploymentType.EMPLOYEE,
+					300_000_000L,
+					LoanPurpose.HOME_PURCHASE,
+					1)
 				.toBuilder()
 				.id(CONSULTATION_ID)
 				.build();

@@ -1,17 +1,15 @@
 package com.zud.backend.domain.houseprice.service.query;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.BDDMockito.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -22,23 +20,22 @@ import com.zud.backend.domain.houseprice.dto.response.HousePriceResDto;
 import com.zud.backend.domain.houseprice.entity.HouseOfficialPrice;
 import com.zud.backend.domain.houseprice.entity.HouseTradePrice;
 import com.zud.backend.domain.houseprice.exception.HousePriceException;
-import com.zud.backend.domain.houseprice.service.facade.HousePriceFacadeServiceImpl;
 import com.zud.backend.domain.houseprice.repository.HouseOfficialPriceRepository;
 import com.zud.backend.domain.houseprice.repository.HouseTradePriceRepository;
+import com.zud.backend.domain.houseprice.service.facade.HousePriceFacadeServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("HousePriceQueryServiceImpl 단위 테스트")
 class HousePriceQueryServiceImplTest {
 
+	private static final String VALID_ADDRESS = "서울특별시 서초구 반포동 자하문로36길 16-14 반포아파트 101동 101호";
+	private static final String VALID_HOUSE_TYPE = "아파트";
 	@Mock
 	private HouseTradePriceRepository houseTradePriceRepository;
-
 	@Mock
 	private HouseOfficialPriceRepository houseOfficialPriceRepository;
-
 	@InjectMocks
 	private HousePriceQueryServiceImpl housePriceQueryServiceImpl;
-
 	private HousePriceFacadeServiceImpl housePriceQueryService;
 
 	@BeforeEach
@@ -51,8 +48,40 @@ class HousePriceQueryServiceImplTest {
 		housePriceQueryService = ctor.newInstance(housePriceQueryServiceImpl);
 	}
 
-	private static final String VALID_ADDRESS = "서울특별시 서초구 반포동 자하문로36길 16-14 반포아파트 101동 101호";
-	private static final String VALID_HOUSE_TYPE = "아파트";
+	private HouseTradePrice createTradePrice(Long dealAmountManwon) {
+		return HouseTradePrice.builder()
+			.houseType("APARTMENT")
+			.sigungu("서울특별시 서초구 반포동")
+			.roadName("자하문로36길 16-14")
+			.buildingName("반포아파트")
+			.buildingDong("101")
+			.dealAmountManwon(dealAmountManwon)
+			.contractYearMonth(202401)
+			.contractDay((short)15)
+			.build();
+	}
+
+	private HouseOfficialPrice createOfficialPrice(Long officialPrice) {
+		return HouseOfficialPrice.builder()
+			.sido("서울특별시")
+			.sigungu("서초구")
+			.dongRi("반포동")
+			.complexName("반포아파트")
+			.dongName("101")
+			.hoName("101")
+			.officialPrice(officialPrice)
+			.stdYear(2024)
+			.stdMonth((short)1)
+			.legalDongCode("1165010100")
+			.roadAddress("서울특별시 서초구 반포동 자하문로36길 16-14")
+			.build();
+	}
+
+	private HouseOfficialPrice createOfficialPriceForGangnamMultiHousehold(Long officialPriceWon) {
+		return HouseOfficialPrice.builder()
+			.officialPrice(officialPriceWon)
+			.build();
+	}
 
 	@Nested
 	@DisplayName("findHousePrice()")
@@ -417,40 +446,5 @@ class HousePriceQueryServiceImplTest {
 				assertThat(result.priceType()).isEqualTo("근삿값");
 			}
 		}
-	}
-
-	private HouseTradePrice createTradePrice(Long dealAmountManwon) {
-		return HouseTradePrice.builder()
-			.houseType("APARTMENT")
-			.sigungu("서울특별시 서초구 반포동")
-			.roadName("자하문로36길 16-14")
-			.buildingName("반포아파트")
-			.buildingDong("101")
-			.dealAmountManwon(dealAmountManwon)
-			.contractYearMonth(202401)
-			.contractDay((short)15)
-			.build();
-	}
-
-	private HouseOfficialPrice createOfficialPrice(Long officialPrice) {
-		return HouseOfficialPrice.builder()
-			.sido("서울특별시")
-			.sigungu("서초구")
-			.dongRi("반포동")
-			.complexName("반포아파트")
-			.dongName("101")
-			.hoName("101")
-			.officialPrice(officialPrice)
-			.stdYear(2024)
-			.stdMonth((short)1)
-			.legalDongCode("1165010100")
-			.roadAddress("서울특별시 서초구 반포동 자하문로36길 16-14")
-			.build();
-	}
-
-	private HouseOfficialPrice createOfficialPriceForGangnamMultiHousehold(Long officialPriceWon) {
-		return HouseOfficialPrice.builder()
-			.officialPrice(officialPriceWon)
-			.build();
 	}
 }
