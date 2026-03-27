@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { Header } from '@/widgets/header';
 import { CustomerInfoForm } from '@/widgets/customer-info-form';
 import { LoanStepper } from '@/widgets/loan-stepper/ui/LoanStepper';

@@ -2,7 +2,7 @@ import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { setSelectedProductKey } from '@/entities/review/model/review.slice';
 import { selectProcessedProducts, selectSelectedProductKey } from '@/entities/review/model/review.selectors';
 import { clsx } from 'clsx';
-import { APPROVAL_STATUS, UI_LIMITS } from '@/shared/config/constants';
+import { UI_LIMITS } from '@/shared/config/constants';
 
 /**
  * @widget review-summary
