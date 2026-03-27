@@ -81,12 +81,26 @@ def _update_pipeline(raw_text=None):
     if not os.path.exists(chunk_dump_dir):
         os.makedirs(chunk_dump_dir, exist_ok=True)
     for filename in os.listdir(document_dir):
-        if not filename.endswith('.txt'):
+        if not (filename.endswith('.txt') or filename.endswith('.docx')):
             continue
-        doc_name = filename.replace('.txt', '')
+        
+        file_ext = os.path.splitext(filename)[1].lower()
+        doc_name = filename.replace(file_ext, '')
         file_path = os.path.join(document_dir, filename)
-        with open(file_path, 'r', encoding='utf-8') as f:
-            doc_text = f.read()
+        
+        doc_text = ""
+        if file_ext == '.txt':
+            with open(file_path, 'r', encoding='utf-8') as f:
+                doc_text = f.read()
+        elif file_ext == '.docx':
+            try:
+                import docx
+                doc = docx.Document(file_path)
+                doc_text = '\n'.join([para.text for para in doc.paragraphs])
+            except ImportError:
+                print(f"[Warning] python-docx not installed. Skipping {filename}.")
+                continue
+                
         print(f'[{doc_name}] Starting Keyword Extraction Pipeline...')
         pipeline = KeywordExtractionPipeline(content=doc_text)
         documents = pipeline.run()
@@ -98,10 +112,69 @@ def _update_pipeline(raw_text=None):
         try:
             save_chunks(doc_name, documents, doc_vectors)
             print(f'[{doc_name}] Saved {len(documents)} embedded chunks to DB')
+            
+            # Save chunks to JSON file for LLM or debugging
+            output_json_path = os.path.join(chunk_dump_dir, f"{doc_name}_chunks.json")
+            with open(output_json_path, 'w', encoding='utf-8') as json_f:
+                import json
+                json.dump(documents, json_f, ensure_ascii=False, indent=2)
+            print(f'[{doc_name}] Exported chunks to {output_json_path}')
         except Exception as e:
-            print(f'[{doc_name} Error] Failed to save DB: {e}')
+            print(f'[{doc_name} Error] Failed to save DB or JSON: {e}')
         total_chunks += len(documents)
     return total_chunks
+
+def update_single_document(doc_name: str) -> int:
+    """Read a single document by name, run keyword pipeline, vector embedding, and update DB/JSON."""
+    doc_text = None
+    for ext in ['.txt', '.docx']:
+        file_path = os.path.join(document_dir, f"{doc_name}{ext}")
+        if os.path.exists(file_path):
+            if ext == '.txt':
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    doc_text = f.read()
+            elif ext == '.docx':
+                try:
+                    import docx
+                    doc = docx.Document(file_path)
+                    doc_text = '\n'.join([para.text for para in doc.paragraphs])
+                except ImportError:
+                    print(f"[Warning] python-docx not installed. Skipping {doc_name}.docx.")
+                    doc_text = ""
+            break
+
+    if not doc_text:
+        raise FileNotFoundError(f"Document {doc_name} (.txt or .docx) not found or could not be read.")
+
+    print(f'[{doc_name}] Starting Keyword Extraction for single document update...')
+    pipeline = KeywordExtractionPipeline(content=doc_text)
+    documents = pipeline.run()
+    
+    retriever = HybridRetriever(concept_dict_path=concept_dict_path)
+    doc_vectors = retriever.encode_documents(documents)
+    
+    # Update active state
+    AppState.grouped_documents[doc_name] = documents
+    AppState.grouped_doc_vectors[doc_name] = doc_vectors
+    AppState.retrievers[doc_name] = retriever
+
+    try:
+        save_chunks(doc_name, documents, doc_vectors)
+        print(f'[{doc_name}] Saved {len(documents)} embedded chunks to DB')
+        
+        # Save chunks to JSON file for LLM or debugging
+        if not os.path.exists(chunk_dump_dir):
+            os.makedirs(chunk_dump_dir, exist_ok=True)
+        output_json_path = os.path.join(chunk_dump_dir, f"{doc_name}_chunks.json")
+        with open(output_json_path, 'w', encoding='utf-8') as json_f:
+            import json
+            json.dump(documents, json_f, ensure_ascii=False, indent=2)
+        print(f'[{doc_name}] Exported chunks to {output_json_path}')
+        
+    except Exception as e:
+        print(f'[{doc_name} Error] Failed to save DB or JSON: {e}')
+
+    return len(documents)
 
 def update_vector_db():
     num_chunks = _update_pipeline()

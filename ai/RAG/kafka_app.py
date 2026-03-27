@@ -67,14 +67,59 @@ def main():
                 print("[ERROR] Failed to decode JSON payload")
                 continue
                 
-            # [기능 추가] Update 요청인 경우 파이프라인(청킹 및 DB 저장) 재실행
+            # [기능 추가] Update 요청인 경우 파이프라인(다운로드, 청킹 및 DB 저장) 실행
             if UPDATE_TOPIC and message.topic() == UPDATE_TOPIC:
-                print(f"\n[UPDATE CALLED] Received update request from {UPDATE_TOPIC}. Refreshing Vector DB...")
-                try:
-                    update_vector_db()
-                    print("[UPDATE SUCCESS] Vector DB has been successfully updated with new files.")
-                except Exception as e:
-                    print(f"[UPDATE ERROR] Failed to update Vector DB: {e}")
+                print(f"\n[UPDATE CALLED] Received Document Update from {UPDATE_TOPIC}")
+                if isinstance(payload, list):
+                    from api import update_single_document, update_vector_db
+                    import urllib.request
+                    import re
+                    
+                    doc_dir = os.path.join(current_dir, 'data', 'document')
+                    os.makedirs(doc_dir, exist_ok=True)
+                    
+                    for doc_info in payload:
+                        file_name_ko = doc_info.get("파일명", "")
+                        download_url = doc_info.get("파일 경로", "")
+                        
+                        if not file_name_ko or not download_url:
+                            print("[UPDATE WARNING] Missing '파일명' or '파일 경로'. Skipping.")
+                            continue
+                            
+                        # Extract table name and extension (e.g. 싸딤돌_ssadimdol(260327).txt -> ssadimdol)
+                        file_ext = os.path.splitext(file_name_ko)[1].lower()
+                        if file_ext not in ['.txt', '.docx', '.doc']:
+                            print(f"[UPDATE WARNING] Unsupported file type: {file_ext}. Skipping.")
+                            continue
+                            
+                        match = re.search(r'_([a-zA-Z0-9]+)', file_name_ko)
+                        doc_name = match.group(1) if match else file_name_ko.replace(file_ext, '')
+                        
+                        save_path = os.path.join(doc_dir, f"{doc_name}{file_ext}")
+                        print(f"[*] Downloading: {file_name_ko} -> Table: {doc_name}")
+                        
+                        try:
+                            req = urllib.request.Request(download_url, headers={'User-Agent': 'Mozilla/5.0'})
+                            with urllib.request.urlopen(req) as response:
+                                file_data = response.read()
+                                
+                            with open(save_path, 'wb') as f:
+                                f.write(file_data)
+                                
+                            print(f"[SUCCESS] Saved file to {save_path}")
+                            num_chunks = update_single_document(doc_name)
+                            print(f"[UPDATE SUCCESS] Table '{doc_name}' updated with {num_chunks} chunks.")
+                        except Exception as e:
+                            print(f"[UPDATE ERROR] Failed to process {file_name_ko}: {e}")
+                else:
+                    # Fallback
+                    print("[UPDATE WARNING] Payload is not a list. Attempting global DB update fallback.")
+                    from api import update_vector_db
+                    try:
+                        update_vector_db()
+                        print("[UPDATE SUCCESS] Global Vector DB update completed.")
+                    except Exception as e:
+                        print(f"[UPDATE ERROR] Failed to update Vector DB: {e}")
                 continue
 
             req_id = payload.get("consultationId", payload.get("counselId", payload.get("UUID", "N/A")))
