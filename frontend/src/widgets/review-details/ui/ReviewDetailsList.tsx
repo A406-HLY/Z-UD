@@ -1,18 +1,16 @@
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { 
-  selectFilteredAndSortedCurrentItems, 
-  selectListFilter, 
-  selectListSort, 
-  setListFilter, 
-  setListSort, 
   setSelectedArticle,
-  FilterType,
-  SortType
 } from '@/entities/review/model/review.slice';
+import { selectCurrentProduct } from '@/entities/review/model/review.selectors';
+import { useState, useMemo } from 'react';
 import { formatValueForUI } from '@/entities/review/lib/formatUtils';
 import { clsx } from 'clsx';
 import { FileText, ArrowUpDown } from 'lucide-react';
 import { APPROVAL_STATUS } from '@/shared/config/constants';
+
+type FilterType = 'ALL' | 'PASS' | 'REJECT';
+type SortType = 'PASS_STATUS' | 'NAME';
 
 /**
  * @widget review-details
@@ -20,17 +18,49 @@ import { APPROVAL_STATUS } from '@/shared/config/constants';
  */
 export const ReviewDetailsList = () => {
   const dispatch = useAppDispatch();
-  const items = useAppSelector(selectFilteredAndSortedCurrentItems);
-  const filter = useAppSelector(selectListFilter);
-  const sort = useAppSelector(selectListSort);
+  const currentProduct = useAppSelector(selectCurrentProduct);
+  
+  // FSD: 컴포넌트 내부에서만 쓰이는 UI 상태는 Redux(Entity)에서 분리하여 컴포넌트 자생력을 높입니다.
+  const [filter, setFilter] = useState<FilterType>('ALL');
+  const [sort, setSort] = useState<SortType>('PASS_STATUS');
+
+  // 내부 상태를 기반으로 순수 도메인 데이터(currentProduct.items)를 파생(Memoize)시킵니다.
+  const items = useMemo(() => {
+    if (!currentProduct) return [];
+
+    let result = [...currentProduct.items];
+
+    // 하단 컨트롤러 - 필터 적용
+    if (filter === 'PASS') {
+      result = result.filter(i => i.result === APPROVAL_STATUS.PASS || i.result === APPROVAL_STATUS.IRRELEVANT);
+    } else if (filter === 'REJECT') {
+      result = result.filter(i => i.result === APPROVAL_STATUS.REJECT || i.result === APPROVAL_STATUS.SUPPLEMENT);
+    }
+
+    // 하단 컨트롤러 - 정렬 적용
+    if (sort === 'PASS_STATUS') {
+      result.sort((a, b) => {
+        const getScore = (res: string) => {
+          if (res === APPROVAL_STATUS.REJECT) return 0;
+          if (res === APPROVAL_STATUS.SUPPLEMENT) return 1;
+          if (res === APPROVAL_STATUS.REVIEW_REQUIRED) return 2;
+          return 3;
+        };
+        return getScore(a.result) - getScore(b.result);
+      });
+    } else if (sort === 'NAME') {
+      result.sort((a, b) => a.name_ko.localeCompare(b.name_ko));
+    }
+
+    return result;
+  }, [currentProduct, filter, sort]);
 
   const handleFilterChange = (newFilter: FilterType) => {
-    dispatch(setListFilter(newFilter));
+    setFilter(newFilter);
   };
 
   const handleSortChange = () => {
-    const nextSort: SortType = sort === 'PASS_STATUS' ? 'NAME' : 'PASS_STATUS';
-    dispatch(setListSort(nextSort));
+    setSort(prev => prev === 'PASS_STATUS' ? 'NAME' : 'PASS_STATUS');
   };
 
   const handleArticleClick = (articles: string[]) => {

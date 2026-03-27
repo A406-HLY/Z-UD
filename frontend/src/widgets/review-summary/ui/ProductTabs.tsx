@@ -1,5 +1,6 @@
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
-import { selectProcessedProducts, selectSelectedProductKey, setSelectedProductKey } from '@/entities/review/model/review.slice';
+import { setSelectedProductKey } from '@/entities/review/model/review.slice';
+import { selectProcessedProducts, selectSelectedProductKey } from '@/entities/review/model/review.selectors';
 import { clsx } from 'clsx';
 import { APPROVAL_STATUS, UI_LIMITS } from '@/shared/config/constants';
 

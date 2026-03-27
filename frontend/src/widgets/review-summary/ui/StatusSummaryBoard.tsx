@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAppSelector } from '@/app/store/hooks';
-import { selectCurrentProduct } from '@/entities/review/model/review.slice';
+import { selectCurrentProduct } from '@/entities/review/model/review.selectors';
 import { ChevronDown, ChevronUp, AlertCircle, CheckCircle } from 'lucide-react';
 import { clsx } from 'clsx';
 

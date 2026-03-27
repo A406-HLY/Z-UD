@@ -3,19 +3,12 @@ import { Header } from '@/widgets/header';
 import { CustomerInfoForm } from '@/widgets/customer-info-form';
 import { LoanStepper } from '@/widgets/loan-stepper/ui/LoanStepper';
 
-import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
-import { 
-  setReviewData, 
-  selectProcessedProducts, 
-  selectSelectedArticle, 
-  selectSelectedProductKey, 
-  setSelectedProductKey 
-} from '@/entities/review/model/review.slice';
 import { ProductTabs, StatusSummaryBoard, LimitVisualizationCard } from '@/widgets/review-summary';
 import { ReviewDetailsList } from '@/widgets/review-details';
 import { DocumentImageViewer } from '@/widgets/document-image-viewer/ui/DocumentImageViewer';
-import { useGetReview } from '@/entities/review/api/review.api';
-import { ARTICLE_PAGE_MAP, MOCK_PDF_FILES } from '@/shared/config/pdfConfig';
+import { useReviewReportController } from '@/features/review/model/use-review-report-controller';
+import { MOCK_PDF_FILES } from '@/shared/config/pdfConfig';
+
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { LoanTabs } from '@/widgets/loan-tabs';
 
@@ -27,18 +20,20 @@ import { LoanTabs } from '@/widgets/loan-tabs';
  * 심사레포트 단계 최상위 화면 (데이터 연동 및 Split 뷰 스켈레톤)
  */
 export const ReviewReportPage = () => {
-  const dispatch = useAppDispatch();
-  const products = useAppSelector(selectProcessedProducts);
-  const selectedProductKey = useAppSelector(selectSelectedProductKey);
-  const selectedArticle = useAppSelector(selectSelectedArticle);
-  
+  const consultationId = "CONS-2026-EMP-001";
+  const { 
+    isLoading, 
+    isError, 
+    error, 
+    pdfPage, 
+    setPdfPage, 
+    pdfScale, 
+    setPdfScale 
+  } = useReviewReportController(consultationId);
+
   // 1. Split View 조절 로직
   const [leftWidthPercent, setLeftWidthPercent] = useState<number>(55);
   const containerRef = useRef<HTMLDivElement>(null);
-  
-  // PDF 뷰어 연동 상태
-  const [pdfPage, setPdfPage] = useState<number>(1);
-  const [pdfScale, setPdfScale] = useState<number>(1.2);
 
   const startResizing = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -60,35 +55,6 @@ export const ReviewReportPage = () => {
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
   }, []);
-
-  // 2. 서버 데이터 페칭 (TanStack Query)
-  const consultationId = "CONS-2026-EMP-001";
-  const { data, isLoading, isError, error } = useGetReview(consultationId);
-
-  // 3. 서버 상태 -> 전역 클라이언트 상태(Redux) 동기화
-  useEffect(() => {
-    if (data) {
-      dispatch(setReviewData(data));
-    }
-  }, [data, dispatch]);
-
-  // 3. 조항 클릭 시 PDF 스크롤(페이지 이동) 싱크
-  useEffect(() => {
-    if (selectedArticle && selectedArticle.length > 0) {
-      const targetRule = selectedArticle[0];
-      const targetPage = ARTICLE_PAGE_MAP[targetRule];
-      if (targetPage) {
-        setPdfPage(targetPage);
-      }
-    }
-  }, [selectedArticle]);
-
-  // 4. 상품 자동 선택 로직 (정렬된 순서상 첫 번째 상품 우선)
-  useEffect(() => {
-    if (products.length > 0 && !selectedProductKey) {
-      dispatch(setSelectedProductKey(products[0].productKey));
-    }
-  }, [products, selectedProductKey, dispatch]);
 
   // 4. 전산 액션 버튼 정의
   const approvalButton = {
