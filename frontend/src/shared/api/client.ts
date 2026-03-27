@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { env } from '../config/env';
-import { ApiResponse } from '../../entities/user';
+import { ApiResponse, ReissueResponseData } from '../../entities/user';
 
 /**
  * 공통 Axios 인스턴스
@@ -21,6 +21,25 @@ interface ApiStatusError {
   status: string;
   message: string;
 }
+
+// (Why) 여러 API가 동시에 401을 뱉거나 초기 동기화 시 중복 호출되는 것을 방지하기 위한 싱글톤 프로미스입니다.
+let pendingReissue: Promise<AxiosResponse<ApiResponse<ReissueResponseData>>> | null = null;
+
+/**
+ * 전역 안전 재발급 함수 (Singleton)
+ * (Why) 앱 전체에서 단 한 번만 reissue가 수행되도록 보장하며, 순환 참조를 방지하기 위해 내부에서 직접 요청합니다.
+ */
+export const safeReissue = async (): Promise<AxiosResponse<ApiResponse<ReissueResponseData>>> => {
+  if (pendingReissue) {
+    return pendingReissue;
+  }
+
+  pendingReissue = apiClient.post<ApiResponse<ReissueResponseData>>('/auth/reissue').finally(() => {
+    pendingReissue = null;
+  });
+
+  return pendingReissue;
+};
 
 // === 의존성 주입(DI)을 위한 내부 상태 ===
 let getAccessToken: () => string | undefined = () => undefined;
@@ -77,18 +96,24 @@ export const setupAxiosInterceptors = (config: {
       const responseData = error.response?.data as ApiResponse<unknown>;
       const errorCode = (responseData?.error as unknown as ApiStatusError)?.status;
 
+      /**
+       * (Why) 401 인증 에러 발생 시 토큰 재발급을 시도합니다.
+       * AU-001: 토큰 유효하지 않음, AU-003: 토큰 없음
+       * reissue 요청 자체가 401을 뱉은 경우는 건너뜁니다 (Deadlock 방지).
+       */
+      const isReissueRequest = originalRequest?.url?.includes('/auth/reissue');
       if (
         error.response?.status === 401 &&
         (errorCode === 'AU-001' || errorCode === 'AU-003') &&
         originalRequest &&
-        !originalRequest._retry
+        !originalRequest._retry &&
+        !isReissueRequest
       ) {
         originalRequest._retry = true;
 
         try {
           const newToken = await onTokenReissue();
           if (newToken && originalRequest.headers) {
-            onTokenUpdate(newToken);
             originalRequest.headers.Authorization = `Bearer ${newToken}`;
             return apiClient(originalRequest);
           }

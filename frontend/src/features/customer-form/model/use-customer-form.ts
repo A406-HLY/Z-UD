@@ -14,7 +14,6 @@ import {
 } from '@/entities/customer/model/slice';
 import { validateCustomer, isFieldComplete } from '@/entities/customer/model/validation';
 import { calculateCustomerProgress } from '@/entities/customer/model/utils';
-import { generateUUID } from '@/shared/lib/utils/id-utils';
 import { Customer } from '@/entities/customer/model/types';
 import { createConsultation } from '@/entities/customer/api/customer.api';
 
@@ -107,20 +106,18 @@ export const useCustomerForm = () => {
       return;
     }
 
-    // (Why) 상담 ID가 없는 경우 새로 생성하고, 즉시 백엔드 서버에 등록을 시도합니다.
-    let currentCounselId = form.counselId;
-    if (!currentCounselId) {
-      currentCounselId = generateUUID();
-      dispatch(setCounselId(currentCounselId));
-    }
-
     try {
       dispatch(setIsSubmitting(true));
-      // (Why) 백엔드 /consultations 엔드포인트에 상담 정보를 저장하여 에이전트 연동의 정합성을 확보합니다.
-      const response = await createConsultation({ ...form, counselId: currentCounselId });
+      // (Why) 백엔드 /consultations 엔드포인트에 상담 정보를 저장합니다. 
+      // 이제 백엔드가 UUID를 직접 생성하여 응답으로 내려줍니다.
+      const response = await createConsultation(form);
       
-      if (response.success) {
-        console.log('[System] Consultation registered successfully:', currentCounselId);
+      if (response.success && response.data) {
+        // (Why) 백엔드에서 생성된 정식 상담 ID(id 필드)를 전역 상태에 반영합니다.
+        const newCounselId = response.data.id;
+        dispatch(setCounselId(newCounselId));
+        
+        console.log('[System] Consultation registered with Backend UUID:', newCounselId);
         dispatch(setIsPollingActive(!isPollingActive));
       } else {
         console.error('[System] Failed to register consultation:', response.error?.message);

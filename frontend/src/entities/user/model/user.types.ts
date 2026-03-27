@@ -18,6 +18,23 @@ export interface LoginResponseData {
   // (Note) Access Token은 응답 헤더(Authorization)에 포함되므로 body에서는 제외합니다.
 }
 
+/** 백엔드 토큰 재발급(Reissue) API 응답 데이터 - login과 동일한 구조로 통일 */
+export interface ReissueResponseData {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  userInfoDto: {
+    userId: number;
+    employeeNumber: string;
+    name: string;
+  };
+  branchInfoDto: {
+    id: number;
+    name?: string;
+  };
+  sessionExpiry: string;
+}
+
 /** 필드별 상세 에러 규격 */
 export interface ApiFieldError {
   field: string;
