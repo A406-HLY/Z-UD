@@ -47,7 +47,8 @@ export const DocumentImageViewer = ({
     containerRef,
     setRenderedSize,
     scaledBboxes,
-    currentFileUrl
+    currentFileUrl,
+    debouncedScale
   } = usePdfController(fields, focusedFieldKey, files, fileUrl, {
     scale: externalScale,
     pageNumber: externalPageNumber,
@@ -127,28 +128,24 @@ export const DocumentImageViewer = ({
       
       {/* 2. 스크롤 가능한 캔버스 영역 (Viewport 고정 레이어 분리) */}
       <div className="flex-1 relative">
-         {/* (Point: 스크롤 영역과 별개로 뷰포트 정중앙에 플로팅되는 로딩 인디케이터) */}
-         {isLoading && (
-            <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/5 pointer-events-none">
-              <div className="flex flex-col items-center gap-4 bg-[#f4f4f4] px-24 py-10 border-2 border-gray-400 shadow-xl">
-                <div className="w-8 h-8 border-4 border-[#004b93] border-t-transparent rounded-full animate-spin" />
-                <span className="text-[12px] font-bold text-[#333] tracking-[0.2em] uppercase font-mono">
-                  PROCESSING
-                </span>
-              </div>
-            </div>
-         )}
+         {/* (Point: 스크롤 영역과 별개로 뷰포트 정중앙에 플로팅되는 로딩 인디케이터 제거됨) */}
 
          <div 
            ref={containerRef}
            className="absolute inset-0 overflow-auto p-12 flex justify-center shadow-[inset_0_0_50px_rgba(0,0,0,0.5)]"
          >
-           <div className="relative shrink-0 transition-transform origin-top">
+           <div 
+             className="relative shrink-0 transition-transform origin-top will-change-transform"
+             style={{ 
+               transform: `scale(${scale / debouncedScale})`,
+               transition: scale === debouncedScale ? 'none' : 'transform 0.1s ease-out'
+             }}
+           >
               <PdfRenderer 
                 key={currentFileUrl}
                 fileUrl={currentFileUrl} 
-                pageNumber={1} 
-                scale={scale}
+                pageNumber={pageNumber} 
+                debouncedScale={debouncedScale}
                 originalWidth={originalWidth}
                 originalHeight={originalHeight}
                 onLoadSuccess={setRenderedSize} 

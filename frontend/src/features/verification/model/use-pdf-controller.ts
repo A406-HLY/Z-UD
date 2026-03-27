@@ -26,10 +26,19 @@ export const usePdfController = (
   } = options;
 
   const [scale, setInternalScale] = useState(options.scale ?? 1);
+  const [debouncedScale, setDebouncedScale] = useState(scale);
   const [pageNumber, setInternalPageNumber] = useState(options.pageNumber ?? 1);
   const [isLoading, setIsLoading] = useState(false);
   const [renderedSize, setRenderedSize] = useState({ width: 0, height: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // (Why: 줌 조작 중 불필요한 고해상도 재렌더링을 방지하기 위한 디바운스 처리)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedScale(scale);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [scale]);
 
   // (Why: 외부에서 동기화된 값이 들어올 경우 내부 상태를 업데이트합니다.)
   useEffect(() => {
@@ -71,16 +80,21 @@ export const usePdfController = (
   }, [files, pageNumber, initialFileUrl]);
 
   const scaleRatios = useMemo(() => {
-    if (!renderedSize.width || !renderedSize.height || !originalWidth || !originalHeight) {
+    // (Point: 실제 렌더링된 사이즈가 없으면 원본 해상도 매핑 불가)
+    if (!renderedSize.width || !renderedSize.height) {
       return { x: 1, y: 1 };
     }
     
-    // (Why: 가로와 세로의 원본 대비 렌더링 비율을 각각 계산하여 좌표 정밀도를 극대화합니다.)
+    // (Why: 디바운스된 렌더링 스케일을 기준으로 좌표 비율을 계산하여 줌 트랜지션 중에도 Bbox 위치를 고정함)
+    // 원본 문서의 가로/세로 비율이 Portrait(1240/1754)로 고정되지 않도록 renderedSize의 비율을 활용 가능성 검토
+    const effectiveOriginalWidth = originalWidth || (renderedSize.width / debouncedScale);
+    const effectiveOriginalHeight = originalHeight || (renderedSize.height / debouncedScale);
+
     return {
-      x: renderedSize.width / originalWidth,
-      y: renderedSize.height / originalHeight
+      x: renderedSize.width / effectiveOriginalWidth,
+      y: renderedSize.height / effectiveOriginalHeight
     };
-  }, [renderedSize, originalWidth, originalHeight]);
+  }, [renderedSize, originalWidth, originalHeight, debouncedScale]);
 
   // (Why: 스케일링 로직 최적화. 불필요한 State를 만들지 않고 렌더링 시점에 파생 상태로 계산합니다.)
   // 현재 pageNumber에 해당하는 필드의 bbox만 표시
@@ -158,6 +172,7 @@ export const usePdfController = (
     containerRef,
     setRenderedSize,
     scaledBboxes,
-    currentFileUrl
+    currentFileUrl,
+    debouncedScale
   };
 };

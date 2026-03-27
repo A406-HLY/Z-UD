@@ -8,7 +8,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_CONFIG.WORKER_SRC;
 interface Props {
   fileUrl?: string; // 백엔드 API로부터 전달받은 PDF 소스 URL
   pageNumber: number;
-  scale: number;
+  debouncedScale: number;
   originalWidth?: number;
   originalHeight?: number;
   onLoadSuccess: (info: { width: number; height: number }) => void;
@@ -24,7 +24,15 @@ interface Props {
  * 2. 렌더링 속도: 1.5초 이내 완료를 위해 Canvas 하드웨어 가속 활용
  * 3. 폐쇄망 대응: public 폴더의 로컬 CMap 데이터 참조로 한글 깨짐 방지
  */
-export const PdfRenderer = ({ fileUrl, pageNumber, scale, originalWidth = 1240, originalHeight = 1754, onLoadSuccess, setIsLoading }: Props) => {
+export const PdfRenderer = ({ 
+  fileUrl, 
+  pageNumber, 
+  debouncedScale,
+  originalWidth = 1240, 
+  originalHeight = 1754, 
+  onLoadSuccess, 
+  setIsLoading 
+}: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [pdfDoc, setPdfDoc] = useState<pdfjsLib.PDFDocumentProxy | null>(null);
   
@@ -71,7 +79,8 @@ export const PdfRenderer = ({ fileUrl, pageNumber, scale, originalWidth = 1240, 
 
   // (Why: 화면 크기에 상관없이 원본 문서의 비율을 유지하며 줌(scale)을 적용합니다.)
   const BASE_VIEW_WIDTH = 800; // 가독성 좋은 표준 뷰어 너비
-  const viewWidth = BASE_VIEW_WIDTH * scale;
+  // (Why: 시각적 변환(CSS Scale)은 즉각적인 scale을 따르지만, 실제 Canvas 해상도는 debouncedScale을 따름)
+  const viewWidth = BASE_VIEW_WIDTH * debouncedScale;
   const viewHeight = (originalHeight / originalWidth) * viewWidth;
 
   // 2. [페이지 렌더링]: pdfDoc, pageNumber, scale이 변경될 때 Canvas에 다시 그립니다.
@@ -136,7 +145,7 @@ export const PdfRenderer = ({ fileUrl, pageNumber, scale, originalWidth = 1240, 
         currentRenderTask.current.cancel();
       }
     };
-  }, [pdfDoc, pageNumber, scale, originalWidth, originalHeight, onLoadSuccess, viewWidth, viewHeight]);
+  }, [pdfDoc, pageNumber, debouncedScale, originalWidth, originalHeight, onLoadSuccess, viewWidth, viewHeight]);
 
   return (
     <div className="relative shadow-2xl bg-white flex justify-center overflow-hidden shrink-0">
