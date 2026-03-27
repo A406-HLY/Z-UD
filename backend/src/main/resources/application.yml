@@ -19,6 +19,21 @@ spring:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+        spring.json.add.type.headers: false
+    consumer:
+      group-id: loan-report-response-consumer-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
   jpa:
     open-in-view: false
     defer-datasource-initialization: true
@@ -44,11 +59,6 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 100MB
-
-server:
-  servlet:
-    session:
-      timeout: 9h
 
 kakao:
   api:
@@ -88,6 +98,16 @@ cloudflare:
     bucket: ${CLOUDFLARE_BUCKET}
     access-key: ${CLOUDFLARE_ACCESS_KEY}
     secret-key: ${CLOUDFLARE_SECRET_KEY}
+
+auth:
+  server-url: ${AUTH_SERVER_URL:http://localhost:9000}
+  client-id: ${AUTH_OAUTH_CLIENT_ID:zud-client}
+  client-secret: ${AUTH_OAUTH_CLIENT_SECRET:zud-secret}
+  jwks-uri: ${AUTH_JWKS_URI:http://localhost:9000/oauth2/jwks}
+  issue-path: "/api/v1/token/issue"
+  reissue-path: "/api/v1/token/reissue"
+  revoke-path: "/api/v1/token/revoke"
+  blacklist-path: "/api/v1/token/blacklist/{jti}"
 
 management:
   endpoints:

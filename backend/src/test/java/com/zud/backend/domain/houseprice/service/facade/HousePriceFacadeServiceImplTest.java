@@ -1,9 +1,10 @@
 package com.zud.backend.domain.houseprice.service.facade;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
+
+import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -13,26 +14,22 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
-
+import com.zud.backend.domain.houseprice.dto.response.HousePriceResDto;
 import com.zud.backend.domain.houseprice.entity.HouseOfficialPrice;
 import com.zud.backend.domain.houseprice.entity.HouseTradePrice;
-import com.zud.backend.domain.houseprice.util.ParsedAddress;
-import com.zud.backend.domain.houseprice.dto.response.HousePriceResDto;
 import com.zud.backend.domain.houseprice.service.query.HousePriceQueryService;
+import com.zud.backend.domain.houseprice.util.ParsedAddress;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("HousePriceFacadeServiceImpl 단위 테스트")
 class HousePriceFacadeServiceImplTest {
 
-	@Mock
-	private HousePriceQueryService housePriceQueryService;
-
-	@InjectMocks
-	private HousePriceFacadeServiceImpl housePriceFacadeService;
-
 	private static final String HOUSE_TYPE = "아파트";
 	private static final String ADDRESS = "서울특별시 서초구 반포동 자하문로36길 16-14 반포아파트 101동 101호";
+	@Mock
+	private HousePriceQueryService housePriceQueryService;
+	@InjectMocks
+	private HousePriceFacadeServiceImpl housePriceFacadeService;
 
 	@Nested
 	@DisplayName("findHousePrice()")

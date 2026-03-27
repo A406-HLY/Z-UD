@@ -23,52 +23,52 @@ public class NotificationFacadeServiceImpl implements NotificationFacadeService 
 	private final EmitterRepository emitterRepository;
 
 	@Override
-	public SseEmitter subscribe(final Long counselId) {
+	public SseEmitter subscribe(final Long userId) {
 		SseEmitter emitter = new SseEmitter(DEFAULT_TIMEOUT);
-		emitterRepository.save(counselId, emitter);
+		emitterRepository.save(userId, emitter);
 
 		emitter.onCompletion(() -> {
-			log.info("[SSE] 연결 완료: counselId={}", counselId);
-			emitterRepository.deleteByCounselId(counselId);
+			log.info("[SSE] 연결 완료: userId={}", userId);
+			emitterRepository.deleteByUserId(userId);
 		});
 
 		emitter.onTimeout(() -> {
-			log.info("[SSE] 연결 타임아웃: counselId={}", counselId);
-			emitterRepository.deleteByCounselId(counselId);
+			log.info("[SSE] 연결 타임아웃: userId={}", userId);
+			emitterRepository.deleteByUserId(userId);
 		});
 
 		emitter.onError(ex -> {
-			log.error("[SSE] 연결 오류: counselId={}, error={}", counselId, ex.getMessage());
-			emitterRepository.deleteByCounselId(counselId);
+			log.error("[SSE] 연결 오류: userId={}, error={}", userId, ex.getMessage());
+			emitterRepository.deleteByUserId(userId);
 		});
 
 		try {
 			emitter.send(SseEmitter.event()
 				.name("connect")
 				.data("SSE 연결 성공"));
-			log.info("[SSE] 연결 성공: counselId={}", counselId);
+			log.info("[SSE] 연결 성공: userId={}", userId);
 		} catch (IOException e) {
-			log.error("[SSE] 초기 연결 메시지 전송 실패: counselId={}", counselId, e);
-			emitterRepository.deleteByCounselId(counselId);
+			log.error("[SSE] 초기 연결 메시지 전송 실패: userId={}", userId, e);
+			emitterRepository.deleteByUserId(userId);
 		}
 
 		return emitter;
 	}
 
 	@Override
-	public void disconnect(final Long counselId) {
-		SseEmitter emitter = emitterRepository.findByCounselId(counselId);
+	public void disconnect(final Long userId) {
+		SseEmitter emitter = emitterRepository.findByUserId(userId);
 		if (emitter != null) {
 			emitter.complete();
-			log.info("[SSE] 연결 해제: counselId={}", counselId);
+			log.info("[SSE] 연결 해제: userId={}", userId);
 		}
 	}
 
 	@Override
-	public void send(final Long counselId, final NotificationResDto notificationResDto) {
-		SseEmitter emitter = emitterRepository.findByCounselId(counselId);
+	public void send(final Long userId, final NotificationResDto notificationResDto) {
+		SseEmitter emitter = emitterRepository.findByUserId(userId);
 		if (emitter == null) {
-			log.warn("[SSE] 연결이 없음: counselId={}", counselId);
+			log.warn("[SSE] 연결이 없음: userId={}", userId);
 			return;
 		}
 
@@ -76,11 +76,13 @@ public class NotificationFacadeServiceImpl implements NotificationFacadeService 
 			emitter.send(SseEmitter.event()
 				.name(notificationResDto.eventType())
 				.data(notificationResDto));
-			log.info("[SSE] 알림 전송 성공: counselId={}, eventType={}", counselId,
+			log.info(
+				"[SSE] 알림 전송 성공: userId={}, eventType={}",
+				userId,
 				notificationResDto.eventType());
 		} catch (IOException e) {
-			log.error("[SSE] 알림 전송 실패: counselId={}", counselId, e);
-			emitterRepository.deleteByCounselId(counselId);
+			log.error("[SSE] 알림 전송 실패: userId={}", userId, e);
+			emitterRepository.deleteByUserId(userId);
 		}
 	}
 }

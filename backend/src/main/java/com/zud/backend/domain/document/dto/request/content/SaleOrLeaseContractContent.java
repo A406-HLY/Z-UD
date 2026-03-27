@@ -25,28 +25,32 @@ public record SaleOrLeaseContractContent(
 	Party buyer
 ) implements DocumentContent {
 
-	@Override
-	public DocumentTag getDocumentTag() {
-		return DocumentTag.FILE_016_SALE_OR_LEASE_CONTRACT;
-	}
-
-	@Schema(description = "계약 당사자")
+	@Schema(description = "계약 당사자 정보")
 	@Builder
 	public record Party(
 		@Schema(description = "성명")
-		DataField<String> name
+		DataField<String> name,
+		@Schema(description = "주소")
+		DataField<String> address,
+		@Schema(description = "주민등록번호")
+		DataField<String> registrationNumber
 	) {
+	}
+
+	@Override
+	public DocumentTag getDocumentTag() {
+		return DocumentTag.FILE_016_SALE_CONTRACT;
 	}
 
 	@Override
 	public Map<CrossField, String> getCrossCheckFields() {
 		Map<CrossField, String> fields = new EnumMap<>(CrossField.class);
-		if (seller != null && seller.name != null && seller.name.value() != null) {
-			fields.put(CrossField.TARGET_PROPERTY_OWNER_NAME, seller.name.value());
+		if (seller != null && seller.name() != null && seller.name().value() != null) {
+			fields.put(CrossField.TARGET_PROPERTY_OWNER_NAME, seller.name().value());
 		}
 
-		if (buyer != null && buyer.name != null && buyer.name.value() != null) {
-			fields.put(CrossField.LOAN_APPLICANT_NAME, buyer.name.value());
+		if (buyer != null && buyer.name() != null && buyer.name().value() != null) {
+			fields.put(CrossField.LOAN_APPLICANT_NAME, buyer.name().value());
 		}
 		return fields;
 	}

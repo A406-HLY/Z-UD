@@ -24,7 +24,9 @@ import com.zud.backend.domain.document.dto.request.file.UploadCompletionReqDto;
 import com.zud.backend.domain.document.dto.request.file.UploadResultDto;
 import com.zud.backend.domain.document.dto.response.file.PresignedUrlResDto;
 import com.zud.backend.domain.document.dto.response.file.UploadCompletionResDto;
+import com.zud.backend.domain.document.repository.OcrResultRedisRepository;
 import com.zud.backend.domain.document.service.cloudflare.CloudflareService;
+import com.zud.backend.domain.document.service.kafka.OcrKafkaProducer;
 import com.zud.backend.domain.document.validator.DocumentValidator;
 import com.zud.backend.domain.document.validator.FileValidator;
 
@@ -32,6 +34,7 @@ import com.zud.backend.domain.document.validator.FileValidator;
 @DisplayName("DocumentFacadeServiceImpl 단위 테스트")
 class DocumentFacadeServiceImplTest {
 
+	private static final String CONSULTATION_ID = "consult-123";
 	@Mock
 	private Executor applicationTaskExecutor;
 	@Mock
@@ -41,21 +44,23 @@ class DocumentFacadeServiceImplTest {
 	@Mock
 	private CloudflareService cloudflareService;
 	@Mock
+	private OcrKafkaProducer ocrKafkaProducer;
+	@Mock
+	private OcrResultRedisRepository ocrResultRedisRepository;
+	@Mock
 	private FileValidator fileValidator;
 	@Mock
 	private DocumentValidator documentValidator;
 	@InjectMocks
 	private DocumentFacadeServiceImpl documentFacadeService;
 
-	private static final String CONSULTATION_ID = "consult-123";
-
 	@Nested
 	@DisplayName("issuePresignedUrls()")
 	class IssuePresignedUrls {
 
 		@Test
-		@DisplayName("정상_요청이면_파일_수만큼_Presigned_URL_반환")
-		void 정상_요청이면_파일_수만큼_Presigned_URL_반환() {
+		@DisplayName("정상_요청이면_파일_수만큼_Presigned_Url_반환")
+		void 정상_요청이면_파일_수만큼_Presigned_Url_반환() {
 			// given
 			List<FileMetaDto> files = List.of(
 				new FileMetaDto("a.pdf", "application/pdf", 1024L),
@@ -99,8 +104,8 @@ class DocumentFacadeServiceImplTest {
 	class CompleteUpload {
 
 		@Test
-		@DisplayName("모든_파일_성공이면_OCR_QUEUED_상태_반환")
-		void 모든_파일_성공이면_OCR_QUEUED_상태_반환() {
+		@DisplayName("모든_파일_성공이면_OcrQueued_상태_반환")
+		void 모든_파일_성공이면_OcrQueued_상태_반환() {
 			// given
 			UploadCompletionReqDto reqDto = new UploadCompletionReqDto(List.of(
 				new UploadResultDto("a.pdf", true),
@@ -108,6 +113,8 @@ class DocumentFacadeServiceImplTest {
 			));
 
 			given(consultationQueryService.findByUuid(CONSULTATION_ID)).willReturn(mock(Consultation.class));
+			given(cloudflareService.generateGetPresignedUrl(eq(CONSULTATION_ID), anyString()))
+				.willReturn("https://signed-get-url");
 
 			// when
 			UploadCompletionResDto result = documentFacadeService.completeUpload(CONSULTATION_ID, reqDto);
@@ -119,8 +126,8 @@ class DocumentFacadeServiceImplTest {
 		}
 
 		@Test
-		@DisplayName("일부_파일_실패이면_OCR_QUEUED_상태와_실패_파일명_반환")
-		void 일부_파일_실패이면_OCR_QUEUED_상태와_실패_파일명_반환() {
+		@DisplayName("일부_파일_실패이면_OcrQueued_상태와_실패_파일명_반환")
+		void 일부_파일_실패이면_OcrQueued_상태와_실패_파일명_반환() {
 			// given
 			UploadCompletionReqDto reqDto = new UploadCompletionReqDto(List.of(
 				new UploadResultDto("a.pdf", true),
@@ -128,6 +135,8 @@ class DocumentFacadeServiceImplTest {
 			));
 
 			given(consultationQueryService.findByUuid(CONSULTATION_ID)).willReturn(mock(Consultation.class));
+			given(cloudflareService.generateGetPresignedUrl(eq(CONSULTATION_ID), anyString()))
+				.willReturn("https://signed-get-url");
 
 			// when
 			UploadCompletionResDto result = documentFacadeService.completeUpload(CONSULTATION_ID, reqDto);
@@ -139,8 +148,8 @@ class DocumentFacadeServiceImplTest {
 		}
 
 		@Test
-		@DisplayName("모든_파일_실패이면_FAILED_상태_반환")
-		void 모든_파일_실패이면_FAILED_상태_반환() {
+		@DisplayName("모든_파일_실패이면_Failed_상태_반환")
+		void 모든_파일_실패이면_Failed_상태_반환() {
 			// given
 			UploadCompletionReqDto reqDto = new UploadCompletionReqDto(List.of(
 				new UploadResultDto("a.pdf", false),

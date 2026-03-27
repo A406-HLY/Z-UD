@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.zud.backend.common.error.ErrorCode;
+import com.zud.backend.domain.branch.entity.Branch;
 import com.zud.backend.domain.branch.exception.BranchException;
 import com.zud.backend.domain.branch.repository.BranchRepository;
 import com.zud.backend.domain.branch.repository.NearestBranchProjection;
@@ -35,6 +36,12 @@ public class BranchQueryServiceImpl implements BranchQueryService {
 		);
 
 		return nearestBranch;
+	}
+
+	@Override
+	public Branch findById(final Long branchId) {
+		return branchRepository.findById(branchId)
+			.orElseThrow(() -> new BranchException(ErrorCode.BRANCH_NOT_FOUND));
 	}
 
 	@Override

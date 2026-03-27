@@ -3,19 +3,15 @@ package com.zud.backend.domain.consultation.entity;
 import com.zud.backend.common.converter.ResidentRegistrationNumberEncryptConverter;
 import com.zud.backend.domain.consultation.enums.EmploymentType;
 import com.zud.backend.domain.consultation.enums.LoanPurpose;
-import com.zud.backend.domain.user.entity.User;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -32,15 +28,12 @@ import lombok.NoArgsConstructor;
 public class Consultation {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	@GeneratedValue(strategy = GenerationType.UUID)
+	@Column(name = "id", nullable = false, updatable = false, length = 36)
+	private String id;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", nullable = false)
-	private User user;
-
-	@Column(name = "external_consultation_uuid", nullable = false, unique = true)
-	private String externalConsultationUuid;
+	@Column(name = "user_id", nullable = false)
+	private Long userId;
 
 	@Convert(converter = ResidentRegistrationNumberEncryptConverter.class)
 	@Column(name = "resident_registration_number")
@@ -67,8 +60,7 @@ public class Consultation {
 	private Integer ownedHouseCount;
 
 	public static Consultation create(
-		final User user,
-		final String externalConsultationUuid,
+		final Long userId,
 		final String name,
 		final String phoneNumber,
 		final String residentRegistrationNumber,
@@ -78,8 +70,7 @@ public class Consultation {
 		final Integer ownedHouseCount
 	) {
 		return Consultation.builder()
-			.user(user)
-			.externalConsultationUuid(externalConsultationUuid)
+			.userId(userId)
 			.name(name)
 			.phoneNumber(phoneNumber)
 			.residentRegistrationNumber(residentRegistrationNumber)

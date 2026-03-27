@@ -31,7 +31,9 @@ public enum ErrorCode {
 	/**
 	 * AUTH Error (AU-xxx)
 	 */
-	SESSION_NOT_FOUND(HttpStatus.UNAUTHORIZED, "AU-001", "세션을 찾을 수 없습니다."),
+	TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "AU-001", "유효하지 않은 토큰입니다."),
+	AUTH_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "AU-002", "인증 서버 오류가 발생했습니다."),
+	TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "AU-003", "토큰을 찾을 수 없습니다."),
 
 	/**
 	 * User Error (US-xxx)
@@ -84,7 +86,15 @@ public enum ErrorCode {
 	 */
 	ENCRYPTION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "EN-001", "주민등록번호 암호화 처리에 실패했습니다."),
 	DECRYPTION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "EN-002", "주민등록번호 복호화 처리에 실패했습니다."),
-	ENCRYPTED_DATA_INVALID(HttpStatus.INTERNAL_SERVER_ERROR, "EN-003", "암호화된 데이터 형식이 올바르지 않습니다.");
+	ENCRYPTED_DATA_INVALID(HttpStatus.INTERNAL_SERVER_ERROR, "EN-003", "암호화된 데이터 형식이 올바르지 않습니다."),
+
+	/**
+	 * Report Error (RP-xxx)
+	 */
+	REPORT_RESULT_NOT_FOUND(HttpStatus.NOT_FOUND, "RP-001", "리포트 결과를 찾을 수 없습니다."),
+	REPORT_REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "RP-002", "해당 uuid의 리포트 요청이 존재하지 않습니다."),
+	REPORT_UUID_NOT_FOUND(HttpStatus.BAD_REQUEST, "RP-003", "AI 응답 payload에 uuid가 없습니다."),
+	REPORT_RESULT_PROCESSING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "RP-004", "리포트 결과 저장 처리에 실패했습니다.");
 
 	private final HttpStatus httpStatus;
 	private final String code;

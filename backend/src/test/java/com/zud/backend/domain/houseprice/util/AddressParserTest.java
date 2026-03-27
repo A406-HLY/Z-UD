@@ -1,7 +1,6 @@
 package com.zud.backend.domain.houseprice.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -35,8 +34,8 @@ class AddressParserTest {
 		}
 
 		@Test
-		@DisplayName("동_없는_주소_파싱_성공")
-		void 동_없는_주소_파싱_성공() {
+		@DisplayName("동이_없는_주소_파싱_성공")
+		void 동이_없는_주소_파싱_성공() {
 			// given
 			String address = "서울특별시 강남구 역삼동 테헤란로 212 테헤란아파트 301호";
 
@@ -55,8 +54,8 @@ class AddressParserTest {
 		}
 
 		@Test
-		@DisplayName("호_없는_주소_파싱_성공")
-		void 호_없는_주소_파싱_성공() {
+		@DisplayName("호수가_없는_주소_파싱_성공")
+		void 호수가_없는_주소_파싱_성공() {
 			// given
 			String address = "서울특별시 서초구 반포동 자하문로36길 16-14 반포아파트 101동";
 

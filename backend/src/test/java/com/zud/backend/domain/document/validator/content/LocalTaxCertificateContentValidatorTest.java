@@ -25,8 +25,8 @@ class LocalTaxCertificateContentValidatorTest {
 	}
 
 	@Test
-	@DisplayName("getSupportedTag는_FILE_012_반환")
-	void getSupportedTag는_FILE_012_반환() {
+	@DisplayName("getSupportedTag는_File_012_반환")
+	void getSupportedTag는_File_012_반환() {
 		assertThat(validator.getSupportedTag())
 			.isEqualTo(DocumentTag.FILE_012_LOCAL_TAX_CERTIFICATE);
 	}

@@ -1,24 +1,24 @@
 package com.zud.backend.domain.auth.service.facade;
 
-import java.util.concurrent.TimeUnit;
+import static org.springframework.http.HttpHeaders.*;
 
-import org.apache.catalina.util.StandardSessionIdGenerator;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.zud.backend.common.error.ErrorCode;
 import com.zud.backend.common.util.CookieUtils;
+import com.zud.backend.domain.auth.client.AuthServerClient;
 import com.zud.backend.domain.auth.converter.AuthConverter;
 import com.zud.backend.domain.auth.dto.request.LoginReqDto;
 import com.zud.backend.domain.auth.dto.response.LoginSuccessResDto;
-import com.zud.backend.domain.auth.enums.SessionConstants;
+import com.zud.backend.domain.auth.dto.response.TokenIssueResDto;
 import com.zud.backend.domain.auth.exception.AuthException;
-import com.zud.backend.domain.auth.session.UserSession;
-import com.zud.backend.domain.user.entity.User;
-import com.zud.backend.domain.user.service.query.UserQueryService;
+import com.zud.backend.domain.branch.entity.Branch;
+import com.zud.backend.domain.branch.service.query.BranchQueryService;
 
-import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -29,40 +29,47 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class AuthFacadeServiceImpl implements AuthFacadeService {
 
-	private final RedisTemplate<String, UserSession> sessionRedisTemplate;
-	private final PasswordEncoder passwordEncoder;
+	private static final String BEARER_PREFIX = "Bearer ";
+	private static final String LOGOUT_REASON = "USER_LOGOUT";
 
-	private final UserQueryService userQueryService;
+	private final AuthServerClient authServerClient;
+	private final BranchQueryService branchQueryService;
 
 	@Override
-	public LoginSuccessResDto login(final LoginReqDto reqDto, final HttpServletResponse response) {
-		User user = userQueryService.findByEmployeeNumber(reqDto.employeeNumber());
-		validatePassword(reqDto.password(), user.getPassword());
-		String sessionId = generateSessionId(user.getId());
-		addSessionCookieToResponse(response, sessionId);
-		return AuthConverter.toLoginSuccessDto(user);
+	@Transactional
+	public LoginSuccessResDto login(final LoginReqDto reqDto, final HttpServletResponse servletResponse) {
+		TokenIssueResDto tokenDto = authServerClient.issueToken(reqDto);
+		Branch branch = branchQueryService.findById(tokenDto.branchId());
+		applyTokenToResponse(servletResponse, tokenDto);
+		return AuthConverter.toLoginSuccessDto(tokenDto, branch);
 	}
 
-	private void validatePassword(final String rawPassword, final String encodedPassword) {
-		if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
-			throw new AuthException(ErrorCode.INVALID_CREDENTIALS);
+	@Override
+	@Transactional
+	public TokenIssueResDto reissue(final HttpServletRequest servletRequest) {
+		String refreshToken = CookieUtils.extractRefreshToken(servletRequest)
+			.orElseThrow(() -> new AuthException(ErrorCode.TOKEN_NOT_FOUND));
+		return authServerClient.reissueToken(refreshToken);
+	}
+
+	@Override
+	@Transactional
+	public void logout(final HttpServletRequest servletRequest, final HttpServletResponse servletResponse) {
+		extractBearerToken(servletRequest)
+			.ifPresent(accessToken -> authServerClient.revokeToken(accessToken, LOGOUT_REASON));
+		CookieUtils.expireRefreshTokenCookie(servletResponse);
+	}
+
+	private void applyTokenToResponse(final HttpServletResponse servletResponse, final TokenIssueResDto tokenDto) {
+		servletResponse.setHeader(AUTHORIZATION, BEARER_PREFIX + tokenDto.accessToken());
+		CookieUtils.addRefreshTokenCookie(servletResponse, tokenDto.refreshToken());
+	}
+
+	private Optional<String> extractBearerToken(final HttpServletRequest servletRequest) {
+		String authorizationHeader = servletRequest.getHeader(AUTHORIZATION);
+		if (authorizationHeader == null || !authorizationHeader.startsWith(BEARER_PREFIX)) {
+			return Optional.empty();
 		}
-	}
-
-	private void addSessionCookieToResponse(final HttpServletResponse response, final String sessionId) {
-		Cookie cookie = CookieUtils.generateSessionCookie(sessionId);
-		response.addCookie(cookie);
-	}
-
-	private String generateSessionId(final Long userId) {
-		String sessionId = new StandardSessionIdGenerator().generateSessionId();
-		String sessionKey = SessionConstants.PREFIX + sessionId;
-		saveSession(userId, sessionKey);
-		return sessionId;
-	}
-
-	private void saveSession(final Long userId, final String sessionKey) {
-		sessionRedisTemplate.opsForValue()
-			.set(sessionKey, UserSession.create(userId), SessionConstants.EXPIRATION_HOUR_TIME, TimeUnit.HOURS);
+		return Optional.of(authorizationHeader.substring(BEARER_PREFIX.length()));
 	}
 }

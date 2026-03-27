@@ -17,7 +17,7 @@ public record TitleDeedContent(
 	@Schema(description = " 등기 유형")
 	DataField<String> registrationType,
 	@Schema(description = "동·호수 표기 여부")
-	DataField<Boolean> hasDongHo,
+	DataField<Boolean> hasDongho,
 	@Schema(description = "지번")
 	DataField<String> lotAddress,
 	@Schema(description = "건물 유형")
@@ -25,7 +25,7 @@ public record TitleDeedContent(
 	@Schema(description = "건물내역")
 	DataField<String> buildingDescription,
 	@Schema(description = "대지권의 등기원인 여부")
-	DataField<String> landRightRegistrationCause,
+	DataField<Boolean> hasLandRightCause,
 	@Schema(description = "별도등기 여부")
 	DataField<Boolean> hasSeparateRegistration,
 	@Schema(description = "소유권이전청구권 가등기 여부")
@@ -35,9 +35,9 @@ public record TitleDeedContent(
 	@Schema(description = "소유자명")
 	DataField<String> ownerName,
 	@Schema(description = "임차보증금")
-	List<Deposit> deposit,
+	Deposit deposit,
 	@Schema(description = "선순위권리내역")
-	List<SeniorRight> seniorRight
+	List<SeniorRight> seniorRights
 ) implements DocumentContent {
 
 	@Schema(description = "임차보증금")

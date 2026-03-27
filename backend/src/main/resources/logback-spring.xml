@@ -10,7 +10,7 @@
             <appender-ref ref="CONSOLE"/>
         </root>
 
-        <logger name="com.backend.zud" level="INFO"/>
+        <logger name="com.zud.backend" level="INFO"/>
         <logger name="org.springframework.web" level="INFO"/>
         <logger name="org.hibernate" level="INFO"/>
     </springProfile>
@@ -86,22 +86,22 @@
 
                     <mdc>
                         <includeMdcKeyName>traceId</includeMdcKeyName>
-                        <mdcKeyFieldName>traceId:trace.id</mdcKeyFieldName>
+                        <mdcKeyFieldName>traceId=trace.id</mdcKeyFieldName>
                     </mdc>
 
                     <mdc>
                         <includeMdcKeyName>userId</includeMdcKeyName>
-                        <mdcKeyFieldName>userId:user.id</mdcKeyFieldName>
+                        <mdcKeyFieldName>userId=user.id</mdcKeyFieldName>
                     </mdc>
 
                     <mdc>
                         <includeMdcKeyName>httpMethod</includeMdcKeyName>
-                        <mdcKeyFieldName>httpMethod:http.request.method</mdcKeyFieldName>
+                        <mdcKeyFieldName>httpMethod=http.request.method</mdcKeyFieldName>
                     </mdc>
 
                     <mdc>
                         <includeMdcKeyName>requestUri</includeMdcKeyName>
-                        <mdcKeyFieldName>requestUri:url.path</mdcKeyFieldName>
+                        <mdcKeyFieldName>requestUri=url.path</mdcKeyFieldName>
                     </mdc>
 
                     <pattern>
@@ -116,7 +116,7 @@
         </appender>
 
         <!-- 로거 레벨 설정 -->
-        <logger name="com.backend.zud" level="INFO"/>
+        <logger name="com.zud.backend" level="INFO"/>
         <logger name="org.springframework.web" level="INFO"/>
         <logger name="org.hibernate" level="INFO"/>
         <logger name="org.hibernate.SQL" level="DEBUG"/>

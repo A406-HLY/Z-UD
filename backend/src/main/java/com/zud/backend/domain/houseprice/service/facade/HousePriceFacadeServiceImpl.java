@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.zud.backend.common.error.ErrorCode;
+import com.zud.backend.domain.houseprice.converter.HousePriceConverter;
 import com.zud.backend.domain.houseprice.dto.response.HousePriceResDto;
 import com.zud.backend.domain.houseprice.entity.HouseOfficialPrice;
 import com.zud.backend.domain.houseprice.entity.HouseTradePrice;
@@ -23,130 +24,103 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class HousePriceFacadeServiceImpl implements HousePriceFacadeService {
 
-	private static final String PRICE_TYPE_TRADE = "실거래가";
-	private static final String PRICE_TYPE_OFFICIAL = "공시가";
-	private static final String PRICE_TYPE_ESTIMATED = "근삿값";
-
-	private static final String MESSAGE_TRADE = "실거래가 기준으로 조회되었습니다.";
-	private static final String MESSAGE_OFFICIAL = "공시가 기준으로 조회되었습니다.";
-	private static final String MESSAGE_ESTIMATED = "같은 동의 낮은 주택가 평균값으로 조회되었습니다.";
-
 	private final HousePriceQueryService housePriceQueryService;
 
 	@Override
 	public HousePriceResDto findHousePrice(final String houseType, final String address) {
-		validateHouseType(houseType);
+		HouseType resolvedType = validateHouseType(houseType);
 
 		ParsedAddress parsedAddress = parseAddress(address);
-		String dbHouseType = HouseType.fromDisplayName(houseType).getDbCode();
+		String dbHouseType = resolvedType.getDbCode();
+
+		if (resolvedType == HouseType.MULTI_HOUSEHOLD) {
+			return findOfficialOnly(dbHouseType, parsedAddress);
+		}
 
 		// 1순위: 실거래가(정확 매칭)
 		return findByPriority(dbHouseType, parsedAddress);
+	}
+
+	private HousePriceResDto findOfficialOnly(
+		final String dbHouseType,
+		final ParsedAddress parsedAddress
+	) {
+		return findOfficialResult(dbHouseType, parsedAddress, true);
 	}
 
 	private HousePriceResDto findByPriority(
 		final String dbHouseType,
 		final ParsedAddress parsedAddress
 	) {
-		// 1) 실거래가 정확 매칭
 		return housePriceQueryService.findExactTradePrice(dbHouseType, parsedAddress)
-			.map(tradePrice -> HousePriceResDto.builder()
-				.price(tradePrice.getDealAmountManwon())
-				.priceType(PRICE_TYPE_TRADE)
-				.message(MESSAGE_TRADE)
-				.build())
-			.orElseGet(() -> findOfficialResult(dbHouseType, parsedAddress));
+			.map(HousePriceConverter::toResDtoFromExactTrade)
+			.orElseGet(() -> findOfficialResult(dbHouseType, parsedAddress, false));
 	}
 
 	private HousePriceResDto findOfficialResult(
 		final String dbHouseType,
-		final ParsedAddress parsedAddress
+		final ParsedAddress parsedAddress,
+		final boolean skipTradeEstimates
 	) {
 		return housePriceQueryService.findExactOfficialPrice(parsedAddress)
-			.map(officialPrice -> HousePriceResDto.builder()
-				.price(officialPrice.getOfficialPrice() / 10000)
-				.priceType(PRICE_TYPE_OFFICIAL)
-				.message(MESSAGE_OFFICIAL)
-				.build())
-			.orElseGet(() -> findEstimatedResult(dbHouseType, parsedAddress));
+			.map(HousePriceConverter::toResDtoFromExactOfficial)
+			.orElseGet(() -> findEstimatedResult(dbHouseType, parsedAddress, skipTradeEstimates));
 	}
 
 	private HousePriceResDto findEstimatedResult(
 		final String dbHouseType,
+		final ParsedAddress parsedAddress,
+		final boolean skipTradeEstimates
+	) {
+		if (!skipTradeEstimates) {
+			HousePriceResDto fromTrade = findEstimatedByTrade(dbHouseType, parsedAddress);
+			if (fromTrade != null) {
+				return fromTrade;
+			}
+		}
+		return findEstimatedByOfficial(parsedAddress);
+	}
+
+	private HousePriceResDto findEstimatedByTrade(
+		final String dbHouseType,
 		final ParsedAddress parsedAddress
 	) {
-		// 추정값은 "동/층이 있는 정확도 우선" 순으로 진행합니다.
-		// (facade가 우선순위를 결정하고 query service는 데이터 조회만 담당)
-		List<HouseTradePrice> tradeByDetail = housePriceQueryService.findLowestTradePricesByBuildingDetail(
+		List<HouseTradePrice> byDetail = housePriceQueryService.findLowestTradePricesByBuildingDetail(
 			dbHouseType, parsedAddress
 		);
-		if (!tradeByDetail.isEmpty()) {
-			return estimatedFromTrade(tradeByDetail);
+		if (!byDetail.isEmpty()) {
+			return HousePriceConverter.toEstimatedFromTrade(byDetail);
 		}
-
-		List<HouseTradePrice> tradeByBuilding = housePriceQueryService.findLowestTradePricesByBuilding(
+		List<HouseTradePrice> byBuilding = housePriceQueryService.findLowestTradePricesByBuilding(
 			dbHouseType, parsedAddress
 		);
-		if (!tradeByBuilding.isEmpty()) {
-			return estimatedFromTrade(tradeByBuilding);
+		if (!byBuilding.isEmpty()) {
+			return HousePriceConverter.toEstimatedFromTrade(byBuilding);
 		}
-
-		List<HouseOfficialPrice> officialByDetail = housePriceQueryService.findLowestOfficialPricesByBuildingDetail(
-			parsedAddress
-		);
-		if (!officialByDetail.isEmpty()) {
-			return estimatedFromOfficial(officialByDetail);
-		}
-
-		List<HouseOfficialPrice> officialByBuilding = housePriceQueryService.findLowestOfficialPricesByBuilding(
-			parsedAddress
-		);
-		if (!officialByBuilding.isEmpty()) {
-			return estimatedFromOfficial(officialByBuilding);
-		}
-
 		return null;
 	}
 
-	private HousePriceResDto estimatedFromTrade(final List<HouseTradePrice> tradePrices) {
-		Long avgManwon = avgManwon(tradePrices);
-		return HousePriceResDto.builder()
-			.price(avgManwon)
-			.priceType(PRICE_TYPE_ESTIMATED)
-			.message(MESSAGE_ESTIMATED)
-			.build();
+	private HousePriceResDto findEstimatedByOfficial(final ParsedAddress parsedAddress) {
+		List<HouseOfficialPrice> byDetail = housePriceQueryService.findLowestOfficialPricesByBuildingDetail(
+			parsedAddress
+		);
+		if (!byDetail.isEmpty()) {
+			return HousePriceConverter.toEstimatedFromOfficial(byDetail);
+		}
+		List<HouseOfficialPrice> byBuilding = housePriceQueryService.findLowestOfficialPricesByBuilding(
+			parsedAddress
+		);
+		if (!byBuilding.isEmpty()) {
+			return HousePriceConverter.toEstimatedFromOfficial(byBuilding);
+		}
+		return null;
 	}
 
-	private HousePriceResDto estimatedFromOfficial(final List<HouseOfficialPrice> officialPrices) {
-		Long avgPrice = avgOfficial(officialPrices);
-		return HousePriceResDto.builder()
-			.price(avgPrice)
-			.priceType(PRICE_TYPE_ESTIMATED)
-			.message(MESSAGE_ESTIMATED)
-			.build();
-	}
-
-	private long avgManwon(final List<HouseTradePrice> tradePrices) {
-		double average = tradePrices.stream()
-			.mapToLong(HouseTradePrice::getDealAmountManwon)
-			.average()
-			.orElse(0.0);
-		return Math.round(average);
-	}
-
-	private long avgOfficial(final List<HouseOfficialPrice> officialPrices) {
-		double average = officialPrices.stream()
-			.mapToLong(p -> p.getOfficialPrice() / 10000)
-			.average()
-			.orElse(0.0);
-		return Math.round(average);
-	}
-
-	private void validateHouseType(final String houseType) {
+	private HouseType validateHouseType(final String houseType) {
 		if (houseType == null) {
 			throw new HousePriceException(ErrorCode.INVALID_HOUSE_TYPE);
 		}
-		HouseType.fromDisplayName(houseType);
+		return HouseType.fromDisplayName(houseType);
 	}
 
 	private ParsedAddress parseAddress(final String address) {
