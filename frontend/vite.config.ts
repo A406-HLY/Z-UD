@@ -51,12 +51,12 @@ export default defineConfig({
       output: {
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
+            // (Why) pdfjs-dist는 용량이 매우 크므로 별도 청크로 분리하여 초기 로딩 속도를 최적화합니다.
             if (id.includes('pdfjs-dist')) {
               return 'vendor-pdfjs';
             }
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-              return 'vendor-react';
-            }
+            // (Why) 일반 라이브러리들과 React 관련 라이브러리 간의 상호 참조로 인한 
+            // 'Circular chunk' 경고를 방지하기 위해 하나의 vendor 청크로 통합합니다.
             return 'vendor';
           }
         }
