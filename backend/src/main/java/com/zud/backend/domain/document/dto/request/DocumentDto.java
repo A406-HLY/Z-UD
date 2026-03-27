@@ -2,13 +2,13 @@ package com.zud.backend.domain.document.dto.request;
 
 import java.util.List;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.zud.backend.domain.document.dto.request.content.DocumentContent;
 import com.zud.backend.domain.document.dto.request.deserializer.DocumentDtoDeserializer;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
 @Builder
 @JsonDeserialize(using = DocumentDtoDeserializer.class)

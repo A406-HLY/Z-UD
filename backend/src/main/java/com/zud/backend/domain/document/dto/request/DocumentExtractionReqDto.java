@@ -8,7 +8,6 @@ import lombok.Builder;
 @Builder
 public record DocumentExtractionReqDto(
 	String schemaVersion,
-	String jobId,
 	String consultationId,
 	ProcessedAt processedAt,
 	@NotNull

@@ -1,6 +1,7 @@
 package com.zud.backend.domain.consultation.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.zud.backend.common.annotation.Authentication;
 import com.zud.backend.common.response.BaseResponse;
 import com.zud.backend.common.util.ResponseUtils;
+import com.zud.backend.domain.consultation.dto.request.ConsultationTransferReqDto;
 import com.zud.backend.domain.consultation.dto.request.CustomerInfoReqDto;
 import com.zud.backend.domain.consultation.dto.response.CustomerInfoResDto;
 import com.zud.backend.domain.consultation.service.facade.ConsultationFacadeService;
@@ -35,5 +37,16 @@ public class ConsultationController {
 	) {
 		CustomerInfoResDto response = facadeService.register(userId, reqDto);
 		return ResponseUtils.created(response);
+	}
+
+	@PostMapping("/{consultationId}/transfer")
+	@Operation(summary = "전산 이관 요청", description = "상담 정보를 전산 이관 요청합니다.")
+	public ResponseEntity<BaseResponse<Void>> transferConsultation(
+		@Authentication Long userId,
+		@PathVariable String consultationId,
+		@Valid @RequestBody ConsultationTransferReqDto reqDto
+	) {
+		facadeService.transferConsultation(userId, consultationId, reqDto);
+		return ResponseUtils.accepted();
 	}
 }

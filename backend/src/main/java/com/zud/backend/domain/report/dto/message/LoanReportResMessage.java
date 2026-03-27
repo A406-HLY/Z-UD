@@ -1,7 +1,8 @@
 package com.zud.backend.domain.report.dto.message;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 public record LoanReportResMessage(
 	String consultationId,

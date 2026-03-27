@@ -3,11 +3,11 @@ package com.zud.backend.domain.report.converter;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import org.springframework.stereotype.Component;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.stereotype.Component;
-
 import com.zud.backend.domain.report.dto.message.LoanReportReqMessage;
 import com.zud.backend.domain.report.dto.request.LoanReportReqDto;
 import com.zud.backend.domain.report.dto.response.LoanReportGenerateResDto;
