@@ -33,9 +33,10 @@ export const LoginForm: React.FC = () => {
     
     loginMutation.mutate(formData, {
       onSuccess: (response) => {
-        if (response.success) {
-          // (Note) 로그인 성공 후 실제 업무 화면(기초 정보 입력)으로 리다이렉트함
-          navigate('/basic-info');
+        // (Why) loginMutation.mutate는 AxiosResponse를 반환하므로 .data.success를 확인해야 함
+        if (response.data.success) {
+          // (Note) SSO 연동 시뮬레이션을 위해 로그인 성공 후 전산 시스템(Bank System)으로 먼저 이동합니다.
+          navigate('/bank-system');
         }
       },
     });
