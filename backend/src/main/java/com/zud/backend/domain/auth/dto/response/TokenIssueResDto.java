@@ -1,38 +1,19 @@
 package com.zud.backend.domain.auth.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
+import com.zud.backend.domain.user.dto.common.BranchInfoDto;
+import com.zud.backend.domain.user.dto.common.UserInfoDto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
-@Schema(description = "인증 서버 토큰 발급 응답 DTO")
+@Schema(description = "토큰 발급 성공 응답 DTO")
 @Builder
 public record TokenIssueResDto(
-	@Schema(description = "Access Token", example = "eyJhbGciOiJSUzI1NiJ9...")
-	@JsonAlias("access_token")
-	String accessToken,
-
-	@Schema(description = "Refresh Token", example = "eyJhbGciOiJSUzI1NiJ9...")
-	@JsonAlias("refresh_token")
-	String refreshToken,
-
-	@Schema(description = "Access Token 만료 시간 (초)", example = "3600")
-	@JsonAlias("expires_in")
-	Long expiresIn,
-
-	@Schema(description = "사용자 ID", example = "1")
-	@JsonAlias("user_id")
-	Long userId,
-
-	@Schema(description = "사용자 이름", example = "홍길동")
-	String name,
-
-	@Schema(description = "사원 번호", example = "EMP001")
-	@JsonAlias("employee_number")
-	String employeeNumber,
-
-	@Schema(description = "지점 ID", example = "1")
-	@JsonAlias("branch_id")
-	Long branchId
+	@Schema(description = "사용자 정보 (userId, name)")
+	UserInfoDto userInfoDto,
+	@Schema(description = "지점 정보")
+	BranchInfoDto branchInfoDto,
+	@Schema(description = "Access Token 만료 시간 (초), 실제 Access Token은 Authorization 헤더로 전달")
+	Long expiresIn
 ) {
 }

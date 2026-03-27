@@ -12,7 +12,7 @@ import com.zud.backend.common.util.CookieUtils;
 import com.zud.backend.domain.auth.client.AuthServerClient;
 import com.zud.backend.domain.auth.converter.AuthConverter;
 import com.zud.backend.domain.auth.dto.request.LoginReqDto;
-import com.zud.backend.domain.auth.dto.response.LoginSuccessResDto;
+import com.zud.backend.domain.auth.dto.response.SsoTokenResDto;
 import com.zud.backend.domain.auth.dto.response.TokenIssueResDto;
 import com.zud.backend.domain.auth.exception.AuthException;
 import com.zud.backend.domain.branch.entity.Branch;
@@ -37,19 +37,21 @@ public class AuthFacadeServiceImpl implements AuthFacadeService {
 
 	@Override
 	@Transactional
-	public LoginSuccessResDto login(final LoginReqDto reqDto, final HttpServletResponse servletResponse) {
-		TokenIssueResDto tokenDto = authServerClient.issueToken(reqDto);
-		Branch branch = branchQueryService.findById(tokenDto.branchId());
-		applyTokenToResponse(servletResponse, tokenDto);
-		return AuthConverter.toLoginSuccessDto(tokenDto, branch);
+	public TokenIssueResDto login(final LoginReqDto reqDto, final HttpServletResponse servletResponse) {
+		SsoTokenResDto tokenDto = authServerClient.issueToken(reqDto);
+		return buildTokenIssuanceResponse(servletResponse, tokenDto);
 	}
 
 	@Override
 	@Transactional
-	public TokenIssueResDto reissue(final HttpServletRequest servletRequest) {
+	public TokenIssueResDto reissue(
+		final HttpServletRequest servletRequest,
+		final HttpServletResponse servletResponse
+	) {
 		String refreshToken = CookieUtils.extractRefreshToken(servletRequest)
 			.orElseThrow(() -> new AuthException(ErrorCode.TOKEN_NOT_FOUND));
-		return authServerClient.reissueToken(refreshToken);
+		SsoTokenResDto tokenDto = authServerClient.reissueToken(refreshToken);
+		return buildTokenIssuanceResponse(servletResponse, tokenDto);
 	}
 
 	@Override
@@ -60,7 +62,7 @@ public class AuthFacadeServiceImpl implements AuthFacadeService {
 		CookieUtils.expireRefreshTokenCookie(servletResponse);
 	}
 
-	private void applyTokenToResponse(final HttpServletResponse servletResponse, final TokenIssueResDto tokenDto) {
+	private void applyTokenToResponse(final HttpServletResponse servletResponse, final SsoTokenResDto tokenDto) {
 		servletResponse.setHeader(AUTHORIZATION, BEARER_PREFIX + tokenDto.accessToken());
 		CookieUtils.addRefreshTokenCookie(servletResponse, tokenDto.refreshToken());
 	}
@@ -71,5 +73,14 @@ public class AuthFacadeServiceImpl implements AuthFacadeService {
 			return Optional.empty();
 		}
 		return Optional.of(authorizationHeader.substring(BEARER_PREFIX.length()));
+	}
+
+	private TokenIssueResDto buildTokenIssuanceResponse(
+		final HttpServletResponse servletResponse,
+		final SsoTokenResDto tokenDto
+	) {
+		Branch branch = branchQueryService.findById(tokenDto.branchId());
+		applyTokenToResponse(servletResponse, tokenDto);
+		return AuthConverter.toTokenIssuanceResDto(tokenDto, branch);
 	}
 }

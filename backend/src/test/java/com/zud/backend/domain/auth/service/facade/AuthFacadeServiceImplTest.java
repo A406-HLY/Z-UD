@@ -14,7 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.zud.backend.common.error.ErrorCode;
 import com.zud.backend.domain.auth.client.AuthServerClient;
 import com.zud.backend.domain.auth.dto.request.LoginReqDto;
-import com.zud.backend.domain.auth.dto.response.LoginSuccessResDto;
+import com.zud.backend.domain.auth.dto.response.SsoTokenResDto;
 import com.zud.backend.domain.auth.dto.response.TokenIssueResDto;
 import com.zud.backend.domain.auth.exception.AuthException;
 import com.zud.backend.domain.branch.entity.Branch;
@@ -44,8 +44,8 @@ class AuthFacadeServiceImplTest {
 	@InjectMocks
 	private AuthFacadeServiceImpl authFacadeService;
 
-	private TokenIssueResDto createMockTokenResponse() {
-		return TokenIssueResDto.builder()
+	private SsoTokenResDto createMockTokenResponse() {
+		return SsoTokenResDto.builder()
 			.accessToken(MOCK_ACCESS_TOKEN)
 			.refreshToken(MOCK_REFRESH_TOKEN)
 			.expiresIn(MOCK_EXPIRES_IN)
@@ -65,7 +65,7 @@ class AuthFacadeServiceImplTest {
 
 	private void stubSuccessfulLogin() {
 		LoginReqDto reqDto = new LoginReqDto(EMPLOYEE_NUMBER, PLAIN_PASSWORD);
-		TokenIssueResDto tokenResponse = createMockTokenResponse();
+		SsoTokenResDto tokenResponse = createMockTokenResponse();
 		Branch branch = createDefaultBranch();
 
 		given(authServerClient.issueToken(reqDto)).willReturn(tokenResponse);
@@ -85,7 +85,7 @@ class AuthFacadeServiceImplTest {
 			stubSuccessfulLogin();
 
 			// when
-			LoginSuccessResDto result = authFacadeService.login(reqDto, servletResponse);
+			TokenIssueResDto result = authFacadeService.login(reqDto, servletResponse);
 
 			// then
 			assertThat(result).isNotNull();

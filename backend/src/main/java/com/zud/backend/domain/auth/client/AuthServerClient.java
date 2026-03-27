@@ -17,7 +17,7 @@ import com.zud.backend.domain.auth.dto.request.LoginReqDto;
 import com.zud.backend.domain.auth.dto.request.TokenIssueReqDto;
 import com.zud.backend.domain.auth.dto.request.TokenRefreshReqDto;
 import com.zud.backend.domain.auth.dto.request.TokenRevokeReqDto;
-import com.zud.backend.domain.auth.dto.response.TokenIssueResDto;
+import com.zud.backend.domain.auth.dto.response.SsoTokenResDto;
 import com.zud.backend.domain.auth.exception.AuthException;
 
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +43,7 @@ public class AuthServerClient {
 			.build();
 	}
 
-	public TokenIssueResDto issueToken(final LoginReqDto reqDto) {
+	public SsoTokenResDto issueToken(final LoginReqDto reqDto) {
 		TokenIssueReqDto tokenIssueReqDto = AuthConverter.toTokenIssueReqDto(reqDto);
 
 		try {
@@ -66,7 +66,7 @@ public class AuthServerClient {
 		}
 	}
 
-	public TokenIssueResDto reissueToken(final String refreshToken) {
+	public SsoTokenResDto reissueToken(final String refreshToken) {
 		TokenRefreshReqDto tokenRefreshReqDto = AuthConverter.toTokenRefreshReqDto(refreshToken);
 
 		try {
@@ -128,9 +128,9 @@ public class AuthServerClient {
 		}
 	}
 
-	private TokenIssueResDto parseTokenIssueResponse(final String body) throws IOException {
+	private SsoTokenResDto parseTokenIssueResponse(final String body) throws IOException {
 		JsonNode payloadNode = unwrapDataNode(body);
-		TokenIssueResDto response = objectMapper.treeToValue(payloadNode, TokenIssueResDto.class);
+		SsoTokenResDto response = objectMapper.treeToValue(payloadNode, SsoTokenResDto.class);
 		if (response == null || response.accessToken() == null || response.refreshToken() == null) {
 			throw new AuthException(ErrorCode.AUTH_SERVER_ERROR);
 		}
