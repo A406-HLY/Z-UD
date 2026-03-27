@@ -10,6 +10,7 @@ import { useVerificationController } from '@/features/verification/model/use-ver
 import { useGlobalFocusRecovery } from '@/features/verification/model/use-global-focus-recovery';
 import { useCrossWindowSync } from '@/features/verification/model/use-cross-window-sync';
 import { DeadEndPopup } from '@/features/verification/ui/DeadEndPopup';
+import { OcrWaitModal } from '@/features/verification/ui/OcrWaitModal';
 import { useVerificationStatus } from '@/features/verification/model/use-verification-status';
 import { useVerificationActions } from '@/features/verification/model/use-verification-actions';
 
@@ -79,10 +80,13 @@ export const VerificationResultPage = () => {
           <section className="shrink-0">
             <LoanTabs actionButton={nextStepButton} />
           </section>
-          <div className="flex-1 flex items-center justify-center font-black text-gray-300 animate-pulse uppercase tracking-[0.5em] py-20">
-            Analyzing Document Consistency...
+          <div className="flex-1 flex flex-col items-center justify-center font-black text-gray-300 animate-pulse uppercase tracking-[0.5em] py-20 gap-4">
+            <div className="text-xl">Analyzing Document Consistency...</div>
+            <div className="text-[10px] font-normal tracking-tight lowercase">Please wait for AI verification</div>
           </div>
         </main>
+        {/* [WHY: 데이터가 아직 로드되지 않았을 때 실시간 SSE 진행 상황을 보여주는 분석 모달] */}
+        <OcrWaitModal />
       </div>
     );
   }
@@ -150,6 +154,8 @@ export const VerificationResultPage = () => {
 
       {/* [WHY: 필수 서류 누락 시 전역적으로 차단하는 전산 팝업] */}
       <DeadEndPopup />
+      {/* [WHY: 실시간 SSE 진행 상황을 보여주는 분석 모달 (상태에 따라 자동 노출)] */}
+      <OcrWaitModal />
     </div>
   );
 };

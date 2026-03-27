@@ -30,7 +30,19 @@ export default defineConfig({
       '/api': {
         target: 'https://j14a406.p.ssafy.io',
         changeOrigin: true,
-        secure: false, // SSL 인증서 문제 우회용 
+        secure: false, // SSL 인증서 문제 우회용
+        // (Why) SSE(Server-Sent Events) 스트리밍을 위해 프록시의 응답 버퍼링을 해제합니다.
+        // 기본 http-proxy는 응답을 버퍼링하여 SSE 이벤트가 즉시 전달되지 않고 연결이 끊기는 문제가 발생합니다.
+        configure: (proxy) => {
+          proxy.on('proxyRes', (proxyRes, req, res) => {
+            if (proxyRes.headers['content-type']?.includes('text/event-stream')) {
+              // SSE 응답에 대해 버퍼링을 비활성화합니다.
+              res.setHeader('X-Accel-Buffering', 'no');
+              res.setHeader('Cache-Control', 'no-cache, no-transform');
+              res.setHeader('Connection', 'keep-alive');
+            }
+          });
+        }
       }
     }
   },

@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { env } from '@/shared/config/env';
 import { 
@@ -17,59 +17,93 @@ import { fetchVerificationResult } from '@/entities/verification/api/verificatio
 /**
  * @feature Audit/SSE
  * 백엔드 SSE(Server-Sent Events) 스트림에 연결하여 실시간 심사진행 상태와 데이터를 Redux에 업데이트하는 훅입니다.
+ * (Why) 네이티브 EventSource를 사용하되, 인증 토큰을 쿼리 파라미터(accessToken)로 전달합니다.
+ * fetch 기반이나 XHR 폴리필보다 네이티브 API가 Vite 프록시 환경에서 가장 안정적인 스트리밍을 보장합니다.
  */
 export const useSseAudit = (counselId: string | undefined, isTriggered: boolean) => {
   const dispatch = useAppDispatch();
   const { isSseConnected } = useAppSelector((state) => state.audit);
+  const accessToken = useAppSelector((state) => state.auth.user?.accessToken);
+
+  // (Why) 값을 ref로 보관하여 useCallback 의존성에서 제거합니다.
+  const accessTokenRef = useRef(accessToken);
+  const counselIdRef = useRef(counselId);
+  const eventSourceRef = useRef<EventSource | null>(null);
+
+  useEffect(() => { accessTokenRef.current = accessToken; }, [accessToken]);
+  useEffect(() => { counselIdRef.current = counselId; }, [counselId]);
+
+  /**
+   * OCR 완료 이벤트 비동기 핸들러
+   */
+  const handleOcrCompleted = useCallback(async (payload: { message?: string }) => {
+    dispatch(updateStepStatus({ step: 'ocr', status: 'LOADING' }));
+    try {
+      const currentCounselId = counselIdRef.current;
+      if (!currentCounselId) return;
+      const ocrResult = await fetchVerificationResult(currentCounselId);
+      dispatch(setOcrData(ocrResult));
+      dispatch(updateStepStatus({ step: 'ocr', status: 'SUCCESS', message: payload.message || 'OCR 분석 완료' }));
+    } catch (error) {
+      console.error('[SSE] OCR result fetch failed:', error);
+      dispatch(updateStepStatus({ step: 'ocr', status: 'ERROR', message: 'OCR 데이터 수취 실패' }));
+      dispatch(addErrorMessage('OCR 데이터를 불러오는 데 실패했습니다.'));
+    }
+  }, [dispatch]);
 
   const connectSse = useCallback(() => {
     if (!counselId || !isTriggered) return;
 
-    // (Why) 현재 프론트엔드 환경에 맞게 네이티브 EventSource와 withCredentials 세션 쿠키 인증을 사용합니다.
-    const url = `${env.apiBaseUrl}/notification/subscribe?consultationId=${counselId}`;
-    const eventSource = new EventSource(url, { withCredentials: true });
+    // (Why) 이전 연결이 있으면 먼저 종료합니다.
+    eventSourceRef.current?.close();
 
-    // 0. 연결 시작 (onopen)
+    const token = accessTokenRef.current;
+    
+    /**
+     * (Why) URLSearchParams는 공백을 +로 인코딩하지만, 
+     * 인증 필터는 %20(표준 공백 인코딩)을 기대하는 경우가 많으므로 직접 인코딩합니다.
+     */
+    const baseUrl = `${window.location.origin}${env.apiBaseUrl}/notification/subscribe`;
+    const finalUrl = token 
+      ? `${baseUrl}?accessToken=${token}`
+      : baseUrl;
+    
+    console.log('[SSE] Connecting to:', finalUrl.split('accessToken=')[0] + 'accessToken=Bearer ***');
+    
+    const eventSource = new EventSource(finalUrl, { withCredentials: true });
+    eventSourceRef.current = eventSource;
+
+    // ─── 연결 관리 ───
     eventSource.onopen = () => {
       console.log('[SSE] Connection opened (onopen)');
       dispatch(setSseConnected(true));
       dispatch(setCurrentMessage('서버와 실시간 연결됨...'));
     };
 
-    // 1. 초기 연결 수신 (Event: connect)
+    // 0. 초기 연결 확인 이벤트
     eventSource.addEventListener('connect', (event: MessageEvent) => {
       console.log('[SSE] "connect" event received:', event.data);
       dispatch(setSseConnected(true));
       dispatch(setCurrentMessage('심사 프로세스를 시작합니다...'));
     });
 
-    // 보조 메시지 수신 (이름 없는 이벤트)
+    // 보조 메시지 (이름 없는 이벤트)
     eventSource.onmessage = (event) => {
       console.log('[SSE] Standard message received:', event.data);
     };
 
-    // 2. OCR 이벤트
-    eventSource.addEventListener('OCR_COMPLETED', async (e: MessageEvent) => {
+    // ─── 1. OCR 이벤트 ───
+    eventSource.addEventListener('OCR_COMPLETED', (e: MessageEvent) => {
+      console.log('[SSE] OCR_COMPLETED received:', e.data);
       const payload = JSON.parse(e.data);
-      dispatch(updateStepStatus({ step: 'ocr', status: 'LOADING' }));
-      
-      try {
-        if (!counselId) return;
-        const data = await fetchVerificationResult(counselId);
-        dispatch(setOcrData(data));
-        dispatch(updateStepStatus({ step: 'ocr', status: 'SUCCESS', message: payload.message || 'OCR 분석 완료' }));
-      } catch (error) {
-        console.error('[SSE] OCR result fetch failed:', error);
-        dispatch(updateStepStatus({ step: 'ocr', status: 'ERROR', message: 'OCR 데이터 수취 실패' }));
-        dispatch(addErrorMessage('OCR 데이터를 불러오는 데 실패했습니다.'));
-      }
+      handleOcrCompleted(payload);
     });
     eventSource.addEventListener('OCR_FAILED', () => {
       dispatch(updateStepStatus({ step: 'ocr', status: 'ERROR', message: 'OCR 분석 실패' }));
       dispatch(addErrorMessage('OCR 처리에 실패했습니다.'));
     });
 
-    // 3. 주택 심사 이벤트 (House Audit)
+    // ─── 2. 주택 심사 이벤트 ───
     eventSource.addEventListener('HOUSE_AUDIT_STARTED', (e: MessageEvent) => {
       const payload = JSON.parse(e.data);
       dispatch(updateStepStatus({ step: 'houseAudit', status: 'LOADING', message: `주택 심사 시작: ${payload.data?.propertyAddress || ''}` }));
@@ -84,31 +118,21 @@ export const useSseAudit = (counselId: string | undefined, isTriggered: boolean)
       dispatch(addErrorMessage('주택 심사 중 오류가 발생했습니다.'));
     });
 
-    // 주택 심사 세부 단계 (Status 전이는 없으며 메시지만 업데이트)
+    // 주택 심사 세부 단계
     eventSource.addEventListener('HOUSE_AUDIT_PRICE_CHECK_STARTED', () => dispatch(setCurrentMessage('주택 시세 조회 시작...')));
     eventSource.addEventListener('HOUSE_AUDIT_PRICE_CHECK_COMPLETED', () => dispatch(setCurrentMessage('주택 시세 조회 완료')));
     eventSource.addEventListener('HOUSE_AUDIT_PRICE_CHECK_FAILED', () => dispatch(addErrorMessage('주택 시세 조회 중 실패했습니다.')));
-
     eventSource.addEventListener('HOUSE_AUDIT_ILLEGAL_BUILDING_CHECK_STARTED', () => dispatch(setCurrentMessage('위반 건축물 검사 시작...')));
     eventSource.addEventListener('HOUSE_AUDIT_ILLEGAL_BUILDING_CHECK_COMPLETED', () => dispatch(setCurrentMessage('위반 건축물 검사 완료')));
     eventSource.addEventListener('HOUSE_AUDIT_ILLEGAL_BUILDING_CHECK_FAILED', () => dispatch(addErrorMessage('위반 건축물 검증에 실패했습니다.')));
-
     eventSource.addEventListener('HOUSE_AUDIT_NEAREST_BRANCH_CHECK_STARTED', () => dispatch(setCurrentMessage('관할 지점 확인 중...')));
     eventSource.addEventListener('HOUSE_AUDIT_NEAREST_BRANCH_CHECK_COMPLETED', () => dispatch(setCurrentMessage('관할 지점 조회 완료')));
     eventSource.addEventListener('HOUSE_AUDIT_NEAREST_BRANCH_CHECK_FAILED', () => dispatch(addErrorMessage('관할 지점 조회에 실패했습니다.')));
 
-    // 4. 마이데이터/신용(Credit/Loan) 이벤트
-    eventSource.addEventListener('MY_DATA_AUDIT_STARTED', () => {
-      dispatch(setCurrentMessage('마이데이터 스크래핑 시작...'));
-    });
-    eventSource.addEventListener('MY_DATA_AUDIT_COMPLETED', () => {
-      dispatch(setCurrentMessage('마이데이터 심사 전체 완료'));
-    });
-    eventSource.addEventListener('MY_DATA_AUDIT_FAILED', () => {
-      dispatch(addErrorMessage('마이데이터 심사 통합 조회에 실패했습니다.'));
-    });
-
-    // 마이데이터 회원 확인
+    // ─── 3. 마이데이터 이벤트 ───
+    eventSource.addEventListener('MY_DATA_AUDIT_STARTED', () => dispatch(setCurrentMessage('마이데이터 스크래핑 시작...')));
+    eventSource.addEventListener('MY_DATA_AUDIT_COMPLETED', () => dispatch(setCurrentMessage('마이데이터 심사 전체 완료')));
+    eventSource.addEventListener('MY_DATA_AUDIT_FAILED', () => dispatch(addErrorMessage('마이데이터 심사 통합 조회에 실패했습니다.')));
     eventSource.addEventListener('MY_DATA_MEMBER_LOOKUP_STARTED', () => dispatch(setCurrentMessage('마이데이터 회원 여부 조회 중...')));
     eventSource.addEventListener('MY_DATA_MEMBER_LOOKUP_COMPLETED', () => dispatch(setCurrentMessage('마이데이터 회원 확인 완료')));
     eventSource.addEventListener('MY_DATA_MEMBER_LOOKUP_FAILED', () => dispatch(addErrorMessage('마이데이터 회원 조회 중 오류가 발생했습니다.')));
@@ -141,7 +165,7 @@ export const useSseAudit = (counselId: string | undefined, isTriggered: boolean)
       dispatch(addErrorMessage('대출 내역 조회 중 오류가 발생했습니다.'));
     });
 
-    // 최종 레포트 완료
+    // ─── 4. 최종 레포트 완료 ───
     eventSource.addEventListener('REPORT_COMPLETED', () => {
       dispatch(setAllAuditDone(true));
       dispatch(setCurrentMessage('모든 심사가 완료되었습니다. 결과를 확인하세요.'));
@@ -149,18 +173,20 @@ export const useSseAudit = (counselId: string | undefined, isTriggered: boolean)
       dispatch(setSseConnected(false));
     });
 
-    // 서버 기본 에러 처리
+    // ─── 에러 처리 ───
     eventSource.onerror = (error) => {
       console.error('[SSE] Connection Error:', error);
-      dispatch(setSseConnected(false));
-      eventSource.close();
+      if (eventSource.readyState === EventSource.CLOSED) {
+        dispatch(setSseConnected(false));
+        eventSource.close();
+      }
     };
 
     return () => {
       eventSource.close();
       dispatch(setSseConnected(false));
     };
-  }, [counselId, isTriggered, dispatch]);
+  }, [counselId, isTriggered, dispatch, handleOcrCompleted]);
 
   useEffect(() => {
     const cleanup = connectSse();

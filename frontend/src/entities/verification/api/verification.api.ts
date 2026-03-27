@@ -1,18 +1,18 @@
+import { apiClient } from '@/shared/api/client';
 import { VerificationServerResponse } from '@/entities/verification/model/types';
-import { MOCK_VERIFICATION_RESPONSE } from '@/features/verification/api/verification.mock';
+import { ApiResponse } from '@/entities/user';
 
 /**
  * @feature verification/api/fetchVerificationResult
  * 서버로부터 서류 검증 결과 원본 데이터를 조회합니다.
- * (Note: 테스트를 위해 임시로 MOCK_VERIFICATION_RESPONSE를 반환합니다.)
+ * (Why) SSE OCR_COMPLETED 이벤트 수신 후, 실제 추출된 데이터를 가져오기 위해 호출합니다.
  */
 export const fetchVerificationResult = async (consultationId: string): Promise<VerificationServerResponse> => {
-  // 실제 연동 시: 
-  // const response = await apiClient.get<VerificationServerResponse>(`/documents/extraction-results/${consultationId}`);
-  // return response.data;
-  consultationId; // 빌드테스트 레거시
-
-  // (Why) 실제 네트워크 지연 시간을 시뮬레이션합니다.
-  await new Promise(resolve => setTimeout(resolve, 800));
-  return MOCK_VERIFICATION_RESPONSE;
+  // (Why) 백엔드 규격에 맞춰 /documents/extraction 엔드포인트를 호출합니다.
+  const response = await apiClient.get<ApiResponse<VerificationServerResponse>>(
+    `/documents/extraction-results/${consultationId}`
+  );
+  
+  // (Why) 공통 응답 규격(ApiResponse)에서 실제 데이터부만 추출하여 반환합니다.
+  return response.data.data;
 };
