@@ -10,7 +10,6 @@ import com.zud.backend.common.config.swagger.ApiErrorResponse;
 import com.zud.backend.common.response.BaseResponse;
 import com.zud.backend.common.util.ResponseUtils;
 import com.zud.backend.domain.auth.dto.request.LoginReqDto;
-import com.zud.backend.domain.auth.dto.response.LoginSuccessResDto;
 import com.zud.backend.domain.auth.dto.response.TokenIssueResDto;
 import com.zud.backend.domain.auth.service.facade.AuthFacadeService;
 
@@ -46,11 +45,11 @@ public class AuthController {
 	)
 	@ApiErrorResponse
 	@PostMapping("/login")
-	public ResponseEntity<BaseResponse<LoginSuccessResDto>> loginUser(
+	public ResponseEntity<BaseResponse<TokenIssueResDto>> loginUser(
 		@Valid @RequestBody final LoginReqDto reqDto,
 		final HttpServletResponse servletResponse
 	) {
-		LoginSuccessResDto response = facadeService.login(reqDto, servletResponse);
+		TokenIssueResDto response = facadeService.login(reqDto, servletResponse);
 		return ResponseUtils.ok(response);
 	}
 
@@ -67,10 +66,11 @@ public class AuthController {
 	)
 	@ApiErrorResponse
 	@PostMapping("/reissue")
-	public ResponseEntity<BaseResponse<TokenIssueResDto>> loginUser(
-		final HttpServletRequest servletRequest
+	public ResponseEntity<BaseResponse<TokenIssueResDto>> reissue(
+		final HttpServletRequest servletRequest,
+		final HttpServletResponse servletResponse
 	) {
-		TokenIssueResDto response = facadeService.reissue(servletRequest);
+		TokenIssueResDto response = facadeService.reissue(servletRequest, servletResponse);
 		return ResponseUtils.ok(response);
 	}
 

@@ -3,7 +3,7 @@ package com.zud.backend.domain.auth.converter;
 import com.zud.backend.domain.auth.dto.request.LoginReqDto;
 import com.zud.backend.domain.auth.dto.request.TokenIssueReqDto;
 import com.zud.backend.domain.auth.dto.request.TokenRefreshReqDto;
-import com.zud.backend.domain.auth.dto.response.LoginSuccessResDto;
+import com.zud.backend.domain.auth.dto.response.SsoTokenResDto;
 import com.zud.backend.domain.auth.dto.response.TokenIssueResDto;
 import com.zud.backend.domain.branch.entity.Branch;
 import com.zud.backend.domain.user.converter.UserConverter;
@@ -26,8 +26,8 @@ public class AuthConverter {
 			.build();
 	}
 
-	public LoginSuccessResDto toLoginSuccessDto(final TokenIssueResDto tokenDto, final Branch branch) {
-		return LoginSuccessResDto.builder()
+	public TokenIssueResDto toTokenIssuanceResDto(final SsoTokenResDto tokenDto, final Branch branch) {
+		return TokenIssueResDto.builder()
 			.userInfoDto(UserConverter.toUserInfoDto(tokenDto))
 			.branchInfoDto(UserConverter.toBranchInfoDto(branch))
 			.expiresIn(tokenDto.expiresIn())

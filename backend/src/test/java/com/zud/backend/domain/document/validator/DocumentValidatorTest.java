@@ -29,12 +29,12 @@ import com.zud.backend.domain.document.validator.content.TitleDeedContentValidat
 class DocumentValidatorTest {
 
 	private final DocumentValidator validator = new DocumentValidator(List.of(
-			new TitleDeedContentValidator(),
-			new HealthInsuranceEligibilityContentValidator(),
-			new IncomeAmountCertificateContentValidator(),
-			new NationalTaxCertificateContentValidator(),
-			new LocalTaxCertificateContentValidator(),
-			new LocalTaxItemCertificateContentValidator()));
+		new TitleDeedContentValidator(),
+		new HealthInsuranceEligibilityContentValidator(),
+		new IncomeAmountCertificateContentValidator(),
+		new NationalTaxCertificateContentValidator(),
+		new LocalTaxCertificateContentValidator(),
+		new LocalTaxItemCertificateContentValidator()));
 
 	private DataField<String> strField(String value) {
 		return new DataField<>(value, null, null);
@@ -45,10 +45,11 @@ class DocumentValidatorTest {
 	}
 
 	private DocumentDto toDocumentDto(
-			com.zud.backend.domain.document.dto.request.content.DocumentContent content) {
+		com.zud.backend.domain.document.dto.request.content.DocumentContent content
+	) {
 		return DocumentDto.builder()
-				.extraction(DocumentDto.ExtractionDetail.builder().content(content).build())
-				.build();
+			.extraction(DocumentDto.ExtractionDetail.builder().content(content).build())
+			.build();
 	}
 
 	@Nested
@@ -61,20 +62,20 @@ class DocumentValidatorTest {
 			// given
 			ResidentRegistrationContent resident = ResidentRegistrationContent.builder().build();
 			TitleDeedContent titleDeed = TitleDeedContent.builder()
-					.ownerName(strField("홍길동"))
-					.hasTrustRegistration(boolField(false))
-					.build();
+				.ownerName(strField("홍길동"))
+				.hasTrustRegistration(boolField(false))
+				.build();
 			BuildingRegisterContent building = BuildingRegisterContent.builder().build();
 
 			List<DocumentDto> documents = List.of(
-					toDocumentDto(resident),
-					toDocumentDto(titleDeed),
-					toDocumentDto(building));
+				toDocumentDto(resident),
+				toDocumentDto(titleDeed),
+				toDocumentDto(building));
 
 			Consultation consultation = Consultation.builder()
-					.name("홍길동")
-					.employmentType(EmploymentType.EMPLOYEE)
-					.build();
+				.name("홍길동")
+				.employmentType(EmploymentType.EMPLOYEE)
+				.build();
 
 			// when
 			DocumentValidationResult result = validator.validateAll(documents, consultation);
@@ -90,9 +91,9 @@ class DocumentValidatorTest {
 			List<DocumentDto> documents = List.of();
 
 			Consultation consultation = Consultation.builder()
-					.name("홍길동")
-					.employmentType(EmploymentType.EMPLOYEE)
-					.build();
+				.name("홍길동")
+				.employmentType(EmploymentType.EMPLOYEE)
+				.build();
 
 			// when
 			DocumentValidationResult result = validator.validateAll(documents, consultation);
@@ -109,21 +110,21 @@ class DocumentValidatorTest {
 			// given
 			ResidentRegistrationContent resident = ResidentRegistrationContent.builder().build();
 			TitleDeedContent titleDeed = TitleDeedContent.builder()
-					.ownerName(strField("홍길동"))
-					.hasOwnershipTransferClaim(boolField(false))
-					.hasTrustRegistration(boolField(false))
-					.build();
+				.ownerName(strField("홍길동"))
+				.hasOwnershipTransferClaim(boolField(false))
+				.hasTrustRegistration(boolField(false))
+				.build();
 			BuildingRegisterContent building = BuildingRegisterContent.builder().build();
 
 			List<DocumentDto> documents = List.of(
-					toDocumentDto(resident),
-					toDocumentDto(titleDeed),
-					toDocumentDto(building));
+				toDocumentDto(resident),
+				toDocumentDto(titleDeed),
+				toDocumentDto(building));
 
 			Consultation consultation = Consultation.builder()
-					.name("홍길동")
-					.employmentType(EmploymentType.SELF_EMPLOYED)
-					.build();
+				.name("홍길동")
+				.employmentType(EmploymentType.SELF_EMPLOYED)
+				.build();
 
 			// when
 			DocumentValidationResult result = validator.validateAll(documents, consultation);
@@ -142,23 +143,22 @@ class DocumentValidatorTest {
 		void 이름_불일치시_위반사항_반환() {
 			// given
 			EmploymentCertificateContent employment = EmploymentCertificateContent.builder()
-					.name(strField("김철수"))
-					.build();
+				.name(strField("김철수"))
+				.build();
 
 			SaleOrLeaseContractContent contract = SaleOrLeaseContractContent.builder()
-					.buyer(SaleOrLeaseContractContent.Party.builder()
-							.name(strField("홍길동")).build())
-					.build();
-
+				.buyer(SaleOrLeaseContractContent.Party.builder()
+					.name(strField("홍길동")).build())
+				.build();
 
 			Consultation consultation = Consultation.builder()
-					.name("홍길동")
-					.employmentType(EmploymentType.EMPLOYEE)
-					.build();
+				.name("홍길동")
+				.employmentType(EmploymentType.EMPLOYEE)
+				.build();
 
 			List<DocumentDto> documents = List.of(
-					toDocumentDto(employment),
-					toDocumentDto(contract));
+				toDocumentDto(employment),
+				toDocumentDto(contract));
 
 			// when
 			DocumentValidationResult result = validator.validateAll(documents, consultation);
@@ -172,15 +172,15 @@ class DocumentValidatorTest {
 		void 이름_일치시_위반사항_없음() {
 			// given
 			TitleDeedContent titleDeed = TitleDeedContent.builder()
-					.ownerName(strField("홍길동"))
-					.hasOwnershipTransferClaim(boolField(false))
-					.hasTrustRegistration(boolField(false))
-					.build();
+				.ownerName(strField("홍길동"))
+				.hasOwnershipTransferClaim(boolField(false))
+				.hasTrustRegistration(boolField(false))
+				.build();
 
 			Consultation consultation = Consultation.builder()
-					.name("홍길동")
-					.employmentType(EmploymentType.EMPLOYEE)
-					.build();
+				.name("홍길동")
+				.employmentType(EmploymentType.EMPLOYEE)
+				.build();
 
 			List<DocumentDto> documents = List.of(toDocumentDto(titleDeed));
 
