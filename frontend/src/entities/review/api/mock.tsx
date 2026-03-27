@@ -8,6 +8,15 @@ export const dummyConsultationData: ConsultationResponse = {
       productName: "싸딤돌",
       interestRate: "15%",
       repaymentPeriod: "30년",
+      stressDSR: {
+        name_ko: "스트레스 DSR",
+        value: "3%",
+        search_query: "대출 심사 시 기존 부채 및 신규 대출의 원리금 상환 부담 산정에 적용되는 스트레스 DSR 가산 금리 기준 및 적용 비율은 어떻게 되는가?",
+        matched_articles: [
+          "제14조",
+          "제12조"
+        ]
+      },
       ltvBasedLoanLimit: {
         collateralMarketPrice: 900000000,
         LTVRatio: "35%",
@@ -289,6 +298,31 @@ export const dummyConsultationData: ConsultationResponse = {
       productName: "싸금자리",
       interestRate: "4.5%",
       repaymentPeriod: "40년",
+      ltvBasedLoanLimit: {
+        collateralMarketPrice: 900000000,
+        LTVRatio: "35%",
+        maximumClaimAmount: 100000000,
+        totalRemainingLoanBalance: 150000000,
+        value: 6
+      },
+      dsrBasedLoanLimit: {
+        DSRRatio: "40%",
+        annualIncomeTotal: 70000000,
+        annualPrincipalAndInterestRepayment: 14400000,
+        interestRate: "10%",
+        stressRateAdjustment: "0.6%",
+        stressDSR: "3%",
+        repaymentPeriodYears: 30,
+        value: 8
+      },
+      stressDSR: {
+        name_ko: "스트레스 DSR",
+        value: "3%",
+        search_query: "대출 심사 시 기존 부채 및 신규 대출의 원리금 상환 부담 산정에 적용되는 스트레스 DSR(총부채원리금상환비율) 가산 금리 기준 및 적용 비율은 어떻게 되는가?",
+        matched_articles: [
+          "제13조"
+        ]
+      },
       aiResults: {
         creditRating: {
         name_ko: "신용등급",

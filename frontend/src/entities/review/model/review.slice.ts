@@ -33,12 +33,6 @@ export const reviewSlice = createSlice({
     // API 데이터 세팅 및 기본 탭 설정
     setReviewData: (state, action: PayloadAction<ConsultationResponse>) => {
       state.data = action.payload;
-      if (action.payload?.result) {
-        const keys = Object.keys(action.payload.result);
-        if (keys.length > 0 && !state.selectedProductKey) {
-          state.selectedProductKey = keys[0];
-        }
-      }
     },
     // 선택된 상품 탭 변경
     setSelectedProductKey: (state, action: PayloadAction<string>) => {

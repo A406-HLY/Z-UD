@@ -71,16 +71,16 @@ export const ReviewDetailsList = () => {
         </div>
       </div>
 
-      {/* Table Header */}
-      <div className="flex bg-slate-100 text-[#445566] font-bold text-[9px] uppercase tracking-tighter border-b border-gray-300 shrink-0">
-        <div className="w-[30%] px-2 py-1.5 border-r border-gray-300">Audit Item</div>
-        <div className="w-[15%] px-2 py-1.5 border-r border-gray-300 text-center">Result</div>
-        <div className="flex-1 px-2 py-1.5 border-r border-gray-300">Extracted Value & Reason</div>
-        <div className="w-[15%] px-2 py-1.5 text-center">Reference</div>
-      </div>
+      {/* List Body with Sticky Header */}
+      <div className="flex-1 overflow-y-auto relative">
+        {/* Table Header (Moved inside the scrollable container and made sticky) */}
+        <div className="flex bg-slate-100 text-[#445566] font-bold text-[9px] uppercase tracking-tighter border-b border-gray-300 sticky top-0 z-10 shadow-sm backdrop-blur-sm">
+          <div className="w-[30%] px-2 py-1.5 border-r border-gray-300">Audit Item</div>
+          <div className="w-[15%] px-2 py-1.5 border-r border-gray-300 text-center">Result</div>
+          <div className="flex-1 px-2 py-1.5 border-r border-gray-300">Extracted Value & Reason</div>
+          <div className="w-[15%] px-2 py-1.5 text-center">Reference</div>
+        </div>
 
-      {/* List Body */}
-      <div className="flex-1 overflow-y-auto">
         {items.length === 0 ? (
           <div className="p-8 text-center text-slate-400 font-bold text-[11px]">조건에 맞는 항목이 없습니다.</div>
         ) : (
