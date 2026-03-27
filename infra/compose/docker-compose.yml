@@ -8,7 +8,6 @@ services:
     environment:
       - TZ=Asia/Seoul
     ports:
-      - "80:80"
       - "443:443"
     networks:
       - app-network
@@ -19,16 +18,15 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt
       - /var/www/certbot:/var/www/certbot
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost/ || exit 1" ]
+      test: [ "CMD-SHELL", "curl -k -f https://localhost/ || exit 1" ]
       interval: 5s
       timeout: 3s
       retries: 3
-      start_period: 5s
+      start_period: 30s
     depends_on:
       backend:
         condition: service_healthy
     restart: unless-stopped
-
 
 #  certbot:
 #    container_name: certbot
@@ -65,7 +63,7 @@ services:
       - SPRING_DATA_REDIS_HOST=redis
       - SPRING_DATA_REDIS_PORT=${REDIS_PORT:-6379}
       - SPRING_DATA_REDIS_PASSWORD=${REDIS_PASSWORD}
-
+      - TZ=Asia/Seoul
     expose:
       - "8080"
     networks:
