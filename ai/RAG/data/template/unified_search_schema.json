@@ -127,13 +127,6 @@
   },
   {
     "category": "개인사업자",
-    "name_en": "determinedTaxAmount",
-    "name_ko": "결정세액",
-    "default_value": null,
-    "search_query": "개인사업자의 총 납부 결정세액 자료를 활용한 세무 소득 증빙 및 과세 환산 수익 인정 규정은?"
-  },
-  {
-    "category": "개인사업자",
     "name_en": "taxableSalesAmount",
     "name_ko": "매출 과세표준",
     "default_value": null,
