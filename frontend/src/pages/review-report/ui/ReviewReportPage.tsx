@@ -5,40 +5,15 @@ import { LoanStepper } from '@/widgets/loan-stepper/ui/LoanStepper';
 
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { setReviewData, selectProcessedProducts, selectSelectedArticle } from '@/entities/review/model/review.slice';
-import { ConsultationResponse } from '@/entities/review/model/types';
 import { ProductTabs, StatusSummaryBoard, LimitVisualizationCard } from '@/widgets/review-summary';
 import { ReviewDetailsList } from '@/widgets/review-details';
 import { DocumentImageViewer } from '@/widgets/document-image-viewer/ui/DocumentImageViewer';
+import { useGetReview } from '@/entities/review/api/review.api';
+import { ARTICLE_PAGE_MAP, MOCK_PDF_FILES } from '@/shared/config/pdfConfig';
+import { Loader2, AlertTriangle } from 'lucide-react';
 
-const DUMMY_DATA: ConsultationResponse = {
-  consultationId: "REQ-2026-001",
-  result: {
-    "ssadimdol": {
-      "ltv": { name_ko: "LTV 잔여 한도(%)", value: 60, matched_articles: ["제1조"], result: "승인", reason: "기준 이하" },
-      "dsr": { name_ko: "DSR 잔여 한도(%)", value: 30, matched_articles: ["제2조"], result: "승인", reason: "기준 이하" },
-      "income": { name_ko: "소득 심사", value: "적격", matched_articles: [], result: "승인", reason: "근로소득 확인" },
-      "credit": { name_ko: "CB사 신용 평가", value: "1등급", matched_articles: ["내규-신용-01"], result: "승인", reason: "우량 등급" }
-    },
-    "ssageumjari": {
-      "ltv": { name_ko: "LTV 제한", value: 85, matched_articles: ["제3조"], result: "거절", reason: "LTV 한도 초과" },
-      "house": { name_ko: "주택보유수", value: 2, matched_articles: [], result: "자료 보완 요망", reason: "추가 증빙 필요" }
-    }
-  }
-};
+// (Why) 모든 하드코딩 데이터는 src/shared/config 및 src/entities/review/api/mock.tsx 로 이관되었습니다.
 
-const ARTICLE_PAGE_MAP: Record<string, number> = {
-  "제1조": 1,
-  "제2조": 2,
-  "제3조": 3,
-  "내규-신용-01": 4,
-};
-
-const MOCK_PDF_FILES = [
-  { fileId: "p1", pageNum: 1 },
-  { fileId: "p2", pageNum: 2 },
-  { fileId: "p3", pageNum: 3 },
-  { fileId: "p4", pageNum: 4 },
-];
 
 /**
  * @page review-report
@@ -78,10 +53,16 @@ export const ReviewReportPage = () => {
     document.addEventListener('mouseup', handleMouseUp);
   }, []);
 
-  // 2. 초기 데이터 주입 (Redux 연동 확인용)
+  // 2. 서버 데이터 페칭 (TanStack Query)
+  const consultationId = "CONS-2026-EMP-001";
+  const { data, isLoading, isError, error } = useGetReview(consultationId);
+
+  // 3. 서버 상태 -> 전역 클라이언트 상태(Redux) 동기화
   useEffect(() => {
-    dispatch(setReviewData(DUMMY_DATA));
-  }, [dispatch]);
+    if (data) {
+      dispatch(setReviewData(data));
+    }
+  }, [data, dispatch]);
 
   // 3. 조항 클릭 시 PDF 스크롤(페이지 이동) 싱크
   useEffect(() => {
@@ -106,8 +87,8 @@ export const ReviewReportPage = () => {
             <h2 className="text-[11px] font-black text-slate-800 uppercase italic">Final Credit Audit Consolidation</h2>
             <div className="h-3 w-px bg-gray-300"></div>
             <div className="flex gap-3 font-bold text-[#003366] text-[9px]">
-               <span>NO: {products.length > 0 ? "REQ-2026-001" : "LOADING..."}</span>
-               <span>STATUS: <span className="text-blue-600 underline">AUDITING</span></span>
+               <span>NO: {isLoading ? "LOADING..." : data?.consultationId || "N/A"}</span>
+               <span>STATUS: {isLoading ? "FETCHING..." : <span className="text-blue-600 underline">AUDITING</span>}</span>
             </div>
           </div>
         </div>
@@ -134,17 +115,33 @@ export const ReviewReportPage = () => {
 
           {/* 메인 리포트 스크롤 영역 */}
           <main className="flex-1 overflow-y-auto bg-[#f8fafc] p-3 flex flex-col space-y-4">
-            {/* 상태 요약 보드 */}
-            <StatusSummaryBoard />
-            
-            {/* 한도 시각화 카드 */}
-            <LimitVisualizationCard />
+            {isLoading ? (
+             <div className="flex-1 flex flex-col items-center justify-center bg-white space-y-3 border border-gray-200">
+               <Loader2 className="animate-spin text-blue-600" size={32} />
+               <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest animate-pulse">심사 결과 데이터를 분석 중입니다...</div>
+             </div>
+           ) : isError ? (
+             <div className="flex-1 flex flex-col items-center justify-center bg-red-50 space-y-3 border border-red-200 p-6 text-center">
+               <AlertTriangle className="text-red-500" size={32} />
+               <div className="text-[12px] font-black text-red-800 uppercase">Data Fetching Error</div>
+               <div className="text-[10px] text-red-600 font-medium max-w-[240px]">{(error as Error)?.message || "알 수 없는 전산 오류가 발생했습니다. 시스템 관리자에게 문의하세요."}</div>
+               <button onClick={() => window.location.reload()} className="mt-2 px-4 py-1.5 bg-red-600 text-white font-bold rounded-sm text-[10px] uppercase hover:bg-red-700 shadow-sm">Retry Connection</button>
+             </div>
+           ) : (
+             <>
+               {/* 상태 요약 보드 */}
+               <StatusSummaryBoard />
+               
+               {/* 한도 시각화 카드 */}
+               <LimitVisualizationCard />
 
-            {/* 상세 항목 리스트 */}
-            <ReviewDetailsList />
-            
-            {/* 하단 패널(임시 전송 버튼 등 기능 확장용 패딩) */}
-            <div className="h-4 shrink-0"></div>
+               {/* 상세 항목 리스트 */}
+               <ReviewDetailsList />
+               
+               {/* 하단 패널(임시 전송 버튼 등 기능 확장용 패딩) */}
+               <div className="h-4 shrink-0"></div>
+             </>
+           )}
           </main>
         </div>
 
@@ -170,7 +167,6 @@ export const ReviewReportPage = () => {
             verificationId="RVW-2026-SYSTEM"
           />
         </div>
-
       </div>
     </div>
   );
