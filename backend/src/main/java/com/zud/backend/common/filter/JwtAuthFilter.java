@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Optional;
 
 import org.jspecify.annotations.NonNull;
+import org.slf4j.MDC;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -40,6 +41,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 			try {
 				Jwt jwt = jwtDecoder.decode(token);
 				Long userId = jwt.getClaim("userId");
+				MDC.put("userId", String.valueOf(userId));
 				UsernamePasswordAuthenticationToken auth =
 					new UsernamePasswordAuthenticationToken(userId, jwt, Collections.emptyList());
 				SecurityContextHolder.getContext().setAuthentication(auth);
