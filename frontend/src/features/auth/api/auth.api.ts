@@ -13,11 +13,27 @@ export interface LoginRequest {
 }
 
 /**
- * 행원 세션 로그인 요청
+ * 행원 로그인 요청 (SSO 중계 방식)
  * @param data 사번 및 비밀번호
- * @returns 세션 생성 결과 및 유저 상세 정보
+ * @returns 세션 정보 및 유저 상세 정보 (헤더 포함을 위해 AxiosResponse 반환)
  */
-export const login = async (data: LoginRequest): Promise<ApiResponse<LoginResponseData>> => {
-  const response = await apiClient.post<ApiResponse<LoginResponseData>>('/auth/login', data);
+export const login = async (data: LoginRequest) => {
+  return await apiClient.post<ApiResponse<LoginResponseData>>('/auth/login', data);
+};
+
+/**
+ * Access Token 재발급 요청
+ * - HttpOnly 쿠키의 Refresh Token을 사용하므로 별도 바디 없음
+ */
+export const reissueToken = async () => {
+  return await apiClient.post<ApiResponse<LoginResponseData>>('/auth/reissue');
+};
+
+/**
+ * 로그아웃 요청
+ * - 서버 세션 및 토큰을 무효화합니다.
+ */
+export const logout = async (): Promise<ApiResponse<void>> => {
+  const response = await apiClient.post<ApiResponse<void>>('/auth/logout');
   return response.data;
 };

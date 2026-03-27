@@ -7,6 +7,7 @@ import { CustomerInfoPage } from '@/pages/customer-info/ui/CustomerInfoPage';
 import { PdfViewerPage } from '@/pages/pdf-viewer/ui/PdfViewerPage';
 import { MockPage } from '@/pages/mock/ui/MockPage';
 import { BankSystemPage } from '@/pages/bank-system/ui/BankSystemPage';
+import { AuthInitializer } from '@/features/auth/ui/AuthInitializer';
 
 /**
  * @app router
@@ -15,6 +16,7 @@ import { BankSystemPage } from '@/pages/bank-system/ui/BankSystemPage';
 export const router = createBrowserRouter([
   {
     path: '/',
+    element: <AuthInitializer />,
     children: [
       { index: true, element: <Navigate to="/login" replace /> },
       { path: 'login', element: <LoginPage /> }, // 로그인 화면

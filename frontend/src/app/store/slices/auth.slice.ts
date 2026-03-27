@@ -27,6 +27,14 @@ export const authSlice = createSlice({
       state.isAuthenticated = true;
     },
     /**
+     * 액세스 토큰만 갱신 (인터셉터 재발급 시 호출)
+     */
+    updateToken: (state, action: PayloadAction<string>) => {
+      if (state.user) {
+        state.user.accessToken = action.payload;
+      }
+    },
+    /**
      * 인증 정보 초기화 (로그아웃 시 호출)
      */
     logout: (state) => {
@@ -36,6 +44,6 @@ export const authSlice = createSlice({
   },
 });
 
-export const { setCredentials, logout } = authSlice.actions;
+export const { setCredentials, updateToken, logout } = authSlice.actions;
 
 export default authSlice.reducer;
