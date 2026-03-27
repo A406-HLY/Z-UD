@@ -3,7 +3,7 @@
  * - 가이드라인에 따라 백엔드 응답 타입(Response)과 프론트엔드 UI 모델(User)을 분리합니다.
  */
 
-/** 백엔드 로그인 API 응답 데이터 (Nested CamelCase) */
+/** 백엔드 로그인 API 응답 데이터 (SSO 가이드 준수) */
 export interface LoginResponseData {
   userInfoDto: {
     userId: number;
@@ -12,10 +12,10 @@ export interface LoginResponseData {
   };
   branchInfoDto: {
     id: number;
-    name: string;
+    name?: string; 
   };
   sessionExpiry: string;
-  accessToken?: string; // [NEW] 에이전트 연동을 위한 JWT 토큰 필드 추가
+  // (Note) Access Token은 응답 헤더(Authorization)에 포함되므로 body에서는 제외합니다.
 }
 
 /** 필드별 상세 에러 규격 */
@@ -46,10 +46,16 @@ export interface User {
   name: string;
   branchId: number;
   branchName: string;
-  sessionExpiry: string; // [FIX] Redux Serializability 대응 (Date -> string)
+  accessToken: string; // [NEW] 모든 API 요청 및 에이전트 연동에 사용되는 JWT
+  sessionExpiry: string;
 }
 
 /** 로그인 정보를 포함한 인증 상태 타입 */
+/**
+ * @feature Auth
+ * @entity User
+ * 인증 상태 및 유저 정보에 대한 도메인 모델입니다.
+ */
 export interface AuthState {
   isAuthenticated: boolean;
   user: User | null;

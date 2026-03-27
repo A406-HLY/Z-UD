@@ -20,22 +20,18 @@ export const useLoginMutation = () => {
      */
     mutationFn: (data: LoginRequest) => login(data),
     onSuccess: (response) => {
-      if (response.success && response.data) {
+      const { data: apiResponse, headers } = response;
+      
+      if (apiResponse.success && apiResponse.data) {
+        // (Why) SSO 가이드에 따라 응답 헤더(Authorization)에서 Bearer 토큰을 추출함
+        const authHeader = headers['authorization'] || '';
+        const accessToken = authHeader.replace('Bearer ', '');
+        
         // (Why) FSD 규칙에 따라 엔티티 매퍼를 사용하여 UI 모델로 변환 후 전역 상태에 저장함
-        const user = mapLoginResponseToUser(response.data);
+        const user = mapLoginResponseToUser(apiResponse.data, accessToken);
         dispatch(setCredentials({ user }));
 
-        // (Why) 에이전트 연동을 위해 토큰을 sessionStorage에 저장합니다.
-        const respData = response.data as any;
-        const token = respData.accessToken;
-        
-        if (token) {
-          sessionStorage.setItem('access_token', token);
-          console.log('[Auth] Token stored in sessionStorage');
-        } else {
-          console.warn('[Auth] accessToken not found in response');
-        }
-        
+        // (Note) 'Memory-only' 정책에 따라 더 이상 sessionStorage를 사용하지 않습니다.
         console.log('Login successful:', user.name);
       }
     },
