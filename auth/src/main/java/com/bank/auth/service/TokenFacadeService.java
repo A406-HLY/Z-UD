@@ -78,13 +78,15 @@ public class TokenFacadeService {
 		String employeeNumber = refreshJwt.getSubject();
 		Long userId = refreshJwt.getClaim("userId");
 
+		User user = userQueryService.findByEmployeeNumber(employeeNumber);
+
 		long accessTtl = oAuthProperties.accessTokenTtl().toSeconds();
 		String newAccessToken = encodeTokenById(employeeNumber, userId, UUID.randomUUID().toString(), accessTtl,
 			TokenType.ACCESS.getValue());
 
 		saveAuditLog(employeeNumber, TokenAction.TOKEN_REFRESH, extractIp(servletRequest));
 		log.info("[Token] 액세스 토큰 갱신 완료 - employeeNumber: {}", employeeNumber);
-		return TokenConverter.toTokenIssueResDto(newAccessToken, reqDto.refreshToken(), accessTtl);
+		return TokenConverter.toTokenIssueResDto(newAccessToken, reqDto.refreshToken(), accessTtl, user);
 	}
 
 	public void revokeToken(final TokenRevokeReqDto reqDto, final HttpServletRequest servletRequest) {

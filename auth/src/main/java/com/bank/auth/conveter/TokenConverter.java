@@ -24,16 +24,4 @@ public class TokenConverter {
 			.branchId(user.getBranchId())
 			.build();
 	}
-
-	public TokenIssueResDto toTokenIssueResDto(
-		final String accessToken,
-		final String refreshToken,
-		final Long accessTokenTtlSeconds
-	) {
-		return TokenIssueResDto.builder()
-			.accessToken(accessToken)
-			.refreshToken(refreshToken)
-			.expiresIn(accessTokenTtlSeconds)
-			.build();
-	}
 }
