@@ -3,6 +3,7 @@ package com.zud.backend.domain.consultation.dto.request;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.zud.backend.domain.consultation.dto.request.deserializer.ConsultationTransferReqDtoDeserializer;
 import com.zud.backend.domain.consultation.enums.EmploymentType;
 import com.zud.backend.domain.consultation.enums.LoanPurpose;
@@ -32,6 +33,8 @@ public record ConsultationTransferReqDto(
 
 		String phoneNumber();
 
+		String productName();
+
 		Long targetLoanAmount();
 
 		LoanPurpose loanPurpose();
@@ -51,7 +54,7 @@ public record ConsultationTransferReqDto(
 		// 주소 정보
 		String currentAddress();
 
-		LocalDate moveInDate();
+		List<MoveInHousehold> moveInHouseholds();
 
 		// 등기 정보
 		String registrationType();
@@ -70,10 +73,11 @@ public record ConsultationTransferReqDto(
 
 		String ownerName();
 
-		Deposit deposit();
+		List<DepositAmount> depositAmountList();
 
 		List<SeniorRight> seniorRights();
 
+		@JsonProperty("isViolationBuilding")
 		Boolean isViolationBuilding();
 
 		String mainUsage();
@@ -124,6 +128,10 @@ public record ConsultationTransferReqDto(
 		@Pattern(regexp = "^01\\d-\\d{3,4}-\\d{4}$", message = "휴대폰 번호 형식은 010-0000-0000 이어야 합니다.")
 		String phoneNumber,
 
+		@Schema(description = "상품명", example = "내집마련 디딤돌 대출")
+		@NotBlank(message = "상품명은 필수 입력값 입니다.")
+		String productName,
+
 		@Schema(description = "목표 대출 금액(원)", example = "200000000")
 		@NotNull(message = "목표 대출 금액은 필수 입력값 입니다.")
 		@Positive(message = "목표 대출 금액은 0보다 커야 합니다.")
@@ -150,8 +158,8 @@ public record ConsultationTransferReqDto(
 		@Schema(description = "현 거주지 주소", example = "서울특별시 강남구 테헤란로 123")
 		String currentAddress,
 
-		@Schema(description = "전입일", example = "2025-01-15")
-		LocalDate moveInDate,
+		@Schema(description = "전입세대 목록")
+		@Valid List<MoveInHousehold> moveInHouseholds,
 
 		@Schema(description = "배우자 정보")
 		@Valid Spouse spouse,
@@ -180,13 +188,14 @@ public record ConsultationTransferReqDto(
 		@Schema(description = "등기상 소유자명", example = "이철수")
 		String ownerName,
 
-		@Schema(description = "임차보증금 정보")
-		@Valid Deposit deposit,
+		@Schema(description = "임차보증금 목록")
+		@Valid List<DepositAmount> depositAmountList,
 
 		@Schema(description = "선순위 권리 목록")
 		@Valid List<SeniorRight> seniorRights,
 
 		@Schema(description = "위반건축물 여부", example = "false")
+		@JsonProperty("isViolationBuilding")
 		Boolean isViolationBuilding,
 
 		@Schema(description = "주용도", example = "공동주택")
@@ -272,6 +281,10 @@ public record ConsultationTransferReqDto(
 		@Pattern(regexp = "^01\\d-\\d{3,4}-\\d{4}$", message = "휴대폰 번호 형식은 010-0000-0000 이어야 합니다.")
 		String phoneNumber,
 
+		@Schema(description = "상품명", example = "내집마련 디딤돌 대출")
+		@NotBlank(message = "상품명은 필수 입력값 입니다.")
+		String productName,
+
 		@Schema(description = "목표 대출 금액(원)", example = "200000000")
 		@NotNull(message = "목표 대출 금액은 필수 입력값 입니다.")
 		@Positive(message = "목표 대출 금액은 0보다 커야 합니다.")
@@ -297,8 +310,8 @@ public record ConsultationTransferReqDto(
 		@Schema(description = "현 거주지 주소", example = "서울특별시 강남구 테헤란로 123")
 		String currentAddress,
 
-		@Schema(description = "전입일", example = "2025-01-15")
-		LocalDate moveInDate,
+		@Schema(description = "전입세대 목록")
+		@Valid List<MoveInHousehold> moveInHouseholds,
 
 		@Schema(description = "배우자 정보")
 		@Valid Spouse spouse,
@@ -327,13 +340,14 @@ public record ConsultationTransferReqDto(
 		@Schema(description = "등기상 소유자명", example = "이철수")
 		String ownerName,
 
-		@Schema(description = "임차보증금 정보")
-		@Valid Deposit deposit,
+		@Schema(description = "임차보증금 목록")
+		@Valid List<DepositAmount> depositAmountList,
 
 		@Schema(description = "선순위 권리 목록")
 		@Valid List<SeniorRight> seniorRights,
 
 		@Schema(description = "위반건축물 여부", example = "false")
+		@JsonProperty("isViolationBuilding")
 		Boolean isViolationBuilding,
 
 		@Schema(description = "주용도", example = "공동주택")
@@ -423,12 +437,23 @@ public record ConsultationTransferReqDto(
 
 	@Builder
 	@Schema(description = "임차보증금 정보")
-	public record Deposit(
-		@Schema(description = "보증금 존재 여부", example = "true")
-		Boolean hasDeposit,
+	public record DepositAmount(
+		@Schema(description = "보증금 설정일", example = "2026-03-01")
+		LocalDate depositDate,
 
 		@Schema(description = "보증금 금액(원)", example = "50000000")
 		Long depositAmount
+	) {
+	}
+
+	@Builder
+	@Schema(description = "전입세대 정보")
+	public record MoveInHousehold(
+		@Schema(description = "세대주 이름", example = "홍길동")
+		String headOfHouseholdName,
+
+		@Schema(description = "전입일", example = "2025-01-15")
+		LocalDate moveInDate
 	) {
 	}
 

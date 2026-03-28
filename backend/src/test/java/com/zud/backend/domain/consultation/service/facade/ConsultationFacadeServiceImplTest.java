@@ -58,6 +58,7 @@ class ConsultationFacadeServiceImplTest {
 			.name("홍길동")
 			.residentRegistrationNumber("900101-1234567")
 			.phoneNumber("010-1234-5678")
+			.productName("내집마련 디딤돌 대출")
 			.targetLoanAmount(200_000_000L)
 			.loanPurpose(LoanPurpose.HOME_PURCHASE)
 			.ownedHouseCount(0)
