@@ -2,7 +2,6 @@ package com.zud.backend.domain.document.service.cloudflare;
 
 import java.io.IOException;
 import java.time.Duration;
-
 import java.util.Comparator;
 
 import org.springframework.stereotype.Component;
@@ -42,7 +41,7 @@ public class CloudflareServiceImpl implements CloudflareService {
 
 	@Override
 	public String uploadFile(final MultipartFile file, final String directory, final String fileName) {
-		String key = buildObjectKey(directory,fileName);
+		String key = buildObjectKey(directory, fileName);
 
 		try {
 			uploadToS3(file, key);
@@ -51,8 +50,8 @@ public class CloudflareServiceImpl implements CloudflareService {
 			return presignedUrl;
 
 		} catch (S3Exception e) {
-			log.error("[Cloudflare] S3 업로드 실패 key:{}, statusCode: {}, errorCode: {}, message: {}",
-				key, e.statusCode(), e.awsErrorDetails().errorCode(), e.awsErrorDetails().errorMessage(), e);
+			log.error("[Cloudflare] S3 업로드 실패 key:{}, statusCode: {}, errorCode: {}, message: {}", key, e.statusCode(),
+				e.awsErrorDetails().errorCode(), e.awsErrorDetails().errorMessage(), e);
 			throw new DocumentException(ErrorCode.FILE_UPLOAD_FAILED);
 		} catch (IOException _) {
 			log.error("[Cloudflare] 파일 읽기 실패 {filename: {}}", file.getOriginalFilename());
@@ -117,9 +116,7 @@ public class CloudflareServiceImpl implements CloudflareService {
 		try {
 			GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
 				.signatureDuration(duration)
-				.getObjectRequest(builder -> builder
-					.bucket(cloudflareProperties.bucket())
-					.key(key))
+				.getObjectRequest(builder -> builder.bucket(cloudflareProperties.bucket()).key(key))
 				.build();
 
 			PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
@@ -142,16 +139,16 @@ public class CloudflareServiceImpl implements CloudflareService {
 
 			ListObjectsV2Response listResponse = s3Client.listObjectsV2(listRequest);
 
-			S3Object latestObject = listResponse.contents().stream()
+			S3Object latestObject = listResponse.contents()
+				.stream()
 				.filter(obj -> obj.key().endsWith(".docx") || obj.key().endsWith(".pdf"))
 				.max(Comparator.comparing(S3Object::lastModified))
 				.orElseThrow(() -> new DocumentException(ErrorCode.NOT_FOUND));
 
 			String latestKey = latestObject.key();
 			String fileNameWithExt = latestKey.substring(directory.length() + 1);
-			return fileNameWithExt.contains(".")
-				? fileNameWithExt.substring(0, fileNameWithExt.lastIndexOf('.'))
-				: fileNameWithExt;
+			return fileNameWithExt.contains(".") ? fileNameWithExt.substring(0, fileNameWithExt.lastIndexOf('.')) :
+				fileNameWithExt;
 
 		} catch (S3Exception e) {
 			log.error("[Cloudflare] S3 파일 목록 조회 실패: {}", e.getMessage(), e);
