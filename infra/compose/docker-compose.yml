@@ -26,6 +26,8 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+      frontend:
+        condition: service_started
     restart: unless-stopped
 
 #  certbot:
@@ -42,6 +44,20 @@ services:
 #        condition: service_healthy
 #    restart: unless-stopped
 
+  frontend:
+    container_name: frontend
+    image: frontend:latest
+    build:
+      context: ../../frontend
+      dockerfile: Dockerfile
+    environment:
+      - TZ=Asia/Seoul
+    expose:
+      - "80"
+    networks:
+      - app-network
+    restart: unless-stopped
+
   backend:
     container_name: backend
     image: backend:latest
@@ -53,8 +69,7 @@ services:
       - .env
 
     environment:
-      # 아직은 local로
-      - SPRING_PROFILES_ACTIVE=local
+      - SPRING_PROFILES_ACTIVE=prod
       - DB_HOST=postgres
       - REDIS_HOST=redis
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${DB_NAME}
