@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/app/store/hooks';
+import { useQueryClient } from '@tanstack/react-query';
 import { updateField, resetVerification, setActiveDocument } from '@/entities/verification/model/slice';
+import { setIsPollingActive } from '@/entities/customer/model/slice';
 
 /**
  * [WHY: 검증 프로세스에서 발생하는 사용자 액션(수합, 이동, 종료)을 관리하는 비즈니스 로직 훅입니다.]
@@ -11,6 +13,7 @@ import { updateField, resetVerification, setActiveDocument } from '@/entities/ve
 export const useVerificationActions = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   /** 
    * 특정 문서의 필드 수정 
@@ -18,7 +21,7 @@ export const useVerificationActions = () => {
    * @param path - Dot-notation 경로 (예: "userInfo.name")
    * @param value - 새로운 값
    */
-  const onFieldUpdate = (docId: string, path: string, value: any) => {
+  const onFieldUpdate = (docId: string, path: string, value: unknown) => {
     dispatch(updateField({ docId, path, value }));
   };
 
@@ -34,12 +37,17 @@ export const useVerificationActions = () => {
    * (Why: 필수 서류 누락 팝업 등에서 호출되며, 상태 초기화 후 초기 화면으로 이동합니다.)
    */
   const handleEndService = () => {
-    // 1. 진행 중이던 수정 데이터 초기화
+    // 1. 진행 중이던 수정 데이터 및 서류 폴링 상태 초기화
     dispatch(resetVerification());
+    dispatch(setIsPollingActive(false));
+    
+    // (Why) 폴링을 중단하더라도 React Query가 캐싱하고 있던 이전 서류 리스트가 브라우저 화면에 
+    // 남아 스캔 완료된 것처럼 보이는 현상을 방지하기 위해 캐시를 날립니다.
+    queryClient.removeQueries({ queryKey: ['agent-files'] });
 
-    // 2. 초기 화면(로그인 또는 고객 정보 입력)으로 강제 이동
-    // (Note: routes.tsx 기준 초기 진입점인 /login으로 이동합니다.)
-    navigate('/login');
+    // 2. 프로세스 첫 단계(대출 신청 정보 입력)로 이동하여 재시작 유도
+    // (Note: 세션을 유지하며 처음부터 다시 정보를 입력할 수 있도록 /basic-info로 이동합니다.)
+    navigate('/basic-info');
   };
 
   /**
