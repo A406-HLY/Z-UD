@@ -7,7 +7,7 @@ import { useVerificationActions } from '../model/use-verification-actions';
  * (Why: 레거시 디자인 컨셉인 Windows XP 스타일을 유지하여 일관된 사용자 경험 제공)
  */
 export const DeadEndPopup = () => {
-  const { isBlocked, essentialMissings } = useVerificationStatus();
+  const { isBlocked, essentialMissings, terminationReason } = useVerificationStatus();
   const { handleEndService } = useVerificationActions();
 
   if (!isBlocked) return null;
@@ -43,19 +43,29 @@ export const DeadEndPopup = () => {
                 심사를 진행할 수 없는 상태입니다.
               </h3>
               <p className="text-[11px] text-gray-700 leading-relaxed">
-                사용자님의 직업 정보에 따라 아래의 필수 서류가 수집되지 않았거나 누락되었습니다. 관련 서류를 다시 준비하신 후 처음부터 진행해 주시기 바랍니다.
+                {terminationReason === "위반건축물입니다. 심사를 종료합니다."
+                  ? "제출하신 건축물대장 분석 결과 위반건축물로 판별되어 대출 심사가 불가합니다. 처음부터 다시 진행해 주시기 바랍니다."
+                  : "사용자님의 직업 정보에 따라 아래의 필수 서류가 수집되지 않았거나 누락되었습니다. 관련 서류를 다시 준비하신 후 처음부터 진행해 주시기 바랍니다."}
               </p>
             </div>
 
-            {/* Missing Docs List */}
+            {/* Error Detail List */}
             <div className="bg-white border border-[#7f9db9] p-3 space-y-2">
-              <div className="text-[10px] font-bold text-blue-800 border-b border-gray-100 pb-1">누락된 필수 서류 목록</div>
+              <div className="text-[10px] font-bold text-blue-800 border-b border-gray-100 pb-1">
+                {terminationReason === "위반건축물입니다. 심사를 종료합니다." ? "상세 사유" : "누락된 필수 서류 목록"}
+              </div>
               <ul className="space-y-1">
-                {essentialMissings.map((doc, index) => (
-                  <li key={index} className="text-[11px] text-gray-600 flex items-center gap-2">
-                    <span className="text-red-500">•</span> {doc}
+                {terminationReason === "위반건축물입니다. 심사를 종료합니다." ? (
+                  <li className="text-[11px] text-gray-600 flex items-center gap-2">
+                    <span className="text-red-500">•</span> {terminationReason}
                   </li>
-                ))}
+                ) : (
+                  essentialMissings.map((doc, index) => (
+                    <li key={index} className="text-[11px] text-gray-600 flex items-center gap-2">
+                      <span className="text-red-500">•</span> {doc}
+                    </li>
+                  ))
+                )}
               </ul>
             </div>
 
