@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.zud.backend.common.annotation.Authentication;
+import com.zud.backend.common.config.swagger.ApiErrorResponse;
 import com.zud.backend.common.response.BaseResponse;
 import com.zud.backend.common.util.ResponseUtils;
 import com.zud.backend.domain.audit.dto.request.AuditHouseReqDto;
@@ -16,6 +17,9 @@ import com.zud.backend.domain.audit.dto.response.MyDataResDto;
 import com.zud.backend.domain.audit.service.facade.AuditHouseFacadeService;
 import com.zud.backend.domain.audit.service.facade.AuditMyDataFacadeService;
 
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -31,8 +35,10 @@ public class AuditController {
 	private final AuditMyDataFacadeService auditMyDataFacadeService;
 
 	@PostMapping("/house")
+	@Operation(summary = "주택 심사", description = "사용자의 주택 정보를 기반으로 심사를 수행한다.")
+	@ApiErrorResponse
 	public ResponseEntity<BaseResponse<AuditHouseResDto>> auditHouse(
-		@Authentication Long userId,
+		@Parameter(hidden = true) @Authentication Long userId,
 		@Valid @RequestBody AuditHouseReqDto reqDto
 	) {
 		AuditHouseResDto response = auditHouseFacadeService.auditHouse(userId, reqDto);
@@ -40,8 +46,10 @@ public class AuditController {
 	}
 
 	@PostMapping("/my-data")
+	@Operation(summary = "마이데이터 조회", description = "사용자의 마이데이터를 조회한다.")
+	@ApiErrorResponse
 	public ResponseEntity<BaseResponse<MyDataResDto>> getMyData(
-		@Authentication Long userId,
+		@Parameter(hidden = true) @Authentication Long userId,
 		@Valid @RequestBody MyDataReqDto reqDto
 	) {
 		MyDataResDto response = auditMyDataFacadeService.getMyData(userId, reqDto);

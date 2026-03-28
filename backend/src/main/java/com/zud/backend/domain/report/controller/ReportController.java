@@ -35,7 +35,7 @@ public class ReportController {
 	@Operation(summary = "대출 리포트 생성 요청", description = "입력 정보를 기반으로 대출 리포트 생성을 비동기로 요청한다.")
 	@ApiErrorResponse
 	public ResponseEntity<BaseResponse<LoanReportGenerateResDto>> generateReport(
-		@Authentication Long userId,
+		@Parameter(hidden = true) @Authentication Long userId,
 		@RequestBody LoanReportReqDto request
 	) {
 		LoanReportGenerateResDto response = reportFacadeService.generateLoanReport(userId, request);
