@@ -1,0 +1,4 @@
+{
+  "watchPath": "./watch",
+  "allowedExtensions": [".pdf"]
+}
