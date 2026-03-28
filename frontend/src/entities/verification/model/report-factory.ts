@@ -253,3 +253,58 @@ export const createReportRequestPayload = (
     reportInput: finalReportInput,
   };
 };
+
+/**
+ * @feature verification/report-factory
+ * Redux 상태(본인인증 Customer 정보)와 기존 가심사 결과(ReportInput)를 혼합하여
+ * 백엔드 전산 이관(Transfer) API 스펙에 맞는 최종 Payload를 생성합니다.
+ * 백엔드가 배열형 데이터를 수용하기로 협의됨에 따라, 원본 배열형은 그대로 유지하되
+ * 날짜 포맷팅 및 Redux 필수값(phoneNumber 등)만 추가 주입합니다.
+ */
+export const createLegacyTransferPayload = (
+  originalReport: ReportInput,
+  customerData: Customer,
+  productName: string
+): any => { // 백엔드의 ConsultationTransferReqDto 구조
+  const transferReportInput: any = { ...originalReport };
+
+  // 1. 날짜 필드 포맷 정규화 (YYYY-MM-DD 변환)
+  if (transferReportInput.issueDate) {
+    transferReportInput.issueDate = standardizeDateFormat(transferReportInput.issueDate);
+  }
+  if (transferReportInput.latestAcquisitionDate) {
+    transferReportInput.latestAcquisitionDate = standardizeDateFormat(transferReportInput.latestAcquisitionDate);
+  }
+  if (transferReportInput.latestLossDate) {
+    transferReportInput.latestLossDate = standardizeDateFormat(transferReportInput.latestLossDate);
+  }
+
+  // 2. Redux Store(Customer)에서 누락되었던 전산 기입 필수값 채우기
+  transferReportInput.phoneNumber = customerData.phoneNumber || "";
+  
+  // 콤마 제거 후 숫자로 파싱 (100,000,000 -> 100000000)
+  const sanitizeNumber = (val: any) => typeof val === 'string' ? Number(val.replace(/,/g, '')) || 0 : Number(val) || 0;
+  
+  transferReportInput.targetLoanAmount = sanitizeNumber(customerData.targetLoanAmount);
+  transferReportInput.ownedHouseCount = sanitizeNumber(customerData.ownedHouseCount);
+
+  // 대출 목적 매핑 (한글 -> 영문 Enum 상수)
+  switch (customerData.loanPurpose) {
+    case '생활안정자금목적':
+      transferReportInput.loanPurpose = 'LIVING_STABILITY';
+      break;
+    case '주택구입목적':
+    default:
+      transferReportInput.loanPurpose = 'HOME_PURCHASE';
+      break;
+  }
+
+  // 3. 사용자가 최종 선택한 상품명 주입
+  transferReportInput.productName = productName;
+
+  // 4. 백엔드 DTO { reportInput: { ... } } 형태로 감싸서 반환
+  return {
+    reportInput: transferReportInput
+  };
+};
+
