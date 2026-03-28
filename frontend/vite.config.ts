@@ -16,6 +16,11 @@ export default defineConfig({
           // 가장 중요한 부분: 상위 폴더 구조를 전부 날려버리고 파일만 복사합니다.
           rename: { stripBase: true } 
         },
+        {
+          // PDF 워커를 루트(dist/)로 복사하여 정적 원본 파일로 취급하게 만듭니다. (MIME 에러 해결)
+          src: normalizePath(path.resolve(__dirname, 'node_modules/pdfjs-dist/build/pdf.worker.mjs')),
+          dest: ''
+        }
       ],
     }),
   ],
