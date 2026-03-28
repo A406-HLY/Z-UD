@@ -46,9 +46,9 @@ public class DocumentController {
 	@ApiErrorResponse
 	public ResponseEntity<BaseResponse<Void>> uploadMultipleImage(
 		@Schema(description = "업로드할 파일 목록")
-		@RequestPart("multipartFile") List<MultipartFile> files,
+		@RequestPart("multipartFile") final List<MultipartFile> files,
 		@Parameter(description = "상담 ID")
-		@RequestParam("consultationId") String consultationId
+		@RequestParam("consultationId") final String consultationId
 	) {
 		facadeService.uploadFiles(files, consultationId);
 		return ResponseUtils.accepted();
@@ -58,7 +58,7 @@ public class DocumentController {
 	@Operation(summary = "OCR 추출 결과 수신", description = "OCR 엔진으로부터 분석된 문서 데이터를 수신한다.")
 	@ApiErrorResponse
 	public ResponseEntity<BaseResponse<DocumentExtractionResDto>> receiveExtractionResult(
-		@Valid @RequestBody DocumentExtractionReqDto reqDto
+		@Valid @RequestBody final DocumentExtractionReqDto reqDto
 	) {
 		DocumentExtractionResDto response = facadeService.validateDocuments(reqDto);
 		return ResponseUtils.ok(response);
@@ -69,7 +69,7 @@ public class DocumentController {
 	@ApiErrorResponse
 	public ResponseEntity<BaseResponse<DocumentExtractionResDto>> getExtractionResult(
 		@Parameter(description = "상담 ID")
-		@PathVariable String consultationId
+		@PathVariable final String consultationId
 	) {
 		DocumentExtractionResDto response = facadeService.getExtractionResult(consultationId);
 		return ResponseUtils.ok(response);
@@ -79,7 +79,7 @@ public class DocumentController {
 	@Operation(summary = "Presigned PUT URL 발급", description = "Cloudflare R2 직접 업로드를 위한 Presigned PUT URL을 발급한다.")
 	@ApiErrorResponse
 	public ResponseEntity<BaseResponse<PresignedUrlResDto>> issuePresignedUrls(
-		@Valid @RequestBody PresignedUrlReqDto reqDto
+		@Valid @RequestBody final PresignedUrlReqDto reqDto
 	) {
 		PresignedUrlResDto response = facadeService.issuePresignedUrls(reqDto);
 		return ResponseUtils.ok(response);
@@ -90,8 +90,8 @@ public class DocumentController {
 	@ApiErrorResponse
 	public ResponseEntity<BaseResponse<UploadCompletionResDto>> completeUpload(
 		@Parameter(description = "상담 ID")
-		@PathVariable String consultationId,
-		@Valid @RequestBody UploadCompletionReqDto reqDto
+		@PathVariable final String consultationId,
+		@Valid @RequestBody final UploadCompletionReqDto reqDto
 	) {
 		UploadCompletionResDto response = facadeService.completeUpload(consultationId, reqDto);
 		return ResponseUtils.ok(response);
@@ -106,11 +106,22 @@ public class DocumentController {
 	@ApiErrorResponse
 	public ResponseEntity<BaseResponse<Void>> uploadRuleDocuments(
 		@Schema(description = "업로드할 규칙 문서 파일 목록")
-		@RequestPart("multipartFile") List<MultipartFile> files,
+		@RequestPart("multipartFile") final List<MultipartFile> files,
 		@Parameter(description = "파일명")
-		@RequestParam("fileName") String fileName
+		@RequestParam("fileName") final String fileName
 	) {
 		facadeService.updateRuleDocuments(files, fileName);
 		return ResponseUtils.accepted();
+	}
+
+	@GetMapping("/rules/presigned-url")
+	@Operation(summary = "최신 내규 문서 Presigned GET URL 조회", description = "내규 디렉토리에서 가장 최근 파일의 Presigned GET URL을 반환한다.")
+	@ApiErrorResponse
+	public ResponseEntity<BaseResponse<String>> getLatestRulePresignedUrl(
+		@Parameter(description = "내규 디렉토리명")
+		@RequestParam("directory") final String directory
+	) {
+		String presignedUrl = facadeService.findLatestRuleTitle(directory);
+		return ResponseUtils.ok(presignedUrl);
 	}
 }

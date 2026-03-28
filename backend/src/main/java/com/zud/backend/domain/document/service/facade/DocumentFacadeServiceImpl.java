@@ -207,4 +207,9 @@ public class DocumentFacadeServiceImpl implements DocumentFacadeService {
 			() -> cloudflareService.uploadFile(file, dirName, fileName), applicationTaskExecutor);
 	}
 
+	@Override
+	public String findLatestRuleTitle(final String directory) {
+		String latestTitle = cloudflareService.findLatestRuleTitle(directory);
+		return cloudflareService.generateGetPresignedUrl(directory, latestTitle);
+	}
 }

@@ -23,4 +23,6 @@ public interface DocumentFacadeService {
 	UploadCompletionResDto completeUpload(final String consultationId, final UploadCompletionReqDto reqDto);
 
 	void updateRuleDocuments(final List<MultipartFile> files, final String fileName);
+
+	String findLatestRuleTitle(final String directory);
 }
