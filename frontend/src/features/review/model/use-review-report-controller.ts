@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
-import { useGetReview } from '@/entities/review/api/review.api';
+import { useGetReview, useGetGuideline } from '@/entities/review/api/review.api';
 import { setReviewData, setSelectedProductKey } from '@/entities/review/model/review.slice';
 import { selectProcessedProducts, selectSelectedArticle, selectSelectedProductKey } from '@/entities/review/model/review.selectors';
 import { ARTICLE_PAGE_MAP } from '@/shared/config/pdfConfig';
@@ -27,6 +27,9 @@ export const useReviewReportController = (consultationId: string) => {
   // (Why) 이미 SSE를 통해 데이터를 가져왔다면 캐시된 데이터를 사용합니다.
   const { data, isLoading: isQueryLoading, isError, error } = useGetReview(consultationId);
 
+  // 2-1. (New) 내규 가이드라인 PDF 주소 조회
+  const { data: guidelineUrl, isLoading: isGuidelineLoading } = useGetGuideline();
+
   // 3. 서버 상태 -> 전역 클라이언트 상태(Redux) 동기화
   useEffect(() => {
     if (data && !reviewData) {
@@ -52,8 +55,8 @@ export const useReviewReportController = (consultationId: string) => {
     }
   }, [selectedArticle]);
 
-  // (Why) 사용자 요청에 따라, 심사가 완료되고 데이터가 존재할 때만 로딩이 완료된 것으로 간주합니다.
-  const finalLoading = !isAllAuditDone || isQueryLoading || !reviewData;
+  // (Why) 사용자 요청에 따라, 모든 필수 데이터(리뷰 데이터 + 내규 URL)가 존재할 때만 로딩이 완료된 것으로 간주합니다.
+  const finalLoading = !isAllAuditDone || isQueryLoading || isGuidelineLoading || !reviewData;
 
   return {
     isLoading: finalLoading,
@@ -63,5 +66,6 @@ export const useReviewReportController = (consultationId: string) => {
     setPdfPage,
     pdfScale,
     setPdfScale,
+    guidelineUrl, // 페이지에서 사용하도록 노출
   };
 };
