@@ -5,9 +5,11 @@ import org.springframework.web.multipart.MultipartFile;
 import com.zud.backend.domain.document.dto.request.file.FileMetaDto;
 
 public interface CloudflareService {
-	String uploadFile(final MultipartFile file, final String directory);
+	String uploadFile(final MultipartFile file, final String directory, final String fileName);
 
 	String generatePutPresignedUrl(final String consultationId, final FileMetaDto fileMeta);
 
-	String generateGetPresignedUrl(final String consultationId, final String fileName);
+	String generateGetPresignedUrl(final String dirName, final String fileName);
+
+	String findLatestRuleTitle(final String directory);
 }

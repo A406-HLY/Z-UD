@@ -94,7 +94,13 @@ public enum ErrorCode {
 	REPORT_RESULT_NOT_FOUND(HttpStatus.NOT_FOUND, "RP-001", "리포트 결과를 찾을 수 없습니다."),
 	REPORT_REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "RP-002", "해당 uuid의 리포트 요청이 존재하지 않습니다."),
 	REPORT_UUID_NOT_FOUND(HttpStatus.BAD_REQUEST, "RP-003", "AI 응답 payload에 uuid가 없습니다."),
-	REPORT_RESULT_PROCESSING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "RP-004", "리포트 결과 저장 처리에 실패했습니다.");
+	REPORT_RESULT_PROCESSING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "RP-004", "리포트 결과 저장 처리에 실패했습니다."),
+
+	/**
+	 * Rule Error (RL-xxx)
+	 */
+	RULE_NOT_FOUND(HttpStatus.NOT_FOUND, "RL-001", "최신 내규 문서(규칙)를 찾을 수 없습니다.");
+
 
 	private final HttpStatus httpStatus;
 	private final String code;
