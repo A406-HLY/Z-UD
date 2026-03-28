@@ -1,71 +1,80 @@
 import { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
-import { useGetReview, useGetGuideline } from '@/entities/review/api/review.api';
-import { setReviewData, setSelectedProductKey } from '@/entities/review/model/review.slice';
-import { selectProcessedProducts, selectSelectedArticle, selectSelectedProductKey } from '@/entities/review/model/review.selectors';
-import { ARTICLE_PAGE_MAP } from '@/shared/config/pdfConfig';
+import { fetchReviewResult, fetchGuideline } from '@/entities/review/api/review.api';
+import { 
+  setReviewData, 
+  setLoading, 
+  setError, 
+  setGuidelineUrl 
+} from '@/entities/review/model/review.slice';
+import { 
+  selectReviewData, 
+  selectReviewLoading, 
+  selectReviewError, 
+  selectGuidelineUrl 
+} from '@/entities/review/model/review.selectors';
 
 /**
  * @feature review
- * 리뷰 리포트 페이지의 비즈니스 로직(데이터 패칭, 동기화, PDF 상태 관리)을 캡슐화한 컨트롤러 훅
+ * 리뷰 리포트 페이지의 비즈니스 로직(데이터 패칭, Redux 연동, PDF 상태 관리)을 캡슐화한 컨트롤러 훅
+ * (Why) TanStack Query 대신 Redux를 단일 저장소로 사용하여 잦은 리패치(Window Focus 등)를 방지하고 데이터 일관성을 확보합니다.
  */
 export const useReviewReportController = (consultationId: string) => {
   const dispatch = useAppDispatch();
-  const products = useAppSelector(selectProcessedProducts);
-  const selectedProductKey = useAppSelector(selectSelectedProductKey);
-  const selectedArticle = useAppSelector(selectSelectedArticle);
+  
+  // Redux 상태 구독
+  const reviewData = useAppSelector(selectReviewData);
+  const isLoading = useAppSelector(selectReviewLoading);
+  const reviewError = useAppSelector(selectReviewError);
+  const guidelineUrl = useAppSelector(selectGuidelineUrl);
 
-  // PDF 뷰어 연동 상태
+  // PDF 뷰어 로컬 상태
   const [pdfPage, setPdfPage] = useState<number>(1);
   const [pdfScale, setPdfScale] = useState<number>(1.2);
 
-  // 1. 심사 완료 상태 및 기존 데이터 구독
-  const { isAllAuditDone } = useAppSelector((state) => state.audit);
-  const reviewData = useAppSelector((state) => state.review.data);
-
-  // 2. 서버 데이터 페칭 (TanStack Query)
-  // (Why) 이미 SSE를 통해 데이터를 가져왔다면 캐시된 데이터를 사용합니다.
-  const { data, isLoading: isQueryLoading, isError, error } = useGetReview(consultationId);
-
-  // 2-1. (New) 내규 가이드라인 PDF 주소 조회
-  const { data: guidelineUrl, isLoading: isGuidelineLoading } = useGetGuideline();
-
-  // 3. 서버 상태 -> 전역 클라이언트 상태(Redux) 동기화
+  /**
+   * 서버 데이터 초기 로드 및 동기화
+   * (Why) Redux에 데이터가 이미 있다면(SSE로 수신했거나 이전 방문) 중복 요청을 방지합니다.
+   */
   useEffect(() => {
-    if (data && !reviewData) {
-      dispatch(setReviewData(data));
-    }
-  }, [data, reviewData, dispatch]);
+    const loadReportData = async () => {
+      // 1. 이미 데이터가 있으면 fetch 생략 (중복 요청 방지)
+      if (reviewData && guidelineUrl) return;
 
-  // 4. 상품 자동 선택 로직 (정렬된 순서상 첫 번째 상품 우선)
-  useEffect(() => {
-    if (products.length > 0 && !selectedProductKey) {
-      dispatch(setSelectedProductKey(products[0].productKey));
-    }
-  }, [products, selectedProductKey, dispatch]);
+      dispatch(setLoading(true));
+      dispatch(setError(null));
 
-  // 5. 조항 클릭 시 PDF 스크롤(페이지 이동) 싱크
-  useEffect(() => {
-    if (selectedArticle && selectedArticle.length > 0) {
-      const targetRule = selectedArticle[0];
-      const targetPage = ARTICLE_PAGE_MAP[targetRule];
-      if (targetPage) {
-        setPdfPage(targetPage);
+      try {
+        const promises: [Promise<any>, Promise<any>] = [
+          !reviewData ? fetchReviewResult(consultationId) : Promise.resolve(reviewData),
+          !guidelineUrl ? fetchGuideline() : Promise.resolve(guidelineUrl)
+        ];
+
+        const [reportResponse, guidelineResponse] = await Promise.all(promises);
+
+        if (!reviewData) dispatch(setReviewData(reportResponse));
+        if (!guidelineUrl) dispatch(setGuidelineUrl(guidelineResponse));
+      } catch (err: any) {
+        console.error('[ReviewController] Failed to fetch report data:', err);
+        dispatch(setError(err.message || '데이터를 불러오는 데 실패했습니다.'));
+      } finally {
+        dispatch(setLoading(false));
       }
-    }
-  }, [selectedArticle]);
+    };
 
-  // (Why) 사용자 요청에 따라, 모든 필수 데이터(리뷰 데이터 + 내규 URL)가 존재할 때만 로딩이 완료된 것으로 간주합니다.
-  const finalLoading = !isAllAuditDone || isQueryLoading || isGuidelineLoading || !reviewData;
+    if (consultationId) {
+      loadReportData();
+    }
+  }, [consultationId, reviewData, guidelineUrl, dispatch]);
 
   return {
-    isLoading: finalLoading,
-    isError,
-    error,
+    isLoading,
+    isError: !!reviewError,
+    error: reviewError ? new Error(reviewError) : null,
     pdfPage,
     setPdfPage,
     pdfScale,
     setPdfScale,
-    guidelineUrl, // 페이지에서 사용하도록 노출
+    guidelineUrl,
   };
 };

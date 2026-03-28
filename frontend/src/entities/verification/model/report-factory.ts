@@ -93,7 +93,7 @@ const REPORT_SKELETON: ReportInput = {
   latestAcquisitionDate: "", latestLossDate: "", 
   incomeRecipientName: "", incomeRecipientResidentRegistrationNumber: "",
   workPeriod: "", annualIncomeTotal: 0,
-  loanPurpose: "", ownedHouseCount: 0,
+  loanPurpose: "", ownedHouseCount: 0, targetLoanAmount: 0,
 } as any;
 
 /**
@@ -238,6 +238,7 @@ export const createReportRequestPayload = (
     employmentType: isSelfEmployed ? 'SELF_EMPLOYED' : 'EMPLOYEE',
     loanPurpose: userInputData.loanPurpose,
     ownedHouseCount: parseInt(userInputData.ownedHouseCount) || 0,
+    targetLoanAmount: parseInt(userInputData.targetLoanAmount.replace(/,/g, '')) || 0,
 
     // (B) 마이데이터 연동 정보 주입 (영문 등급 문자열 그대로 전달)
     creditRating: creditData ? creditData.ratingName : null,

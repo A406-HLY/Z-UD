@@ -48,13 +48,6 @@ export const ProductTabs = () => {
             }
           >
             <span>{prod.productName || prod.productKey}</span>
-            {/* 거절 탭인 경우 경고 도트 표시 */}
-            {!prod.isApproved && (
-              <span className={clsx(
-                "w-1.5 h-1.5 rounded-full shadow-sm",
-                isSelected ? "bg-red-400" : "bg-red-500 animate-pulse"
-              )}></span>
-            )}
           </button>
         );
       })}

@@ -5,8 +5,11 @@ import { mapLoanProductToViewModel } from '../lib/review.mapper';
 
 // === Base Selectors ===
 export const selectReviewData = (state: RootStateLike) => state.review.data;
+export const selectReviewLoading = (state: RootStateLike) => state.review.loading;
+export const selectReviewError = (state: RootStateLike) => state.review.error;
 export const selectSelectedProductKey = (state: RootStateLike) => state.review.selectedProductKey;
 export const selectSelectedArticle = (state: RootStateLike) => state.review.selectedArticle;
+export const selectGuidelineUrl = (state: RootStateLike) => state.review.guidelineUrl;
 
 /**
  * 데이터 가공 Selector: 

@@ -5,7 +5,7 @@
 
 // 1. 공통 데이터 필드 구조 (값, 사유, 근거 조항 포함)
 export interface CalculationField {
-  value: any; // number | string | boolean | null;
+  value: string | number | boolean | null; // number | string | boolean | null;
   reason: string;
   usedArticles: string[];
 }
@@ -14,7 +14,7 @@ export interface CalculationField {
 export interface ReviewItem {
   fieldKey?: string;
   name_ko: string;
-  inputValue: any; 
+  inputValue: string | number | boolean | null; 
   result: '승인' | '반려' | '검토' | '자료 보완 요망' | '검토 요망' | '상관 없음';
   reason: string;
   usedArticles: string[]; 
@@ -39,6 +39,7 @@ export interface LoanProduct {
     fieldResults: ReviewItem[];
     summary: {
       finalResult: string;
+      calculatedAmount?: number | null;
       reason: string;
       keyApprovalReasons: string[];
       keyRejectReasons: string[];
@@ -59,10 +60,19 @@ export interface ConsultationResponse {
 
 // === 프론트엔드 UI를 위한 가공(뷰 모델) 타입 확장 ===
 
+export interface LimitParam {
+  label: string;
+  value: string;
+  reason?: string;         // (Why) 산출 로직 설명
+  usedArticles?: string[]; // (Why) 참조 법적 조항
+}
+
 export interface ProcessedReviewItem extends ReviewItem {
   key: string; 
-  value: any; // inputValue를 value로 별칭 매핑하여 기존 UI 소품(Prop) 호환성 유지
+  value: string | number | boolean | null; // inputValue를 value로 별칭 매핑하여 기존 UI 소품(Prop) 호환성 유지
   matched_articles: string[]; // usedArticles를 matched_articles로 별칭 매핑
+  isRequired: boolean;        // (New) 필수 심사 항목 여부
+  excludedFromFinal: boolean; // (New) 최종 결과 제외(참고) 항목 여부
 }
 
 export interface ProcessedProduct {
@@ -74,7 +84,9 @@ export interface ProcessedProduct {
   ltvLimit: number; // % 값
   dsrLimit: number; // % 값
   calculatedLimit: number; // 최종 한도 금액 (원)
-  limitParams: Array<{ label: string; value: string }>;
+  ltvArticles: string[]; // (New) LTV 관련 내규 조항
+  dsrArticles: string[]; // (New) DSR 관련 내규 조항
+  limitParams: LimitParam[];
   items: ProcessedReviewItem[];
   summary: {
     keyApprovalReasons: string[];

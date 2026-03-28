@@ -119,6 +119,7 @@ export interface ReportInput {
   annualPrincipalAndInterestRepayment: number | null;
   loanPurpose: string | null;
   ownedHouseCount: number | null;
+  targetLoanAmount: number | null;
 }
 
 /** 

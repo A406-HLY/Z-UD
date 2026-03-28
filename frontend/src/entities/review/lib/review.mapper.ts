@@ -1,4 +1,5 @@
-import { ProcessedProduct, ProcessedReviewItem, LoanProduct } from '../model/types';
+import { ProcessedProduct, ProcessedReviewItem, LoanProduct, LimitParam } from '../model/types';
+import { CALCULATE_LABELS } from '../config/constants';
 
 /**
  * API에서 전달된 단일 상품 데이터(LoanProduct)를 UI 컴포넌트에서 
@@ -13,7 +14,9 @@ export const mapLoanProductToViewModel = (
     ...item,
     key: item.fieldKey || 'unknown',
     value: item.inputValue, // UI에서 value 필드명을 사용하므로 별칭 매핑
-    matched_articles: item.usedArticles || [] // UI에서 matched_articles 필드명을 사용하므로 별칭 매핑
+    matched_articles: item.usedArticles || [], // UI에서 matched_articles 필드명을 사용하므로 별칭 매핑
+    isRequired: item.isRequired ?? false,
+    excludedFromFinal: item.excludedFromFinal ?? false
   }));
 
   // 2. 승인 여부 판정 (백엔드 요약 결과 기반)
@@ -21,44 +24,89 @@ export const mapLoanProductToViewModel = (
   const isApproved = finalResult !== '반려';
 
   // 3. 한도 시각화 UI 컴포넌트(LimitVisualizationCard)를 위한 파라미터 셋 구성
-  const limitParams = [];
+  const limitParams: LimitParam[] = [];
   const calc = productData.forCalculate;
 
   if (calc) {
     if (calc.collateralMarketPrice?.value !== null) {
       limitParams.push({ 
-        label: "평가 시세", 
-        value: `${Number(calc.collateralMarketPrice.value).toLocaleString()} 원` 
+        label: CALCULATE_LABELS.MARKET_PRICE, 
+        value: `${Number(calc.collateralMarketPrice.value).toLocaleString()} 원`,
+        reason: calc.collateralMarketPrice.reason,
+        usedArticles: calc.collateralMarketPrice.usedArticles
       });
     }
+
+    // (New) 채권최고액 합계 추가
+    if (calc.maximumClaimAmount?.value !== null) {
+      limitParams.push({
+        label: CALCULATE_LABELS.MAX_CLAIM_AMOUNT,
+        value: `${Number(calc.maximumClaimAmount.value).toLocaleString()} 원`,
+        reason: calc.maximumClaimAmount.reason,
+        usedArticles: calc.maximumClaimAmount.usedArticles
+      });
+    }
+
     if (calc.totalRemainingLoanBalance?.value !== null) {
       limitParams.push({ 
-        label: "기존 대출 잔액", 
-        value: `${Number(calc.totalRemainingLoanBalance.value).toLocaleString()} 원` 
+        label: CALCULATE_LABELS.REMAINING_BALANCE, 
+        value: `${Number(calc.totalRemainingLoanBalance.value).toLocaleString()} 원`,
+        reason: calc.totalRemainingLoanBalance.reason,
+        usedArticles: calc.totalRemainingLoanBalance.usedArticles
       });
     }
-    if (calc.LTVRatio?.value !== null) {
+    
+    if (calc.LTVRatio) {
+      const isLtvCalculable = calc.LTVRatio.value !== null;
+      const ltvValueText = isLtvCalculable 
+        ? `${(Number(calc.LTVRatio.value) * 100).toFixed(0)}%`
+        : '산정불가';
+
+      // (Why) 보유 주택 수에 따라 규제가 달라지므로 레이블에 포함하여 명시성을 높임
+      const houseCountSuffix = calc.LTVRatio.ownedHouseCountApplied !== null 
+        ? ` (${calc.LTVRatio.ownedHouseCountApplied}주택 기준)` 
+        : '';
       limitParams.push({ 
-        label: "적용 LTV", 
-        value: `${(Number(calc.LTVRatio.value) * 100).toFixed(0)}%` 
+        label: `${CALCULATE_LABELS.APPLIED_LTV}${houseCountSuffix}`, 
+        value: ltvValueText,
+        reason: calc.LTVRatio.reason,
+        usedArticles: calc.LTVRatio.usedArticles
       });
     }
+
     if (calc.LTVRatio?.regulationRegion) {
       limitParams.push({ 
-        label: "규제 지역", 
+        label: CALCULATE_LABELS.REGULATION_REGION, 
         value: calc.LTVRatio.regulationRegion 
       });
     }
+
     if (calc.annualIncomeTotal?.value !== null) {
       limitParams.push({ 
-        label: "연간 소득 합계", 
-        value: `${Number(calc.annualIncomeTotal.value).toLocaleString()} 원` 
+        label: CALCULATE_LABELS.ANNUAL_INCOME, 
+        value: `${Number(calc.annualIncomeTotal.value).toLocaleString()} 원`,
+        reason: calc.annualIncomeTotal.reason,
+        usedArticles: calc.annualIncomeTotal.usedArticles
       });
     }
-    if (calc.DSRRatio?.value !== null) {
+
+    // (New) 연간 원리금 상환액 추가
+    if (calc.annualPrincipalAndInterestRepayment?.value !== null) {
+      limitParams.push({
+        label: CALCULATE_LABELS.ANNUAL_REPAYMENT,
+        value: `${Number(calc.annualPrincipalAndInterestRepayment.value).toLocaleString()} 원`,
+        reason: calc.annualPrincipalAndInterestRepayment.reason,
+        usedArticles: calc.annualPrincipalAndInterestRepayment.usedArticles
+      });
+    }
+
+    if (calc.DSRRatio) {
+      const isDsrCalculable = calc.DSRRatio.value !== null;
       limitParams.push({ 
-        label: "적용 DSR", 
-        value: `${(Number(calc.DSRRatio.value) * 100).toFixed(0)}%` 
+        label: CALCULATE_LABELS.APPLIED_DSR, 
+        value: isDsrCalculable ? `${(Number(calc.DSRRatio.value) * 100).toFixed(0)}%` : '산정불가',
+        reason: calc.DSRRatio.reason,
+        usedArticles: calc.DSRRatio.usedArticles
       });
     }
   }
@@ -67,11 +115,11 @@ export const mapLoanProductToViewModel = (
   const ltvVal = calc?.LTVRatio?.value !== null ? Number(calc?.LTVRatio?.value) * 100 : 0;
   const dsrVal = calc?.DSRRatio?.value !== null ? Number(calc?.DSRRatio?.value) * 100 : 0;
 
-  // 5. 최종 산출 한도 계산 (임시 로직: 시세 * LTV 기준, 실제 백엔드에 최종값이 있다면 그것을 사용)
-  // (Why) 백엔드 응답에 최종 대출 가능 한도 금액이 명시되지 않은 경우 가계산을 수행합니다.
+  // 5. 최종 산출 한도 계산 (백엔드 실제 산출액 우선, 없을 시 가계산)
   const marketPrice = Number(calc?.collateralMarketPrice?.value || 0);
   const ltvRatio = Number(calc?.LTVRatio?.value || 0);
-  const calculatedLimit = marketPrice * ltvRatio;
+  const backendCalculated = productData.forReport?.summary?.calculatedAmount;
+  const calculatedLimit = typeof backendCalculated === 'number' ? backendCalculated : (marketPrice * ltvRatio);
 
   return {
     productKey: productCode,
@@ -82,6 +130,8 @@ export const mapLoanProductToViewModel = (
     ltvLimit: ltvVal,
     dsrLimit: dsrVal,
     calculatedLimit: calculatedLimit,
+    ltvArticles: calc?.LTVRatio?.usedArticles || [],
+    dsrArticles: calc?.DSRRatio?.usedArticles || [],
     limitParams,
     items: items,
     summary: {
