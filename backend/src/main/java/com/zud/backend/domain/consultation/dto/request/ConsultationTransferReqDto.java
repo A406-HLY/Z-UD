@@ -3,6 +3,7 @@ package com.zud.backend.domain.consultation.dto.request;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.zud.backend.domain.consultation.dto.request.deserializer.ConsultationTransferReqDtoDeserializer;
 import com.zud.backend.domain.consultation.enums.EmploymentType;
 import com.zud.backend.domain.consultation.enums.LoanPurpose;
@@ -31,6 +32,8 @@ public record ConsultationTransferReqDto(
 		String residentRegistrationNumber();
 
 		String phoneNumber();
+
+		String productName();
 
 		Long targetLoanAmount();
 
@@ -74,6 +77,7 @@ public record ConsultationTransferReqDto(
 
 		List<SeniorRight> seniorRights();
 
+		@JsonProperty("isViolationBuilding")
 		Boolean isViolationBuilding();
 
 		String mainUsage();
@@ -123,6 +127,10 @@ public record ConsultationTransferReqDto(
 		@NotBlank(message = "휴대폰 번호는 필수 입력값 입니다.")
 		@Pattern(regexp = "^01\\d-\\d{3,4}-\\d{4}$", message = "휴대폰 번호 형식은 010-0000-0000 이어야 합니다.")
 		String phoneNumber,
+
+		@Schema(description = "상품명", example = "내집마련 디딤돌 대출")
+		@NotBlank(message = "상품명은 필수 입력값 입니다.")
+		String productName,
 
 		@Schema(description = "목표 대출 금액(원)", example = "200000000")
 		@NotNull(message = "목표 대출 금액은 필수 입력값 입니다.")
@@ -187,6 +195,7 @@ public record ConsultationTransferReqDto(
 		@Valid List<SeniorRight> seniorRights,
 
 		@Schema(description = "위반건축물 여부", example = "false")
+		@JsonProperty("isViolationBuilding")
 		Boolean isViolationBuilding,
 
 		@Schema(description = "주용도", example = "공동주택")
@@ -272,6 +281,10 @@ public record ConsultationTransferReqDto(
 		@Pattern(regexp = "^01\\d-\\d{3,4}-\\d{4}$", message = "휴대폰 번호 형식은 010-0000-0000 이어야 합니다.")
 		String phoneNumber,
 
+		@Schema(description = "상품명", example = "내집마련 디딤돌 대출")
+		@NotBlank(message = "상품명은 필수 입력값 입니다.")
+		String productName,
+
 		@Schema(description = "목표 대출 금액(원)", example = "200000000")
 		@NotNull(message = "목표 대출 금액은 필수 입력값 입니다.")
 		@Positive(message = "목표 대출 금액은 0보다 커야 합니다.")
@@ -334,6 +347,7 @@ public record ConsultationTransferReqDto(
 		@Valid List<SeniorRight> seniorRights,
 
 		@Schema(description = "위반건축물 여부", example = "false")
+		@JsonProperty("isViolationBuilding")
 		Boolean isViolationBuilding,
 
 		@Schema(description = "주용도", example = "공동주택")
