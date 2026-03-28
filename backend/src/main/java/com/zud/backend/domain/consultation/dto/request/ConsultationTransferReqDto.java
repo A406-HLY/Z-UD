@@ -54,7 +54,7 @@ public record ConsultationTransferReqDto(
 		// 주소 정보
 		String currentAddress();
 
-		LocalDate moveInDate();
+		List<MoveInHousehold> moveInHouseholds();
 
 		// 등기 정보
 		String registrationType();
@@ -73,7 +73,7 @@ public record ConsultationTransferReqDto(
 
 		String ownerName();
 
-		Deposit deposit();
+		List<DepositAmount> depositAmountList();
 
 		List<SeniorRight> seniorRights();
 
@@ -158,8 +158,8 @@ public record ConsultationTransferReqDto(
 		@Schema(description = "현 거주지 주소", example = "서울특별시 강남구 테헤란로 123")
 		String currentAddress,
 
-		@Schema(description = "전입일", example = "2025-01-15")
-		LocalDate moveInDate,
+		@Schema(description = "전입세대 목록")
+		@Valid List<MoveInHousehold> moveInHouseholds,
 
 		@Schema(description = "배우자 정보")
 		@Valid Spouse spouse,
@@ -188,8 +188,8 @@ public record ConsultationTransferReqDto(
 		@Schema(description = "등기상 소유자명", example = "이철수")
 		String ownerName,
 
-		@Schema(description = "임차보증금 정보")
-		@Valid Deposit deposit,
+		@Schema(description = "임차보증금 목록")
+		@Valid List<DepositAmount> depositAmountList,
 
 		@Schema(description = "선순위 권리 목록")
 		@Valid List<SeniorRight> seniorRights,
@@ -310,8 +310,8 @@ public record ConsultationTransferReqDto(
 		@Schema(description = "현 거주지 주소", example = "서울특별시 강남구 테헤란로 123")
 		String currentAddress,
 
-		@Schema(description = "전입일", example = "2025-01-15")
-		LocalDate moveInDate,
+		@Schema(description = "전입세대 목록")
+		@Valid List<MoveInHousehold> moveInHouseholds,
 
 		@Schema(description = "배우자 정보")
 		@Valid Spouse spouse,
@@ -340,8 +340,8 @@ public record ConsultationTransferReqDto(
 		@Schema(description = "등기상 소유자명", example = "이철수")
 		String ownerName,
 
-		@Schema(description = "임차보증금 정보")
-		@Valid Deposit deposit,
+		@Schema(description = "임차보증금 목록")
+		@Valid List<DepositAmount> depositAmountList,
 
 		@Schema(description = "선순위 권리 목록")
 		@Valid List<SeniorRight> seniorRights,
@@ -437,12 +437,23 @@ public record ConsultationTransferReqDto(
 
 	@Builder
 	@Schema(description = "임차보증금 정보")
-	public record Deposit(
-		@Schema(description = "보증금 존재 여부", example = "true")
-		Boolean hasDeposit,
+	public record DepositAmount(
+		@Schema(description = "보증금 설정일", example = "2026-03-01")
+		LocalDate depositDate,
 
 		@Schema(description = "보증금 금액(원)", example = "50000000")
 		Long depositAmount
+	) {
+	}
+
+	@Builder
+	@Schema(description = "전입세대 정보")
+	public record MoveInHousehold(
+		@Schema(description = "세대주 이름", example = "홍길동")
+		String headOfHouseholdName,
+
+		@Schema(description = "전입일", example = "2025-01-15")
+		LocalDate moveInDate
 	) {
 	}
 

@@ -10,6 +10,7 @@ import com.zud.backend.domain.consultation.dto.request.ConsultationTransferReqDt
 import com.zud.backend.domain.consultation.dto.request.ConsultationTransferReqDto.EmployeeReportInput;
 import com.zud.backend.domain.consultation.dto.request.ConsultationTransferReqDto.SelfEmployedReportInput;
 import com.zud.backend.domain.consultation.enums.EmploymentType;
+import com.zud.backend.domain.consultation.enums.LoanPurpose;
 
 import tools.jackson.databind.ObjectMapper;
 
@@ -99,6 +100,47 @@ class ConsultationTransferReqDtoDeserializerTest {
 			assertThatThrownBy(
 				() -> objectMapper.readValue(json, ConsultationTransferReqDto.class)).hasMessageContaining(
 				"employmentType 은 필수 입력값 입니다.");
+		}
+
+		@Test
+		@DisplayName("프론트_별칭_및_List_구조_입력시_역직렬화_성공")
+		void 프론트_별칭_및_List_구조_입력시_역직렬화_성공() throws Exception {
+			// given
+			String json = """
+				{
+				  "reportInput": {
+				    "name": "홍길동",
+				    "residentRegistrationNumber": "900101-1234567",
+				    "phoneNumber": "010-1234-5678",
+				    "targetLoanAmount": 200000000,
+				    "loanPurpose": "주택구입목적",
+				    "ownedHouseCount": 0,
+				    "employmentType": "EMPLOYEE",
+				    "representativeName": true,
+				    "depositAmountList": [
+				      { "depositDate": "2026-03-01", "depositAmount": 30000000 },
+				      { "depositDate": "2026-03-15", "depositAmount": 20000000 }
+				    ],
+				    "moveInHouseholds": [
+				      { "headOfHouseholdName": "홍길동", "moveInDate": "2025-01-15" }
+				    ]
+				  }
+				}
+				""";
+
+			// when
+			ConsultationTransferReqDto result = objectMapper.readValue(json, ConsultationTransferReqDto.class);
+
+			// then
+			assertThat(result.reportInput()).isInstanceOf(EmployeeReportInput.class);
+			EmployeeReportInput reportInput = (EmployeeReportInput)result.reportInput();
+			assertThat(reportInput.loanPurpose()).isEqualTo(LoanPurpose.HOME_PURCHASE);
+			assertThat(reportInput.hasRepresentativeName()).isTrue();
+			assertThat(reportInput.depositAmountList()).hasSize(2);
+			assertThat(reportInput.depositAmountList().get(0).depositAmount()).isEqualTo(30_000_000L);
+			assertThat(reportInput.moveInHouseholds()).hasSize(1);
+			assertThat(reportInput.moveInHouseholds().get(0).moveInDate())
+				.isEqualTo(java.time.LocalDate.of(2025, 1, 15));
 		}
 	}
 }
