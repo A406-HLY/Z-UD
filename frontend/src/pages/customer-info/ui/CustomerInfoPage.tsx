@@ -1,6 +1,5 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Settings } from 'lucide-react';
 import { Header } from '@/widgets/header';
 import { LoanTabs } from '@/widgets/loan-tabs';
 import { CustomerInfoForm } from '@/widgets/customer-info-form';

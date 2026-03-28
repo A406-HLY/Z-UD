@@ -158,7 +158,7 @@ sketch
 # Vite 배포/빌드 관련 폴더
 dist
 dist-ssr
-
+.vite
 # 로컬 시크릿 환경 변수 파일
 .env.local
 .env.*.local
