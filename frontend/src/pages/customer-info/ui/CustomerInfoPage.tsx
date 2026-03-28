@@ -12,14 +12,13 @@ import {
   mapHouseAuditToUiModel, 
   mapMyDataToUiModel,
   AuditSummaryItem,
-  HouseAuditResponseDto,
   AuditStatus
 } from '@/entities/audit';
 import { SseAuditStatus, resetAuditState, setAllAuditDone, updateStepStatus, setHouseAuditData, setCreditData, setLoanData } from '@/entities/audit/model/audit.slice';
 import { useAppSelector, useAppDispatch } from '@/app/store/hooks';
 import { useCallback } from 'react';
 import { useCreateReport } from '@/features/verification/api/use-create-report';
-import { createReportRequestPayload } from '@/entities/verification/model/report-factory';
+import { createReportRequestPayload, aggregateFromDocuments } from '@/entities/verification/model/report-factory';
 
 /**
  * @page customer-info
@@ -30,15 +29,18 @@ export const CustomerInfoPage = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  // (Note) 전결거리 토글 테스트를 위한 개발자용 임시 상태 (기본값: 승인 가능하도록 true)
-  const [isDevBranchNearest, setIsDevBranchNearest] = useState(true);
+  const { isAllAuditDone, steps, data } = useAppSelector(state => state.audit);
 
-  // (Why) 객체 리터럴을 직접 넘기면 매 렌더링마다 참조값이 바뀌어 TanStack Query가 무한 요청을 보낼 수 있으므로 useMemo로 감쌉니다.
+  // (Why) OCR 데이터에서 주택 심사에 필요한 소재지 및 건물 유형을 동적으로 추출합니다.
+  const ocrValues = useMemo(() => 
+    data.ocrData ? aggregateFromDocuments(data.ocrData.documents) : {}, 
+  [data.ocrData]);
+
   const auditParams = useMemo(() => ({
     illegalBuilding: false,
-    houseType: '아파트',
-    propertyAddress: '강원특별자치도 원주시 일산동 천사로 130 신진빌리지 6층 601호',
-  }), []);
+    houseType: (ocrValues.buildingType as string) || '아파트',
+    propertyAddress: (ocrValues.propertyAddress as string) || '',
+  }), [ocrValues]);
 
   const { data: houseData, isLoading: isHouseLoading, isSuccess: isHouseSuccess } = useHouseAuditQuery(auditParams);
 
@@ -52,9 +54,6 @@ export const CustomerInfoPage = () => {
 
   // (Why) 고객명을 기반으로 마이데이터(신용/대출) 통합 조회를 실행합니다.
   // (Why) 백엔드 SSE 이벤트를 모사하던 기존 방식 대신, 이제 전역 store에서 실시간 상태와 수신 데이터를 가져옵니다.
-  const { isAllAuditDone, steps, data } = useAppSelector(state => state.audit);
-  const houseDataPayload = data.houseAuditData;
-
   const customerName = useAppSelector(state => state.customer.data.name);
   const { data: myData, isLoading: isMyDataLoading, isSuccess: isMyDataSuccess } = useMyDataAuditQuery(customerName);
 
@@ -80,33 +79,10 @@ export const CustomerInfoPage = () => {
     }
   }, [steps, isAllAuditDone, dispatch]);
 
-  // (Why) 백엔드 API 미준비 또는 데이터 부재 시를 위한 주택 심사 기본 모의 데이터
-  const mockHouseData = useMemo<HouseAuditResponseDto>(() => ({
-    success: true,
-    data: {
-      housePrice: {
-        price: 85000,
-        priceType: 'KB 시세 (일반가)',
-        message: '담보 가치가 충분하며, 대출 가능 한도 내에 위치합니다.'
-      },
-      nearestBranch: {
-        currentBranchIsNearest: isDevBranchNearest, 
-        currentBranchName: '강남지점',
-        currentBranchAddress: '테헤란로',
-        currentBranchDistanceMeter: isDevBranchNearest ? 1200 : 5500,
-        nearestBranchName: '강남지점',
-        nearestBranchAddress: '테헤란로',
-        nearestBranchDistanceMeter: 1200,
-        message: isDevBranchNearest ? '관할 지점 내 물건지입니다.' : '관할 지점 범위를 벗어난 물건지입니다.'
-      },
-      illegalBuilding: false,
-      supportedHouseType: true
-    }
-  }), [isDevBranchNearest]);
 
   const auditItems = useMemo<AuditSummaryItem[]>(() => {
     // 1. 주택 심사 데이터 구성
-    const effectiveHouseData = houseDataPayload || houseData?.data || mockHouseData?.data;
+    const effectiveHouseData = data.houseAuditData || houseData?.data;
     const houseItems = effectiveHouseData ? mapHouseAuditToUiModel(effectiveHouseData) : [];
     
     // 2. 마이데이터(신용/대출) 데이터 구성
@@ -117,7 +93,7 @@ export const CustomerInfoPage = () => {
     // (Why) "IDLE(대기)" 상태면 UI에서는 로딩 스켈레톤이나 초기 아이콘을 보여주도록 최하단 단계에서 깔끔하게 LOADING으로 통합합니다.
     // (P1) 피드백 반영: REST API 데이터 유무와 상관없이 실시간 SSE 진행 상태(steps)를 기준으로 상태를 표시합니다.
     const mapStatus = (s: SseAuditStatus, queryLoading: boolean): AuditStatus => 
-      (s === 'IDLE' || queryLoading) ? 'LOADING' : s;
+      (s === 'IDLE' || queryLoading) ? 'LOADING' : (s as AuditStatus);
 
     // (Why) 개별 항목의 상태와 요약을 통합 모델로 매핑합니다.
     return [
@@ -133,7 +109,7 @@ export const CustomerInfoPage = () => {
         status: mapStatus(steps.houseAudit, isHouseLoading) 
       })),
     ];
-  }, [houseData, houseDataPayload, mockHouseData, myData, isMyDataLoading, isHouseLoading, steps, data]);
+  }, [houseData, myData, isMyDataLoading, isHouseLoading, steps, data]);
 
   // (Why) 모든 조회가 완료되었고, 'ERROR' 상태인 항목이 하나도 없을 때만 다음 단계로 진행 허용
   const canProceed = isAllAuditDone && !auditItems.some(item => item.status === 'ERROR');
@@ -170,7 +146,8 @@ export const CustomerInfoPage = () => {
         allEditsValues,
         customerData,
         data.creditData || myData, // Credit
-        data.loanData || myData    // Loan
+        data.loanData || myData,   // Loan
+        data.houseAuditData || (houseData?.data as any) // House
       );
 
       // (Step 3) API 호출 및 이동
@@ -249,22 +226,15 @@ export const CustomerInfoPage = () => {
           />
         </div>
 
-        {/* --- [DEV] 하단 테스트용 토글 버튼 --- */}
-         <div className="mt-8 flex justify-center gap-3">
-            <button 
-              onClick={() => setIsDevBranchNearest(!isDevBranchNearest)}
-              className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 text-white rounded text-[11px] hover:bg-slate-700 transition-colors opacity-40 hover:opacity-100"
-            >
-              <Settings size={12} />
-              <span>[DEV] 전결거리 토글 (현재: {isDevBranchNearest ? '승인 가능' : '취급 불가'})</span>
-            </button>
-            <button 
-              onClick={() => dispatch(resetAuditState())}
-              className="flex items-center gap-2 px-3 py-1.5 bg-red-800 text-white rounded text-[11px] hover:bg-red-700 transition-colors opacity-40 hover:opacity-100"
-            >
-              <span>[DEV] 스토어 초기화 (데이터 비우기)</span>
-            </button>
-         </div>
+      {/* --- [DEV] 하단 테스트용 토글 버튼 --- */}
+       <div className="mt-8 flex justify-center gap-3">
+          <button 
+            onClick={() => dispatch(resetAuditState())}
+            className="flex items-center gap-2 px-3 py-1.5 bg-red-800 text-white rounded text-[11px] hover:bg-red-700 transition-colors opacity-40 hover:opacity-100"
+          >
+            <span>[DEV] 스토어 초기화 (데이터 비우기)</span>
+          </button>
+       </div>
       </main>
     </div>
   );

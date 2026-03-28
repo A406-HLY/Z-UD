@@ -5,9 +5,9 @@
 
 export const APPROVAL_STATUS = {
   PASS: '승인',
-  REJECT: '거절',
+  REJECT: '반려',
   SUPPLEMENT: '자료 보완 요망',
-  REVIEW_REQUIRED: '검토 요망',
+  REVIEW_REQUIRED: '검토',
   IRRELEVANT: '상관 없음',
 } as const;
 

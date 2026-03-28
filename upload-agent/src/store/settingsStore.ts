@@ -19,7 +19,7 @@ export class SettingsStore {
     try {
       if (!fs.existsSync(this.settingsPath)) {
         logger.warn(`Settings file not found at ${this.settingsPath}. Using defaults.`);
-        this.settings = { watchPath: './', allowedExtensions: [] };
+        this.settings = { watchPath: './watch', allowedExtensions: [] };
         return;
       }
 

@@ -16,11 +16,12 @@ export const selectSelectedArticle = (state: RootStateLike) => state.review.sele
 export const selectProcessedProducts = createSelector(
   [selectReviewData],
   (data): ProcessedProduct[] => {
-    if (!data || !data.result) return [];
+    if (!data || !data.result || !data.result.products) return [];
 
     // 1. 순수 매퍼 함수를 통해 응답 모델을 뷰 모델로 매핑
-    const products: ProcessedProduct[] = Object.entries(data.result).map(
-      ([productKey, productData]) => mapLoanProductToViewModel(productKey, productData)
+    // (Key point) V2 규격은 result.products 배열 형태이므로 Object.entries 대신 배열 map을 사용합니다.
+    const products: ProcessedProduct[] = data.result.products.map(
+      (productData) => mapLoanProductToViewModel(productData.productCode, productData)
     );
 
     // 2. 탭 순서(상품) 정렬: 승인된 탭을 제일 앞으로, 그 중 한도가 높은 것 우선

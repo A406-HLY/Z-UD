@@ -4,7 +4,7 @@ import {
 } from '@/entities/verification/model/report.types';
 import { ServerDocItem } from '@/entities/verification/model/types';
 import { Customer } from '@/entities/customer/model/types';
-import { MyDataResDto } from '@/entities/audit/model/types';
+import { MyDataResDto, HouseAuditResponseDto } from '@/entities/audit/model/types';
 import { mergeDotNotation } from '@/shared/lib/utils/merge-utils';
 
 /**
@@ -14,8 +14,6 @@ import { mergeDotNotation } from '@/shared/lib/utils/merge-utils';
 const FIELD_SOURCE_RULES: Record<string, { docType: string; path: string }> = {
   // 1. 인적자원
   'headOfHouseholdName': { docType: 'RESIDENT_REGISTRATION', path: 'headOfHouseholdName' },
-  'issueDate': { docType: 'RESIDENT_REGISTRATION_ABSTRACT', path: 'issueDate' },
-  'issueNumber': { docType: 'RESIDENT_REGISTRATION_ABSTRACT', path: 'issueNumber' },
   'currentAddress': { docType: 'RESIDENT_REGISTRATION_ABSTRACT', path: 'currentAddress' },
   'moveInHouseholds': { docType: 'RESIDENT_REGISTRATION_ABSTRACT', path: 'moveInHouseholds' },
   'householdMembers': { docType: 'RESIDENT_REGISTRATION', path: 'householdMembers' },
@@ -33,7 +31,7 @@ const FIELD_SOURCE_RULES: Record<string, { docType: string; path: string }> = {
   'depositAmountList': { docType: 'TITLE_DEED', path: 'depositAmountList' },
   'seniorRights': { docType: 'TITLE_DEED', path: 'seniorRights' },
   'isViolationBuilding': { docType: 'BUILDING_REGISTER', path: 'isViolationBuilding' },
-  'mainUsage': { docType: 'BUILDING_REGISTER', path: 'mainUsage' },
+  'mainUsage': { docType: 'TITLE_DEED', path: 'buildingType.value' },
   'floorStatusList': { docType: 'BUILDING_REGISTER', path: 'floorStatusList' },
   'propertyAddress': { docType: 'SALE_CONTRACT', path: 'propertyAddress' },
   'salePrice': { docType: 'SALE_CONTRACT', path: 'salePrice' },
@@ -72,30 +70,31 @@ const FIELD_SOURCE_RULES: Record<string, { docType: string; path: string }> = {
 };
 
 /**
- * [API 규격 준수] 모든 필드를 null로 초기화한 스켈레톤 객체입니다.
- * 없는 데이터는 undefined가 아닌 명시적 null로 채워 전송해야 합니다.
+ * [API 규격 준수] 모든 필드를 초기화한 스켈레톤 객체입니다.
+ * 백엔드 엄격 스키마 검사를 통과하기 위해 null 대신 기본값(Zero-value)을 할당합니다.
  */
-const REPORT_SKELETON: Partial<ReportInput> = {
-  headOfHouseholdName: null, name: null, residentRegistrationNumber: null, phoneNumber: null,
-  targetLoanAmount: null, loanPurpose: null, ownedHouseCount: null,
-  householdMembers: null, currentAddress: null, moveInHouseholds: null,
-  spouse: null, registrationType: null, hasDongho: null, buildingType: null,
-  lotAddress: null, hasLandRightCause: null, hasOwnershipTransferClaim: null,
-  hasTrustRegistration: null, ownerName: null, depositAmountList: null, seniorRights: null,
-  isViolationBuilding: null, mainUsage: null, floorStatusList: null,
-  propertyAddress: null, salePrice: null, specialTerms: null, seller: null,
-  buyer: null, taxItems: null, manualReviewRequired: null,
-  registrationNumber: null, identifierNumber: null, inspectionAddress: null,
-  collateralMarketPrice: null, totalRemainingLoanBalance: null,
-  monthlyRepaymentAmount: null, creditRating: null, annualPrincipalAndInterestRepayment: null,
-  // 직업군별 필드 초기값
-  businessName: null, businessRegistrationNumber: null, incomeYear: null,
-  incomeAmount: null, determinedTaxAmount: null, corporateRegistrationNumber: null, taxableSalesAmount: null, 
-  representativeName: null, hasCompanySeal: null, subscriberType: null, 
-  latestAcquisitionDate: null, latestLossDate: null, 
-  incomeRecipientName: null, incomeRecipientResidentRegistrationNumber: null,
-  workPeriod: null, annualIncomeTotal: null,
-};
+const REPORT_SKELETON: ReportInput = {
+  headOfHouseholdName: "", name: "", residentRegistrationNumber: "",
+  employmentType: "EMPLOYEE",
+  householdMembers: [], currentAddress: "", moveInHouseholds: [],
+  spouse: { exists: false, name: "", residentRegistrationNumber: "" }, 
+  registrationType: "", buildingType: "", hasDongho: false,
+  lotAddress: "", hasLandRightCause: false, hasOwnershipTransferClaim: false,
+  hasTrustRegistration: false, ownerName: "", depositAmountList: [], seniorRights: [],
+  isViolationBuilding: false, mainUsage: "", floorStatusList: [],
+  propertyAddress: "", salePrice: 0, specialTerms: "", seller: { name: "" },
+  buyer: { name: "" }, taxItems: [], manualReviewRequired: false,
+  registrationNumber: "", identifierNumber: "", inspectionAddress: "",
+  collateralMarketPrice: 0, totalRemainingLoanBalance: 0,
+  monthlyRepaymentAmount: 0, creditRating: "", annualPrincipalAndInterestRepayment: 0,
+  businessName: "", businessRegistrationNumber: "", incomeYear: "",
+  incomeAmount: 0, determinedTaxAmount: 0, corporateRegistrationNumber: "", taxableSalesAmount: 0, 
+  representativeName: false, hasCompanySeal: false, subscriberType: "", 
+  latestAcquisitionDate: "", latestLossDate: "", 
+  incomeRecipientName: "", incomeRecipientResidentRegistrationNumber: "",
+  workPeriod: "", annualIncomeTotal: 0,
+  loanPurpose: "", ownedHouseCount: 0,
+} as any;
 
 /**
  * 중첩된 객체에서 경로(a.b.c)를 통해 값을 추출하는 헬퍼 함수
@@ -106,9 +105,52 @@ const getValueByPath = (obj: unknown, path: string): unknown => {
 };
 
 /**
+ * 다양한 날짜 형식(YYYY.MM.DD, YYYY년...)을 서버 표준(YYYY-MM-DD)으로 변환합니다.
+ */
+const standardizeDateFormat = (dateStr: any): string | any => {
+  if (typeof dateStr !== 'string' || !dateStr) return dateStr || "";
+  // 1. 점(.) 또는 한글 제거 및 공백 정규화
+  const sanitized = dateStr.replace(/\./g, '-').replace(/[년월일]/g, '-').replace(/\s+/g, '');
+  // 2. 마지막 하이픈 제거 (예: 2024-01-01-)
+  let formatted = sanitized.replace(/-+$/, '');
+  
+  // 3. YYYY-MM-DD 자릿수 보정 (단순화된 정규식)
+  const parts = formatted.split('-');
+  if (parts.length === 3) {
+    const y = parts[0];
+    const m = parts[1].padStart(2, '0');
+    const d = parts[2].padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+  return formatted;
+};
+
+/**
+ * OCR 결과에 포함된 { value, confidence, evidence } 형태의 래퍼 객체를 
+ * 재귀적으로 순회하며 원시 값(value)만 깨끗하게 추출합니다.
+ */
+const deepUnwrapOcrValue = (obj: any): any => {
+  if (Array.isArray(obj)) {
+    return obj.map(item => deepUnwrapOcrValue(item));
+  }
+  if (obj !== null && typeof obj === 'object') {
+    if ('value' in obj) {
+      return deepUnwrapOcrValue(obj.value);
+    } else {
+      const result: Record<string, any> = {};
+      for (const [key, val] of Object.entries(obj)) {
+        result[key] = deepUnwrapOcrValue(val);
+      }
+      return result;
+    }
+  }
+  return obj; // 원시 데이터 타입
+};
+
+/**
  * 13종 이상의 OCR 서류 뭉치에서 리포트에 필요한 데이터를 규칙에 따라 집계합니다.
  */
-const aggregateFromDocuments = (documents: ServerDocItem[]): Partial<ReportInput> => {
+export const aggregateFromDocuments = (documents: ServerDocItem[]): Partial<ReportInput> => {
   const aggregated: Record<string, unknown> = {};
   
   const docMap: Record<string, ServerDocItem> = {};
@@ -116,14 +158,48 @@ const aggregateFromDocuments = (documents: ServerDocItem[]): Partial<ReportInput
     docMap[doc.documentClassification.documentType] = doc;
   });
 
-  Object.entries(FIELD_SOURCE_RULES).forEach(([field, rule]) => {
+Object.entries(FIELD_SOURCE_RULES).forEach(([field, rule]) => {
     const doc = docMap[rule.docType];
     if (doc) {
-      const rawValue = getValueByPath(doc.extraction.content, rule.path);
+      const rawValue = getValueByPath(doc.content, rule.path);
       if (rawValue !== undefined && rawValue !== null) {
-        aggregated[field] = (typeof rawValue === 'object' && 'value' in (rawValue as object)) 
-          ? (rawValue as any).value 
-          : rawValue;
+        let unwrapped = deepUnwrapOcrValue(rawValue);
+
+        // [날짜 정규화] 날짜 관련 필드는 포맷 통일
+        if (field.toLowerCase().includes('date') || field === 'workPeriod') {
+          unwrapped = standardizeDateFormat(unwrapped);
+        }
+
+        // [Custom Mapping] API DTO 규격에 맞춘 강제 구조화
+        if (field === 'spouse') {
+          if (typeof unwrapped === 'string' && unwrapped.trim() !== '') {
+             unwrapped = { exists: true, name: unwrapped, residentRegistrationNumber: "" };
+          } else if (typeof unwrapped === 'object' && unwrapped !== null) {
+             unwrapped.exists = true; 
+             unwrapped.name = unwrapped.name || "";
+             unwrapped.residentRegistrationNumber = unwrapped.residentRegistrationNumber || "";
+          } else {
+             unwrapped = { exists: false, name: "", residentRegistrationNumber: "" };
+          }
+        } else if (field === 'seller' || field === 'buyer') {
+          unwrapped = { name: (typeof unwrapped === 'string' ? unwrapped : (unwrapped?.name || "")) };
+        } else if (field === 'representativeName' || field === 'hasCompanySeal' || field === 'isViolationBuilding' || field === 'manualReviewRequired') {
+           unwrapped = !!unwrapped;
+        } else if (Array.isArray(unwrapped)) {
+           // 배열 내의 날짜들도 정규화 (예: depositAmountList 내의 depositDate)
+           unwrapped = unwrapped.map(item => {
+             if (item && typeof item === 'object') {
+               const newItem = { ...item };
+               Object.keys(newItem).forEach(k => {
+                 if (k.toLowerCase().includes('date')) newItem[k] = standardizeDateFormat(newItem[k]);
+               });
+               return newItem;
+             }
+             return item;
+           });
+        }
+
+        aggregated[field] = unwrapped;
       }
     }
   });
@@ -137,13 +213,14 @@ const aggregateFromDocuments = (documents: ServerDocItem[]): Partial<ReportInput
  * (Why) FSD 아키텍처 규칙에 따라 도메인 간 결합은 Feature 레이어에서 수행합니다.
  */
 export const createReportRequestPayload = (
-  ocrData: { data: { documents: ServerDocItem[] } } | null,
+  ocrData: { documents: ServerDocItem[] } | null,
   editsValues: Record<string, unknown>,
   userInputData: Customer,
   creditData: MyDataResDto | null,
-  loanData: MyDataResDto | null
+  loanData: MyDataResDto | null,
+  houseData?: HouseAuditResponseDto['data'] | null
 ): ReportRequestPayload => {
-  const documents = ocrData?.data?.documents || [];
+  const documents = ocrData?.documents || [];
   const baseAggregated = aggregateFromDocuments(documents);
 
   // (Why) dot-notation 병합 로직은 unknown 타입을 반환하므로 명시적 캐스팅을 수행합니다.
@@ -158,29 +235,21 @@ export const createReportRequestPayload = (
     // (A) 사용자 직접 입력 폼 데이터 (중복 필드에 대해 최우선 순위 부여)
     name: userInputData.name,
     residentRegistrationNumber: userInputData.residentRegistrationNumber,
-    phoneNumber: userInputData.phoneNumber,
-    targetLoanAmount: parseInt(userInputData.targetLoanAmount.replace(/,/g, ''), 10) || 0,
-    loanPurpose: userInputData.loanPurpose,
-    ownedHouseCount: parseInt(userInputData.ownedHouseCount, 10) || 0,
     employmentType: isSelfEmployed ? 'SELF_EMPLOYED' : 'EMPLOYEE',
+    loanPurpose: userInputData.loanPurpose,
+    ownedHouseCount: parseInt(userInputData.ownedHouseCount) || 0,
 
     // (B) 마이데이터 연동 정보 주입 (영문 등급 문자열 그대로 전달)
     creditRating: creditData ? creditData.ratingName : null,
     totalRemainingLoanBalance: loanData?.totalRemainingLoanBalance || 0,
     annualPrincipalAndInterestRepayment: loanData?.totalAnnualPrincipalAndInterestRepayment || 0,
-  } as ReportInput;
 
-  // (Why) 직업군별로 문맥상 완전히 무의미한 필드는 API 규격(Discriminated Union) 유지를 위해 명시적으로 삭제합니다.
-  // 단, 해당 직업군의 필수 필드가 누락된 경우 위에서 sprade한 SKELETON에 의해 null이 유지됩니다.
-  const cleanedInput = { ...finalReportInput } as any;
-  if (isSelfEmployed) {
-    ['representativeName', 'hasCompanySeal', 'subscriberType', 'latestAcquisitionDate', 'latestLossDate', 'incomeRecipientName', 'incomeRecipientResidentRegistrationNumber', 'workPeriod', 'annualIncomeTotal'].forEach(k => delete cleanedInput[k]);
-  } else {
-    ['businessName', 'businessRegistrationNumber', 'openingDate', 'incomeYear', 'incomeAmount', 'determinedTaxAmount', 'corporateRegistrationNumber', 'taxableSalesAmount'].forEach(k => delete cleanedInput[k]);
-  }
+    // (C) 주택 심사 정보 주입 (price는 만원 단위이므로 그대로 전달 또는 원 단위 변환 필요 여부 확인 - 백엔드 규격에 따름)
+    collateralMarketPrice: houseData?.housePrice?.price || 0,
+  } as ReportInput;
 
   return {
     consultationId: userInputData.consultationId,
-    reportInput: cleanedInput,
+    reportInput: finalReportInput,
   };
 };

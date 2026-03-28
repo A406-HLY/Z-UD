@@ -52,28 +52,28 @@ export interface TaxItem {
   remark: string | null;
 }
 
-/** 공통 리포트 입력 필드 (Base) */
-export interface BaseReportInput {
-  headOfHouseholdName: string | null; // (API) 세대주 성명 추가
+/** 공통 리포트 입력 필드 (Single Flat DTO) */
+export interface ReportInput {
+  // 1. 공통 인적자원 및 기본 정보
+  headOfHouseholdName: string | null;
   name: string | null;
   residentRegistrationNumber: string | null;
-  phoneNumber: string | null;
-  targetLoanAmount: number | null;
-  loanPurpose: string | null;
-  ownedHouseCount: number | null;
+  employmentType: 'EMPLOYEE' | 'SELF_EMPLOYED';
   householdMembers: HouseholdMember[] | null;
   currentAddress: string | null;
-  moveInHouseholds: MoveInHousehold[] | null; // (API) moveInDate에서 배열 구조로 변경
+  moveInHouseholds: MoveInHousehold[] | null;
   spouse: Spouse | null;
+  
+  // 2. 부동산/건물 정보
   registrationType: string | null;
-  hasDongho: boolean | null;
   buildingType: string | null;
+  hasDongho: boolean | null;
   lotAddress: string | null;
   hasLandRightCause: boolean | null;
   hasOwnershipTransferClaim: boolean | null;
   hasTrustRegistration: boolean | null;
   ownerName: string | null;
-  depositAmountList: DepositItem[] | null; // (API) 단일 객체에서 배열 구조로 변경
+  depositAmountList: DepositItem[] | null;
   seniorRights: SeniorRight[] | null;
   isViolationBuilding: boolean | null;
   mainUsage: string | null;
@@ -83,46 +83,43 @@ export interface BaseReportInput {
   specialTerms: string | null;
   seller: PartyInfo | null;
   buyer: PartyInfo | null;
-  taxItems: TaxItem[] | null;
-  manualReviewRequired: boolean | null;
-  registrationNumber: string | null; // (API) 전산관리번호 추가
-  identifierNumber: string | null;     // (API) 식별번호 추가
-  inspectionAddress: string | null;    // (API) 조사주소 추가
+  inspectionAddress: string | null;
   collateralMarketPrice: number | null;
-  totalRemainingLoanBalance: number | null; // (Fix) 오타 수정 및 JSON 규격 정렬
-  monthlyRepaymentAmount: number | null;    // (API) 월상환액 추가
-  creditRating: string | null;
-  annualPrincipalAndInterestRepayment: number | null;
-}
-
-/** 개인사업자 전용 입력 필드 */
-export interface SelfEmployedReportInput extends BaseReportInput {
-  employmentType: 'SELF_EMPLOYED';
-  businessName: string | null;
-  businessRegistrationNumber: string | null;
-  incomeYear: string | null;
-  incomeAmount: number | null;
-  determinedTaxAmount: number | null;      // (API) 결정세액 추가
-  corporateRegistrationNumber: string | null; // (API) 법인등록번호 추가
-  taxableSalesAmount: number | null;
-}
-
-/** 근로자 전용 입력 필드 */
-export interface EmployeeReportInput extends BaseReportInput {
-  employmentType: 'EMPLOYEE';
-  representativeName: boolean | null; // (Rename) JSON 규격 정렬
+  
+  // 3. 재직/소득 (근로자용)
+  representativeName: boolean | null;
   hasCompanySeal: boolean | null;
   subscriberType: string | null;
   latestAcquisitionDate: string | null;
   latestLossDate: string | null;
-  incomeRecipientName: string | null; // (API) 소득수령인 성명 추가
-  incomeRecipientResidentRegistrationNumber: string | null; // (API) 소득수령인 주민번호 추가
+  incomeRecipientName: string | null;
+  incomeRecipientResidentRegistrationNumber: string | null;
   workPeriod: string | null;
   annualIncomeTotal: number | null;
+  
+  // 4. 재직/소득 (자영업자용)
+  businessName: string | null;
+  businessRegistrationNumber: string | null;
+  incomeYear: string | null;
+  incomeAmount: number | null;
+  determinedTaxAmount: number | null;
+  corporateRegistrationNumber: string | null;
+  taxableSalesAmount: number | null;
+  
+  // 5. 세금 및 전산 정보
+  taxItems: TaxItem[] | null;
+  manualReviewRequired: boolean | null;
+  registrationNumber: string | null;
+  identifierNumber: string | null;
+  
+  // 6. 금융/마이데이터 정보
+  totalRemainingLoanBalance: number | null;
+  monthlyRepaymentAmount: number | null;
+  creditRating: string | null;
+  annualPrincipalAndInterestRepayment: number | null;
+  loanPurpose: string | null;
+  ownedHouseCount: number | null;
 }
-
-/** 가입자 형태에 따른 유니온 타입 (Discriminated Union) */
-export type ReportInput = SelfEmployedReportInput | EmployeeReportInput;
 
 /** 
  * 최종 API 요청 DTO (최상위) 

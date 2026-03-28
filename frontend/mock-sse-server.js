@@ -102,7 +102,7 @@ const server = http.createServer((req, res) => {
 
     setTimeout(() => {
       sendEvent('REPORT_COMPLETED', '모든 심사 완료');
-    }, 35000);
+    }, 1000000000);
 
     const keepAlive = setInterval(() => res.write(': keep-alive\n\n'), 30000);
     req.on('close', () => clearInterval(keepAlive));

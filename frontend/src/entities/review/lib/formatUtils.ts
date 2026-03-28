@@ -21,10 +21,13 @@ export const formatValueForUI = (value: unknown): string | number => {
   }
 
   // 3. 객체인 경우 (재귀 호출)
-  if (typeof value === 'object') {
+  if (typeof value === 'object' && value !== null) {
     const values = Object.values(value);
-    return values.length > 0
-      ? values.map((val) => formatValueForUI(val)).join(' / ')
+    // (Why) 객체의 모든 값이 null, undefined 또는 빈 문자열인 경우 '정보 없음' 처리
+    const validValues = values.filter(v => v !== null && v !== undefined && v !== '');
+    
+    return validValues.length > 0
+      ? validValues.map((val) => formatValueForUI(val)).join(' / ')
       : '정보 없음';
   }
 

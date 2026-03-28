@@ -12,7 +12,9 @@ import {
   setOcrData,
   addErrorMessage
 } from '../model/audit.slice';
+import { setReviewData } from '@/entities/review/model/review.slice';
 import { fetchVerificationResult } from '@/entities/verification/api/verification.api';
+import { fetchReviewResult } from '@/entities/review/api/review.api';
 
 /**
  * @feature Audit/SSE
@@ -48,6 +50,34 @@ export const useSseAudit = (consultationId: string | undefined, isTriggered: boo
       console.error('[SSE] OCR result fetch failed:', error);
       dispatch(updateStepStatus({ step: 'ocr', status: 'ERROR', message: 'OCR 데이터 수취 실패' }));
       dispatch(addErrorMessage('OCR 데이터를 불러오는 데 실패했습니다.'));
+    }
+  }, [dispatch]);
+
+  /**
+   * 최종 레포트 완료 이벤트 비동기 핸들러
+   * (Why) SSE 알림 수신 즉시 실데이터 API를 호출하여 Redux에 저장하고 UI를 갱신합니다.
+   */
+  const handleReportCompleted = useCallback(async () => {
+    try {
+      const currentConsultationId = consultationIdRef.current;
+      if (!currentConsultationId) return;
+
+      console.log('[SSE] Fetching final report for:', currentConsultationId);
+      const reportData = await fetchReviewResult(currentConsultationId);
+      
+      // 1. 레포트 데이터 전역 상태 저장 (ReviewSlice)
+      dispatch(setReviewData(reportData));
+      
+      // 2. 심사 완료 상태 전이
+      dispatch(setAllAuditDone(true));
+      dispatch(setCurrentMessage('모든 심사가 완료되었습니다. 결과를 확인하세요.'));
+    } catch (error) {
+      console.error('[SSE] Report fetch failed:', error);
+      dispatch(addErrorMessage('최종 레포트 데이터를 불러오는 데 실패했습니다.'));
+    } finally {
+      // (Why) 스트림을 명시적으로 정리합니다.
+      eventSourceRef.current?.close();
+      dispatch(setSseConnected(false));
     }
   }, [dispatch]);
 
@@ -167,10 +197,8 @@ export const useSseAudit = (consultationId: string | undefined, isTriggered: boo
 
     // ─── 4. 최종 레포트 완료 ───
     eventSource.addEventListener('REPORT_COMPLETED', () => {
-      dispatch(setAllAuditDone(true));
-      dispatch(setCurrentMessage('모든 심사가 완료되었습니다. 결과를 확인하세요.'));
-      eventSource.close();
-      dispatch(setSseConnected(false));
+      console.log('[SSE] REPORT_COMPLETED received');
+      handleReportCompleted();
     });
 
     // ─── 에러 처리 ───

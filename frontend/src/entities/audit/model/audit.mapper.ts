@@ -19,8 +19,8 @@ export const mapHouseAuditToUiModel = (data: HouseAuditResponseDto['data']): Aud
   items.push({
     id: 'house-audit',
     title: '주택 담보물 심사',
-    summary: data.supportedHouseType 
-      ? `${data.housePrice.price.toLocaleString()}만원 (${data.housePrice.priceType})`
+    summary: data.supportedHouseType && data.housePrice
+      ? `${data.housePrice.price?.toLocaleString() || 0}만원 (${data.housePrice.priceType || '시세'})`
       : '시세 정보 없음',
     status: isSuccess ? 'SUCCESS' : 'ERROR',
     message: isSuccess ? undefined : '심사 불가능: 해당 물건지는 당행에서 취급하지 않거나 관할 지점 범위를 벗어납니다.',
@@ -34,23 +34,26 @@ export const mapHouseAuditToUiModel = (data: HouseAuditResponseDto['data']): Aud
  * 마이데이터 조회 결과를 UI 리스트 아이템 배열로 변환합니다.
  * (Why) 신용 등급과 기대출 현황을 각각 독립된 UI 섹션으로 분리하여 관리합니다.
  */
-export const mapMyDataToUiModel = (dto: MyDataResDto): AuditSummaryItem[] => {
+export const mapMyDataToUiModel = (dto: Partial<MyDataResDto>): AuditSummaryItem[] => {
   const items: AuditSummaryItem[] = [];
 
   // 1. 신용등급 섹션
   items.push({
     id: 'credit-rating',
     title: '신용등급 조회',
-    summary: `${dto.ratingName} 등급`,
+    summary: dto.ratingName ? `${dto.ratingName} 등급` : '조회 중...',
     status: 'SUCCESS',
     details: { ratingName: dto.ratingName, userId: dto.userId },
   });
 
   // 2. 기존 대출 내역 섹션
+  // (Why) SSE 점진적 업데이트 시 loanProducts가 아직 없을 수 있으므로 방어 코드를 추가합니다.
   items.push({
     id: 'loan-history',
     title: '기존 대출 내역',
-    summary: `${dto.loanProducts.length}건 / 잔액 ${dto.totalLoanBalance.toLocaleString()}원`,
+    summary: dto.loanProducts 
+      ? `${dto.loanProducts.length}건 / 잔액 ${dto.totalLoanBalance?.toLocaleString() || 0}원` 
+      : '조회 중...',
     status: 'SUCCESS',
     details: dto, // (Why) LoanDetail 컴포넌트에서 전체 product 목록이 필요하므로 dto 전체를 넘깁니다.
   });

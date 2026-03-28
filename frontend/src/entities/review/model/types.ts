@@ -1,75 +1,84 @@
 /**
  * @entity review
- * 심사 결과 데이터 타입 명세서
+ * 심사 결과 데이터 타입 명세서 (백엔드 V2 규격 준수)
  */
 
-// 1. 어떤 타입의 value가 와도 수용할 수 있는 공통 아이템 구조
-export interface ReviewItem {
-  name_ko: string;
-  value: unknown; // 타입 안정성을 위해 무분별한 any 대신 unknown 적용
-  matched_articles: string[]; // ["제3조", "제1조"] 
-  result: '승인' | '거절' | '자료 보완 요망' | '검토 요망' | '상관 없음';
+// 1. 공통 데이터 필드 구조 (값, 사유, 근거 조항 포함)
+export interface CalculationField {
+  value: any; // number | string | boolean | null;
   reason: string;
+  usedArticles: string[];
 }
 
-// 1-1. 상품 메타 데이터를 위한 간소화된 아이템 구조 (결과/사유 생략 가능)
-export interface LoanMetaItem {
+// 2. 심사 결과 아이템 (aiResults 및 fieldResults 용)
+export interface ReviewItem {
+  fieldKey?: string;
   name_ko: string;
-  value: unknown;
-  search_query?: string;
-  matched_articles?: string[];
+  inputValue: any; 
+  result: '승인' | '반려' | '검토' | '자료 보완 요망' | '검토 요망' | '상관 없음';
+  reason: string;
+  usedArticles: string[]; 
+  isRequired?: boolean;
+  excludedFromFinal?: boolean;
 }
 
-// 2. 한도 상세 정보 타입
-export interface LtvLoanLimit {
-  collateralMarketPrice: number;
-  LTVRatio: string;
-  maximumClaimAmount: number;
-  totalRemainingLoanBalance: number;
-  value: number;
-}
-
-export interface DsrLoanLimit {
-  DSRRatio: string;
-  annualIncomeTotal: number;
-  annualPrincipalAndInterestRepayment: number;
-  interestRate: string;
-  stressRateAdjustment: string;
-  stressDSR: string;
-  repaymentPeriodYears: number;
-  value: number;
-}
-
-// 3. 대출 상품 구조 (계층형)
+// 3. 백엔드 대출 상품 구조 (계층형)
 export interface LoanProduct {
-  productName?: string;
-  interestRate?: string;
-  repaymentPeriod?: string;
-  stressDSR?: LoanMetaItem; // (New) 스트레스 DSR 메타 정보
-  ltvBasedLoanLimit?: LtvLoanLimit;
-  dsrBasedLoanLimit?: DsrLoanLimit;
-  aiResults: Record<string, ReviewItem>; // 심사 조항들은 이 객체 내부로 그룹화
+  productCode: string;
+  productName: string;
+  forCalculate: {
+    collateralMarketPrice: CalculationField;
+    maximumClaimAmount: CalculationField;
+    totalRemainingLoanBalance: CalculationField;
+    LTVRatio: CalculationField & { regulationRegion: string; ownedHouseCountApplied: number | null };
+    annualIncomeTotal: CalculationField;
+    annualPrincipalAndInterestRepayment: CalculationField;
+    DSRRatio: CalculationField;
+  };
+  forReport: {
+    fieldResults: ReviewItem[];
+    summary: {
+      finalResult: string;
+      reason: string;
+      keyApprovalReasons: string[];
+      keyRejectReasons: string[];
+      keyReviewReasons: string[];
+    };
+  };
 }
 
 // 4. API 전체 응답 최상위 구조
 export interface ConsultationResponse {
   consultationId: string;
-  result: Record<string, LoanProduct>;
+  status: string;
+  result: {
+    consultationId: string;
+    products: LoanProduct[];
+  };
 }
 
 // === 프론트엔드 UI를 위한 가공(뷰 모델) 타입 확장 ===
 
 export interface ProcessedReviewItem extends ReviewItem {
   key: string; 
+  value: any; // inputValue를 value로 별칭 매핑하여 기존 UI 소품(Prop) 호환성 유지
+  matched_articles: string[]; // usedArticles를 matched_articles로 별칭 매핑
 }
 
 export interface ProcessedProduct {
   productKey: string;
-  productName?: string;
+  productName: string;
   isApproved: boolean;
-  ltvLimit: number;
-  dsrLimit: number;
-  calculatedLimit: number;
+  finalResult: string; // "승인", "반려", "검표" 등
+  finalReason: string;
+  ltvLimit: number; // % 값
+  dsrLimit: number; // % 값
+  calculatedLimit: number; // 최종 한도 금액 (원)
   limitParams: Array<{ label: string; value: string }>;
   items: ProcessedReviewItem[];
+  summary: {
+    keyApprovalReasons: string[];
+    keyRejectReasons: string[];
+    keyReviewReasons: string[];
+  };
 }

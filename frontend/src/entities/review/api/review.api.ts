@@ -1,23 +1,34 @@
 import { useQuery } from '@tanstack/react-query';
 import { ConsultationResponse } from '../model/types';
-import { dummyConsultationData } from './mock';
+import { apiClient } from '@/shared/api/client';     // (누락됨)
+import { ApiResponse } from '@/entities/user';        // (누락됨)
+
 
 /**
- * @entity review
- * 대출 심사 리포트 데이터를 가져오는 API Hook
- * 
- * (Why) 현재는 백엔드 구현 전이므로 Mock 데이터를 비동기로 반환합니다.
- * 실제 API 연합 시 이 훅 내부의 fetch 로직만 axios 호출로 변경하면 됩니다.
+ * @feature review/api/fetchReviewResult
+ * 서버로부터 최종 심사 레포트 데이터를 상세 조회합니다.
+ * (Why) SSE REPORT_COMPLETED 이벤트 수신 후, 생성된 레포트를 가져오기 위해 호출합니다.
  */
-export const useGetReview = (consultationId: string) => {
+export const fetchReviewResult = async (consultationId: string): Promise<ConsultationResponse> => {
+  // (Why) 사용자 요청에 따라 /api/v1/reports/{id} 엔드포인트를 호출합니다.
+  const response = await apiClient.get<ApiResponse<ConsultationResponse>>(
+    `/reports/${consultationId}`
+  );
+  return response.data.data;
+};
+
+/**
+ * @feature review
+ * 대출 심사 리포트 데이터를 가져오는 TanStack Query Hook
+ * 
+ * (Why) 페이지 진입 시점에 데이터를 캐싱하고 관리하기 위해 사용합니다.
+ */
+export const useGetReview = (consultationId: string | undefined) => {
   return useQuery<ConsultationResponse>({
     queryKey: ['review', consultationId],
-    queryFn: async () => {
-      // API 지연 시뮬레이션 (500ms)
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      
-      // (Why) 실제 운영 시에는 여기서 apiClient.get(`/api/reviews/${consultationId}`) 를 호출합니다.
-      return dummyConsultationData as ConsultationResponse;
+    queryFn: () => {
+      if (!consultationId) throw new Error('Consultation ID is required');
+      return fetchReviewResult(consultationId);
     },
     enabled: !!consultationId,
     staleTime: 1000 * 60 * 5, // 5분간 캐시 유지

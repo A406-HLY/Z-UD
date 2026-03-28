@@ -25,16 +25,20 @@ export const StatusSummaryBoard = () => {
       <div className="px-4 py-3 bg-slate-50 border-b border-gray-200 flex justify-between items-center">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            {currentProduct.isApproved ? (
+            {currentProduct.finalResult === APPROVAL_STATUS.PASS ? (
               <span className="bg-green-100 border border-green-300 text-green-700 font-bold px-2 py-0.5 rounded-[2px] text-[10px] flex items-center gap-1 shadow-sm uppercase tracking-wider">
                 <CheckCircle size={10} strokeWidth={3} /> APPROVED
               </span>
-            ) : (
+            ) : currentProduct.finalResult === APPROVAL_STATUS.REJECT ? (
               <span className="bg-red-100 border border-red-300 text-red-700 font-bold px-2 py-0.5 rounded-[2px] text-[10px] flex items-center gap-1 shadow-sm uppercase tracking-wider">
                 <AlertCircle size={10} strokeWidth={3} /> REJECTED
               </span>
+            ) : (
+              <span className="bg-orange-100 border border-orange-300 text-orange-700 font-bold px-2 py-0.5 rounded-[2px] text-[10px] flex items-center gap-1 shadow-sm uppercase tracking-wider">
+                <AlertCircle size={10} strokeWidth={3} /> REVIEW
+              </span>
             )}
-            <h3 className="font-black text-sm text-slate-800 uppercase tracking-tight">{currentProduct.productKey} 검토 결과</h3>
+            <h3 className="font-black text-sm text-slate-800 uppercase tracking-tight">{currentProduct.productName} 검토 결과</h3>
           </div>
           <div className="text-[10px] text-slate-500 mt-1.5 font-medium">자동 산출 기반 대출 가능 한도 추정액</div>
         </div>
@@ -60,9 +64,9 @@ export const StatusSummaryBoard = () => {
             <div className="flex items-center gap-2 flex-1">
                <AlertCircle size={14} className="text-red-600 shrink-0" />
                <div className="font-bold text-left truncate flex-1">
-                 <span className="bg-red-200 text-red-900 px-1 py-0.5 rounded-sm mr-2 text-[9px] uppercase">Fatal</span>
-                 {rejectedItems[0].reason || rejectedItems[0].name_ko}
-                 {rejectedItems.length > 1 && ` 외 ${rejectedItems.length - 1}건의 부적합 항목이 있습니다.`}
+                 <span className="bg-red-200 text-red-900 px-1 py-0.5 rounded-sm mr-2 text-[9px] uppercase">Summary</span>
+                 {currentProduct.finalReason || (rejectedItems[0]?.reason || rejectedItems[0]?.name_ko)}
+                 {rejectedItems.length > 1 && !currentProduct.finalReason && ` 외 ${rejectedItems.length - 1}건의 부적합 항목이 있습니다.`}
                </div>
             </div>
             <div className="bg-red-200 rounded-full p-0.5 text-red-700 shrink-0">
