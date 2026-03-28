@@ -8,12 +8,12 @@ import java.util.zip.GZIPOutputStream;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.util.StreamUtils;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zud.backend.common.error.ErrorCode;
 import com.zud.backend.common.error.exception.BusinessException;
 
 import lombok.RequiredArgsConstructor;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 @RequiredArgsConstructor
 public class GzipRedisSerializer<T> implements RedisSerializer<T> {
@@ -66,7 +66,6 @@ public class GzipRedisSerializer<T> implements RedisSerializer<T> {
 		) {
 			gos.write(original);
 			gos.finish();
-			// StreamUtils.copy(original, gos);
 			return bos.toByteArray();
 		} catch (Exception _) {
 			throw new BusinessException(ErrorCode.GZIP_COMPRESS_ERROR);
