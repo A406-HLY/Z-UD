@@ -5,8 +5,6 @@ import static com.zud.backend.common.kafka.KafkaTopics.*;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.KafkaListener;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zud.backend.common.error.ErrorCode;
 import com.zud.backend.domain.consultation.service.query.ConsultationQueryService;
 import com.zud.backend.domain.document.dto.request.DocumentExtractionReqDto;
@@ -19,22 +17,21 @@ import com.zud.backend.domain.document.service.notification.OcrNotificationServi
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class OcrKafkaConsumer {
 
-	private final ObjectMapper objectMapper;
+	private final JsonMapper objectMapper;
 	private final ConsultationQueryService consultationQueryService;
 	private final DocumentFacadeService documentFacadeService;
 	private final OcrResultRedisRepository ocrResultRedisRepository;
 	private final OcrNotificationService ocrNotificationService;
 
-	@KafkaListener(
-		topics = OCR_RESPONSE,
-		containerFactory = "ocrKafkaListenerContainerFactory"
-	)
+	@KafkaListener(topics = OCR_RESPONSE, containerFactory = "ocrKafkaListenerContainerFactory")
 	public void consume(final String messageBody) {
 		try {
 			DocumentExtractionReqDto reqDto = objectMapper.readValue(messageBody, DocumentExtractionReqDto.class);
@@ -45,7 +42,7 @@ public class OcrKafkaConsumer {
 		} catch (DocumentException e) {
 			log.error("[OCR] Kafka 응답 처리 실패", e);
 			throw e;
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			log.error("[OCR] Kafka 응답 역직렬화 실패", e);
 			throw new DocumentException(ErrorCode.DESERIALIZE_ERROR);
 		} catch (Exception e) {

@@ -12,14 +12,16 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zud.backend.common.config.properties.RedisProperties;
 import com.zud.backend.common.serializer.GzipRedisSerializer;
 import com.zud.backend.domain.document.redis.OcrExtractionResultCache;
 import com.zud.backend.domain.report.redis.LoanReportResultCache;
 
 import lombok.RequiredArgsConstructor;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
 @EnableRedisRepositories
@@ -27,8 +29,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RedisConfig {
 
+	private static final ObjectMapper REDIS_OBJECT_MAPPER = JsonMapper.builder()
+		.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+		.build();
+
 	private final RedisProperties redisProperties;
-	private final ObjectMapper objectMapper;
 
 	@Bean
 	public RedisConnectionFactory redisConnectionFactory() {
@@ -42,19 +47,19 @@ public class RedisConfig {
 
 	@Bean
 	public RedisTemplate<String, List<String>> documentVerificationRedisTemplate() {
-		return createGzipJsonRedisTemplate(objectMapper, new TypeReference<>() {
+		return createGzipJsonRedisTemplate(REDIS_OBJECT_MAPPER, new TypeReference<>() {
 		});
 	}
 
 	@Bean
 	public RedisTemplate<String, LoanReportResultCache> loanReportCacheRedisTemplate() {
-		return createGzipJsonRedisTemplate(objectMapper, new TypeReference<>() {
+		return createGzipJsonRedisTemplate(REDIS_OBJECT_MAPPER, new TypeReference<>() {
 		});
 	}
 
 	@Bean
 	public RedisTemplate<String, OcrExtractionResultCache> ocrResultRedisTemplate() {
-		return createGzipJsonRedisTemplate(objectMapper, new TypeReference<>() {
+		return createGzipJsonRedisTemplate(REDIS_OBJECT_MAPPER, new TypeReference<>() {
 		});
 	}
 

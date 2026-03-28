@@ -96,4 +96,21 @@ public class DocumentController {
 		UploadCompletionResDto response = facadeService.completeUpload(consultationId, reqDto);
 		return ResponseUtils.ok(response);
 	}
+
+	@PostMapping(
+		value = "/rules",
+		consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+		produces = MediaType.APPLICATION_JSON_VALUE
+	)
+	@Operation(summary = "내규 문서 업로드", description = "내규 문서 파일을 CloudFlare에 업로드하고 Kafka로 업데이트를 전파한다.")
+	@ApiErrorResponse
+	public ResponseEntity<BaseResponse<Void>> uploadRuleDocuments(
+		@Schema(description = "업로드할 규칙 문서 파일 목록")
+		@RequestPart("multipartFile") List<MultipartFile> files,
+		@Parameter(description = "파일명")
+		@RequestParam("fileName") String fileName
+	) {
+		facadeService.updateRuleDocuments(files, fileName);
+		return ResponseUtils.accepted();
+	}
 }
