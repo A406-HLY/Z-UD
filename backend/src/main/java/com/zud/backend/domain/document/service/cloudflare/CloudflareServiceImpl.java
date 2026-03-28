@@ -35,19 +35,18 @@ public class CloudflareServiceImpl implements CloudflareService {
 
 	private static final Duration PRESIGNED_URL_EXPIRATION = Duration.ofHours(2);
 	private static final Duration PUT_PRESIGNED_URL_EXPIRATION = Duration.ofMinutes(10);
-	private static final Duration RULE_PRESIGNED_URL_EXPIRATION = Duration.ofMinutes(10);
 
 	private final S3Client s3Client;
 	private final S3Presigner s3Presigner;
 	private final CloudflareProperties cloudflareProperties;
 
 	@Override
-	public String uploadFile(final MultipartFile file, final String directory) {
-		String key = buildObjectKey(directory, file.getOriginalFilename());
+	public String uploadFile(final MultipartFile file, final String directory, final String fileName) {
+		String key = buildObjectKey(directory,fileName);
 
 		try {
 			uploadToS3(file, key);
-			String presignedUrl = generatePresignedUrl(key);
+			String presignedUrl = generateGetPresignedUrl(key, PRESIGNED_URL_EXPIRATION);
 			log.info("[Cloudflare] 파일 업로드 완료 {key: {}}", key);
 			return presignedUrl;
 
@@ -63,7 +62,6 @@ public class CloudflareServiceImpl implements CloudflareService {
 
 	private void uploadToS3(final MultipartFile file, final String key) throws IOException {
 		PutObjectRequest putObjectRequest = createPutObjectRequest(key, file.getContentType(), file.getSize());
-
 		s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
 	}
 
@@ -87,10 +85,10 @@ public class CloudflareServiceImpl implements CloudflareService {
 	}
 
 	@Override
-	public String generateGetPresignedUrl(final String consultationId, final String fileName) {
-		String key = buildObjectKey(consultationId, fileName);
+	public String generateGetPresignedUrl(final String dirName, final String fileName) {
+		String key = buildObjectKey(dirName, fileName);
 		try {
-			String url = generatePresignedUrl(key);
+			String url = generateGetPresignedUrl(key, PRESIGNED_URL_EXPIRATION);
 			log.info("[Cloudflare] GET Presigned URL 생성 완료 {key: {}}", key);
 			return url;
 		} catch (S3Exception e) {
@@ -115,16 +113,23 @@ public class CloudflareServiceImpl implements CloudflareService {
 			.build();
 	}
 
-	private String generatePresignedUrl(final String key) {
-		GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-			.signatureDuration(PRESIGNED_URL_EXPIRATION)
-			.getObjectRequest(builder -> builder
-				.bucket(cloudflareProperties.bucket())
-				.key(key))
-			.build();
+	private String generateGetPresignedUrl(final String key, final Duration duration) {
+		try {
+			GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+				.signatureDuration(duration)
+				.getObjectRequest(builder -> builder
+					.bucket(cloudflareProperties.bucket())
+					.key(key))
+				.build();
 
-		PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
-		return presignedRequest.url().toString();
+			PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
+			String url = presignedRequest.url().toString();
+			log.info("[Cloudflare] GET Rule Presigned URL 생성 완료 {key: {}}", key);
+			return url;
+		} catch (S3Exception e) {
+			log.error("[Cloudflare] GET Rule Presigned URL 생성 실패 key:{}, message: {}", key, e.getMessage(), e);
+			throw new DocumentException(ErrorCode.PRESIGNED_URL_GENERATION_FAILED);
+		}
 	}
 
 	@Override
@@ -151,40 +156,6 @@ public class CloudflareServiceImpl implements CloudflareService {
 		} catch (S3Exception e) {
 			log.error("[Cloudflare] S3 파일 목록 조회 실패: {}", e.getMessage(), e);
 			throw new DocumentException(ErrorCode.NOT_FOUND);
-		}
-	}
-
-	@Override
-	public void uploadFileWithKey(final MultipartFile file, final String key) {
-		try {
-			uploadToS3(file, key);
-			log.info("[Cloudflare] 파일 업로드 완료 (with key) {key: {}}", key);
-		} catch (S3Exception e) {
-			log.error("[Cloudflare] S3 업로드 실패 key:{}, statusCode: {}", key, e.statusCode(), e);
-			throw new DocumentException(ErrorCode.FILE_UPLOAD_FAILED);
-		} catch (IOException e) {
-			log.error("[Cloudflare] 파일 읽기 실패");
-			throw new DocumentException(ErrorCode.FILE_UPLOAD_FAILED);
-		}
-	}
-
-	@Override
-	public String generateRuleGetPresignedUrl(final String key) {
-		try {
-			GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-				.signatureDuration(RULE_PRESIGNED_URL_EXPIRATION)
-				.getObjectRequest(builder -> builder
-					.bucket(cloudflareProperties.bucket())
-					.key(key))
-				.build();
-
-			PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
-			String url = presignedRequest.url().toString();
-			log.info("[Cloudflare] GET Rule Presigned URL 생성 완료 {key: {}}", key);
-			return url;
-		} catch (S3Exception e) {
-			log.error("[Cloudflare] GET Rule Presigned URL 생성 실패 key:{}, message: {}", key, e.getMessage(), e);
-			throw new DocumentException(ErrorCode.PRESIGNED_URL_GENERATION_FAILED);
 		}
 	}
 }

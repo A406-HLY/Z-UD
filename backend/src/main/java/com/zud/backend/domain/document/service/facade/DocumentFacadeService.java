@@ -21,4 +21,6 @@ public interface DocumentFacadeService {
 	PresignedUrlResDto issuePresignedUrls(final PresignedUrlReqDto reqDto);
 
 	UploadCompletionResDto completeUpload(final String consultationId, final UploadCompletionReqDto reqDto);
+
+	void updateRuleDocuments(final List<MultipartFile> files, final String fileName);
 }
