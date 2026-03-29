@@ -27,7 +27,7 @@ export class FolderWatcher {
       ignored: /(^|[\/\\])\../, // ignore dotfiles
       persistent: true,
       awaitWriteFinish: {
-        stabilityThreshold: 2000, // wait 2s to ensure file is completely written
+        stabilityThreshold: 500, // wait 0.5s to ensure file is completely written
         pollInterval: 100,
       },
     }) as unknown as ChokidarWatcher;

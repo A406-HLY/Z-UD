@@ -27,14 +27,27 @@ export class FileStager {
     const storedFileName = `${timestamp}-${fileName}`;
     const storedPath = path.join(this.stagingDir, storedFileName);
 
-    try {
-      // Move the file
-      await fs.promises.rename(originalPath, storedPath);
-      logger.info(`Successfully staged file to: ${storedPath}`);
-      return storedPath;
-    } catch (error) {
-      logger.error(`Failed to stage file ${originalPath} to ${storedPath}`, error);
-      throw error;
+    let attempt = 0;
+    const maxRetries = 5;
+    const retryDelayMs = 500;
+
+    while (attempt < maxRetries) {
+      try {
+        // Move the file
+        await fs.promises.rename(originalPath, storedPath);
+        logger.info(`Successfully staged file to: ${storedPath}`);
+        return storedPath;
+      } catch (error: any) {
+        if (error.code === 'EBUSY' && attempt < maxRetries - 1) {
+          attempt++;
+          logger.warn(`File ${fileName} is busy. Retrying (${attempt}/${maxRetries}) in ${retryDelayMs}ms...`);
+          await new Promise(resolve => setTimeout(resolve, retryDelayMs));
+        } else {
+          logger.error(`Failed to stage file ${originalPath} to ${storedPath}`, error);
+          throw error;
+        }
+      }
     }
+    throw new Error('Unreachable code');
   }
 }

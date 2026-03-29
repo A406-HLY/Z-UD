@@ -242,7 +242,7 @@ export const BankSystemPage = () => {
 
                   <div className="w-full bg-[#f8fafc] px-2 py-0.5 text-[9px] font-bold text-slate-500 border-y border-gray-200 flex items-center">■ 근로자 세부</div>
                   <Field label="가입자구분" width="w-1/3"><Input id="subscriberType" {...v(transferData?.reportInput?.subscriberType)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
-                  <Field label="취득일자" width="w-1/3"><Input id="latestAcquisitionDate" type="date" {...v(transferData?.reportInput?.latestAcquisitionDate)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
+                  <Field label="최득일자" width="w-1/3"><Input id="latestAcquisitionDate" type="date" {...v(transferData?.reportInput?.latestAcquisitionDate)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
                   <Field label="상실일자" width="w-1/3"><Input id="latestLossDate" type="date" {...v(transferData?.reportInput?.latestLossDate)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
                   <Field label="대표자명 유무" width="w-1/3"><Input id="representativeName" {...vBool(transferData?.reportInput?.representativeName)} placeholder="true/false" className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
                   <Field label="직인여부" width="w-1/3"><Input id="hasCompanySeal" {...vBool(transferData?.reportInput?.hasCompanySeal)} placeholder="true/false" className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
