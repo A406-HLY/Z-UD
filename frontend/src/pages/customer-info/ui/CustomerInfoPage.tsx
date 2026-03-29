@@ -38,7 +38,7 @@ export const CustomerInfoPage = () => {
   const auditParams = useMemo(() => ({
     illegalBuilding: false,
     houseType: (ocrValues.buildingType as string) || '아파트',
-    propertyAddress: (ocrValues.propertyAddress as string) || '',
+    propertyAddress: (ocrValues.lotAddress as string) || (ocrValues.propertyAddress as string) || '',
   }), [ocrValues]);
 
   const { data: houseData, isLoading: isHouseLoading, isSuccess: isHouseSuccess } = useHouseAuditQuery(auditParams);
@@ -158,7 +158,7 @@ export const CustomerInfoPage = () => {
       console.error('리포트 조립 중 오류:', error);
       alert('데이터 조립 중 오류가 발생했습니다.');
     }
-  }, [data, edits, customerData, myData, createReport, navigate]);
+  }, [data, edits, customerData, myData, houseData, createReport, navigate]);
 
   /** 상단 네비게이션바(LoanTabs) 우측 액션 버튼 정의 */
   const actionButton = useMemo(() => {
