@@ -97,6 +97,19 @@ class DateValidatorTest {
 		}
 
 		@Test
+		@DisplayName("한글날짜_공백포함시_false_반환")
+		void 한글날짜_공백포함시_false_반환() {
+			// given
+			String date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy년 MM월 d일"));
+
+			// when
+			boolean result = DateValidator.isWithinDays(dateField(date), 30);
+
+			// then
+			assertThat(result).isFalse();
+		}
+
+		@Test
 		@DisplayName("파싱불가_문자열이면_true_반환")
 		void 파싱불가_문자열이면_true_반환() {
 			// when

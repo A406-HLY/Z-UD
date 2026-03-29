@@ -16,7 +16,8 @@ public class DateValidator {
 		DateTimeFormatter.ofPattern("yyyy-MM-dd"),
 		DateTimeFormatter.ofPattern("yyyy.MM.dd"),
 		DateTimeFormatter.ofPattern("yyyyMMdd"),
-		DateTimeFormatter.ofPattern("yyyy/MM/dd")
+		DateTimeFormatter.ofPattern("yyyy/MM/dd"),
+		DateTimeFormatter.ofPattern("yyyy년M월d일")
 	);
 
 	public boolean isWithinDays(final DataField<String> dateField, final long days) {
@@ -48,7 +49,7 @@ public class DateValidator {
 			return null;
 		}
 
-		String value = dateField.value().trim();
+		String value = normalizeDateValue(dateField.value());
 		for (DateTimeFormatter formatter : DATE_FORMATTERS) {
 			try {
 				return LocalDate.parse(value, formatter);
@@ -57,5 +58,9 @@ public class DateValidator {
 			}
 		}
 		return null;
+	}
+
+	private String normalizeDateValue(final String value) {
+		return value.trim().replaceAll("\\s+", "");
 	}
 }
