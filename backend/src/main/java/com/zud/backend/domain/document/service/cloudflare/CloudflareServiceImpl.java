@@ -146,9 +146,7 @@ public class CloudflareServiceImpl implements CloudflareService {
 				.orElseThrow(() -> new DocumentException(ErrorCode.NOT_FOUND));
 
 			String latestKey = latestObject.key();
-			String fileNameWithExt = latestKey.substring(directory.length() + 1);
-			return fileNameWithExt.contains(".") ? fileNameWithExt.substring(0, fileNameWithExt.lastIndexOf('.')) :
-				fileNameWithExt;
+			return latestKey.substring(directory.length() + 1);
 
 		} catch (S3Exception e) {
 			log.error("[Cloudflare] S3 파일 목록 조회 실패: {}", e.getMessage(), e);
