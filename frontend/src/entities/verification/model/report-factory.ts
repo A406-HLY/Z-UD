@@ -22,6 +22,7 @@ const FIELD_SOURCE_RULES: Record<string, { docType: string; path: string }> = {
 
   // 2. 부동산/권리
   'registrationType': { docType: 'TITLE_DEED', path: 'registrationType' },
+  'issueDate': { docType: 'TITLE_DEED', path: 'issueDate' },
   'hasDongho': { docType: 'TITLE_DEED', path: 'hasDongho' },
   'lotAddress': { docType: 'TITLE_DEED', path: 'lotAddress' },
   'buildingType': { docType: 'TITLE_DEED', path: 'buildingType' },
@@ -95,6 +96,7 @@ const REPORT_SKELETON: ReportInput = {
   incomeRecipientName: null, incomeRecipientResidentRegistrationNumber: null,
   workPeriod: null, annualIncomeTotal: null,
   loanPurpose: null, ownedHouseCount: null, targetLoanAmount: null,
+  issueDate: null,
 } as any;
 
 /**
@@ -263,50 +265,79 @@ export const createReportRequestPayload = (
  * 백엔드가 배열형 데이터를 수용하기로 협의됨에 따라, 원본 배열형은 그대로 유지하되
  * 날짜 포맷팅 및 Redux 필수값(phoneNumber 등)만 추가 주입합니다.
  */
+/**
+ * @feature verification/report-factory
+ * 백엔드 실제 API 전송을 위한 최종 Payload를 생성합니다. (400 에러 방지를 위해 원본 타입 유지)
+ */
 export const createLegacyTransferPayload = (
   originalReport: ReportInput,
   customerData: Customer,
   productName: string
-): any => { // 백엔드의 ConsultationTransferReqDto 구조
+): any => {
   const transferReportInput: any = { ...originalReport };
 
-  // 1. 날짜 필드 포맷 정규화 (YYYY-MM-DD 변환)
-  if (transferReportInput.issueDate) {
-    transferReportInput.issueDate = standardizeDateFormat(transferReportInput.issueDate);
-  }
-  if (transferReportInput.latestAcquisitionDate) {
-    transferReportInput.latestAcquisitionDate = standardizeDateFormat(transferReportInput.latestAcquisitionDate);
-  }
-  if (transferReportInput.latestLossDate) {
-    transferReportInput.latestLossDate = standardizeDateFormat(transferReportInput.latestLossDate);
-  }
+  // 날짜 필드 포맷 정규화 (YYYY-MM-DD 변환)
+  const standardizeDate = (val: any) => standardizeDateFormat(val);
+  transferReportInput.issueDate = standardizeDate(transferReportInput.issueDate);
+  transferReportInput.latestAcquisitionDate = standardizeDate(transferReportInput.latestAcquisitionDate);
+  transferReportInput.latestLossDate = standardizeDate(transferReportInput.latestLossDate);
 
-  // 2. Redux Store(Customer)에서 누락되었던 전산 기입 필수값 채우기
+  // Redux 필수값 채우기 및 숫자 정규화 (타입 유지)
   transferReportInput.phoneNumber = customerData.phoneNumber || "";
+  transferReportInput.targetLoanAmount = typeof customerData.targetLoanAmount === 'string' ? Number(customerData.targetLoanAmount.replace(/,/g, '')) : Number(customerData.targetLoanAmount);
+  transferReportInput.ownedHouseCount = Number(customerData.ownedHouseCount) || 0;
+  transferReportInput.productName = productName;
   
-  // 콤마 제거 후 숫자로 파싱 (100,000,000 -> 100000000)
-  const sanitizeNumber = (val: any) => typeof val === 'string' ? Number(val.replace(/,/g, '')) || 0 : Number(val) || 0;
-  
-  transferReportInput.targetLoanAmount = sanitizeNumber(customerData.targetLoanAmount);
-  transferReportInput.ownedHouseCount = sanitizeNumber(customerData.ownedHouseCount);
-
-  // 대출 목적 매핑 (한글 -> 영문 Enum 상수)
+  // 대출 목적 Enum 매핑
   switch (customerData.loanPurpose) {
-    case '생활안정자금목적':
-      transferReportInput.loanPurpose = 'LIVING_STABILITY';
-      break;
-    case '주택구입목적':
-    default:
-      transferReportInput.loanPurpose = 'HOME_PURCHASE';
-      break;
+    case '생활안정자금목적': transferReportInput.loanPurpose = 'LIVING_STABILITY'; break;
+    case '주택구입목적': default: transferReportInput.loanPurpose = 'HOME_PURCHASE'; break;
   }
 
-  // 3. 사용자가 최종 선택한 상품명 주입
-  transferReportInput.productName = productName;
-
-  // 4. 백엔드 DTO { reportInput: { ... } } 형태로 감싸서 반환
   return {
     reportInput: transferReportInput
   };
+};
+
+/**
+ * @feature verification/report-factory
+ * (Mock UI 전용) 뱅크 시스템 시뮬레이션 화면에 표시할 가독성 높은 매핑 데이터를 생성합니다.
+ */
+export const mapReportToBankSystemFormat = (originalPayload: any): any => {
+  const mapped: any = JSON.parse(JSON.stringify(originalPayload)); // Deep Copy
+  const input = mapped.reportInput;
+
+  const mapBool = (val: any, trueLabel = "적정", falseLabel = "부적정") => val ? trueLabel : falseLabel;
+  const mapList = (list: any[], key?: string) => {
+    if (!Array.isArray(list)) return list || "";
+    return list.map(item => (key && typeof item === 'object') ? item[key] : String(item)).join(", ");
+  };
+
+  // 불리언 -> 전산용 한글 매핑
+  input.hasDongho = mapBool(input.hasDongho, "포함", "미포함");
+  input.isViolationBuilding = mapBool(input.isViolationBuilding, "위반", "정상");
+  input.hasLandRightCause = mapBool(input.hasLandRightCause, "있음", "없음");
+  input.hasOwnershipTransferClaim = mapBool(input.hasOwnershipTransferClaim, "있음", "없음");
+  input.hasTrustRegistration = mapBool(input.hasTrustRegistration, "있음", "없음");
+  input.representativeName = mapBool(input.representativeName, "확인", "미확인");
+  input.hasCompanySeal = mapBool(input.hasCompanySeal, "있음", "없음");
+  input.manualReviewRequired = mapBool(input.manualReviewRequired, "대상", "비대상");
+
+  // 배우자(객체) 처리
+  if (input.spouse) {
+    input["spouse.exists"] = input.spouse.exists ? "유" : "무";
+    input["spouse.name"] = input.spouse.name || "";
+    input["spouse.residentRegistrationNumber"] = input.spouse.residentRegistrationNumber || "";
+  }
+
+  // 배열(List) -> 평탄화된 문자열
+  input.moveInHouseholds = mapList(input.moveInHouseholds);
+  input.householdMembers = mapList(input.householdMembers, "name");
+  input.depositAmountList = mapList(input.depositAmountList);
+  input.taxItems = mapList(input.taxItems, "taxItemName");
+  input.seniorRights = mapList(input.seniorRights, "maximumClaimAmount");
+  input.floorStatusList = mapList(input.floorStatusList, "floor");
+
+  return mapped;
 };
 
