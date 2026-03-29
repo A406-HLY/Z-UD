@@ -1,8 +1,6 @@
 import { useAppSelector } from '@/app/store/hooks';
 import { selectCurrentProduct } from '@/entities/review/model/review.selectors';
 import { AlertCircle, CheckCircle } from 'lucide-react';
-import { clsx } from 'clsx';
-
 import { APPROVAL_STATUS } from '@/shared/config/constants';
 
 /**
@@ -29,11 +27,7 @@ const BOARD_TEXT = {
 export const StatusSummaryBoard = () => {
   const currentProduct = useAppSelector(selectCurrentProduct);
 
-  if (!currentProduct) return null;
-
-  const rejectedItems = currentProduct.items.filter(i => i.result === APPROVAL_STATUS.REJECT);
-  const hasRejects = rejectedItems.length > 0;
-  
+  if (!currentProduct) return null;  
   return (
     <div className="bg-white border border-[#556677] shadow-sm rounded-none animate-fade-in flex flex-col">
       {/* 1. 상단 종합 결과 */}
@@ -65,94 +59,6 @@ export const StatusSummaryBoard = () => {
           {!currentProduct.isApproved && <div className="text-[9px] text-[#c5221f] mt-0.5 font-bold">{BOARD_TEXT.LIMIT_ERROR}</div>}
         </div>
       </div>
-      
-      {/* 2. 종합 심사 코멘트 (승인/리뷰/반려 사유) 상시 노출 */}
-      {(hasRejects || currentProduct.summary.keyApprovalReasons.length > 0 || currentProduct.summary.keyReviewReasons.length > 0) && (
-        <div className={clsx(
-          "transition-all bg-white flex flex-col items-stretch",
-          hasRejects ? "border-b-2 border-[#c5221f]" : ""
-        )}>
-          {/* 하이라이트 메시지 바 */}
-          <div className={clsx(
-            "w-full px-4 py-2 flex items-center gap-2 text-[11px] border-b border-[#e2e8f0]",
-            hasRejects ? "bg-[#fce8e6] text-[#c5221f]" : "bg-slate-50 text-slate-700"
-          )}>
-            {hasRejects ? <AlertCircle size={14} className="shrink-0" /> : <CheckCircle size={14} className="shrink-0 text-[#137333]" />}
-            <div className="font-bold flex-1 flex flex-wrap items-center gap-1.5">
-              <span className={clsx(
-                "px-1 py-0.5 rounded-sm text-[9px] uppercase font-black",
-                hasRejects ? "bg-[#fad2cf] text-[#a50e0e]" : "bg-[#ceead6] text-[#0d652d]"
-              )}>{BOARD_TEXT.SUMMARY_LABEL}</span>
-              <span>{currentProduct.finalReason || (hasRejects ? rejectedItems[0]?.reason : BOARD_TEXT.DEFAULT_SUCCESS)}</span>
-            </div>
-          </div>
-          
-          {/* 상세 내역 패널 (가로 분할 혹은 밀도 높은 나열) */}
-          <div className="p-2 flex flex-wrap lg:flex-nowrap gap-2 bg-white">
-            
-            {/* 왼쪽 패널: 승인 및 리뷰 사유 */}
-            <div className="flex-1 flex flex-col gap-2 min-w-[200px]">
-              {/* 주요 승인 요인 */}
-              {currentProduct.summary.keyApprovalReasons.length > 0 && (
-                <div className="border border-[#ceead6] bg-[#f8fdf9] p-2">
-                  <div className="text-[9px] font-black text-[#137333] uppercase mb-1.5 flex items-center gap-1">
-                    <CheckCircle size={10} /> {BOARD_TEXT.APPROVAL_TITLE}
-                  </div>
-                  <ul className="space-y-0.5 ml-1">
-                    {currentProduct.summary.keyApprovalReasons.map((reason, idx) => (
-                      <li key={idx} className="text-[10px] text-slate-700 flex items-start gap-1 leading-tight">
-                        <span className="text-[#137333] font-bold">✓</span> {reason}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* 주요 검토 사항 */}
-              {currentProduct.summary.keyReviewReasons.length > 0 && (
-                <div className="border border-[#fef0b3] bg-[#fffcf0] p-2">
-                  <div className="text-[9px] font-black text-[#b06000] uppercase mb-1.5 flex items-center gap-1">
-                    <AlertCircle size={10} /> {BOARD_TEXT.REVIEW_TITLE}
-                  </div>
-                  <ul className="space-y-0.5 ml-1">
-                    {currentProduct.summary.keyReviewReasons.map((reason, idx) => (
-                      <li key={idx} className="text-[10px] text-slate-700 flex items-start gap-1 leading-tight">
-                        <span className="text-[#b06000] font-bold">!</span> {reason}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-
-            {/* 오른쪽 패널: 거절 사유 (있을 경우만) */}
-            {hasRejects && (
-              <div className="flex-[1.5] border border-[#fad2cf] bg-[#fdf5f4] p-2 min-w-[250px]">
-                <div className="text-[9px] font-black text-[#c5221f] uppercase mb-1.5 flex items-center gap-1">
-                  <AlertCircle size={10} /> {BOARD_TEXT.REJECT_TITLE}
-                </div>
-                <div className="space-y-1.5">
-                  {rejectedItems.map((item, idx) => (
-                    <div key={idx} className="flex flex-col text-[10px] bg-white p-2 border border-[#fad2cf] relative pl-2 shadow-sm">
-                      <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-[#c5221f]"></div>
-                      <div className="flex justify-between items-start mb-0.5">
-                        <span className="font-black text-slate-800">{item.name_ko}</span>
-                        <span className="text-[#c5221f] font-bold text-[9px] bg-[#fce8e6] px-1 rounded-sm">{BOARD_TEXT.CRITERIA_UNMET}</span>
-                      </div>
-                      <div className="text-[#a50e0e] font-medium mb-1 truncate">{item.reason || BOARD_TEXT.CRITERIA_UNMET}</div>
-                      <div className="text-slate-500 bg-slate-50 p-1 border border-slate-200 font-mono text-[9px] flex gap-2">
-                        <span><strong className="text-slate-600">{BOARD_TEXT.INPUT_VALUE}</strong> {String(item.value)}</span>
-                        <span><strong className="text-slate-600">{BOARD_TEXT.REFERENCE}</strong> {item.matched_articles.join(', ') || BOARD_TEXT.NA}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-          </div>
-        </div>
-      )}
     </div>
   );
 };

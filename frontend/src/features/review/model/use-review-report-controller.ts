@@ -11,8 +11,10 @@ import {
   selectReviewData, 
   selectReviewLoading, 
   selectReviewError, 
-  selectGuidelineUrl 
+  selectGuidelineUrl,
+  selectSelectedArticle 
 } from '@/entities/review/model/review.selectors';
+import { ARTICLE_PAGE_MAP } from '@/shared/config/pdfConfig';
 
 /**
  * @feature review
@@ -27,6 +29,7 @@ export const useReviewReportController = (consultationId: string) => {
   const isLoading = useAppSelector(selectReviewLoading);
   const reviewError = useAppSelector(selectReviewError);
   const guidelineUrl = useAppSelector(selectGuidelineUrl);
+  const selectedArticles = useAppSelector(selectSelectedArticle);
 
   // PDF 뷰어 로컬 상태
   const [pdfPage, setPdfPage] = useState<number>(1);
@@ -66,6 +69,21 @@ export const useReviewReportController = (consultationId: string) => {
       loadReportData();
     }
   }, [consultationId, reviewData, guidelineUrl, dispatch]);
+
+  /**
+   * [Interactive] 선택된 내규 조항에 따른 PDF 페이지 동기화
+   * (Why) 리포트에서 특정 조항 버튼을 클릭했을 때, 우측 PDF 뷰어를 해당 페이지로 이동시킵니다.
+   */
+  useEffect(() => {
+    if (selectedArticles && selectedArticles.length > 0) {
+      const firstArticle = selectedArticles[0];
+      const targetPage = ARTICLE_PAGE_MAP[firstArticle];
+      
+      if (targetPage) {
+        setPdfPage(targetPage);
+      }
+    }
+  }, [selectedArticles]);
 
   return {
     isLoading,
