@@ -15,6 +15,14 @@ public record LoanReportReqDto(
 	ReportInput reportInput
 ) {
 	public record ReportInput(
+		String phoneNumber,
+		Long targetLoanAmount,
+		String loanPurpose,
+		@JsonFormat(pattern = "yyyy-MM-dd")
+		LocalDate issueDate,
+		String issueNumber,
+		@JsonFormat(pattern = "yyyy-MM-dd")
+		LocalDate moveInDate,
 		String headOfHouseholdName,
 		List<HouseholdMember> householdMembers,
 		EmploymentType employmentType,

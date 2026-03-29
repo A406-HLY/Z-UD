@@ -7,6 +7,6 @@ import lombok.Builder;
 @Builder
 public record DataField<T>(T value, Double confidence, Evidence evidence) {
 	@Builder
-	public record Evidence(Integer pageNum, List<Integer> bbox, String rawText, Double confidence) {
+	public record Evidence(Integer pageNum, List<Double> bbox, String rawText, Double confidence) {
 	}
 }
