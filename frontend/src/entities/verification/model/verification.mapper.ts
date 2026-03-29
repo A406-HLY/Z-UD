@@ -192,19 +192,28 @@ export const mapServerResponseToVerificationResult = (
     return acc;
   }, initialData);
 
-  // 4. 카테고리 구성
+  // 4. 카테고리 구성 (Requested Order: IDENTITY_FAMILY -> INCOME -> PROPERTY -> TAX)
+  const ORDERED_GROUPS = [
+    'IDENTITY_FAMILY',
+    'INCOME_EMPLOYEE',
+    'INCOME_BUSINESS',
+    'PROPERTY_HOUSING',
+    'TAX'
+  ];
+
   const categories: DocCategory[] = [];
-  const groups = Array.from(new Set(processedDocs.map(d => d.documentClassification.documentGroup)));
-  groups.forEach(group => {
+  ORDERED_GROUPS.forEach(group => {
     const itemIds = processedDocs
       .filter(d => d.documentClassification.documentGroup === group)
       .map(d => d.id);
 
-    categories.push({
-      id: `cat-${group}`,
-      name: DOCUMENT_GROUP_LABELS[group] || '주택 및 권리관계',
-      itemIds
-    });
+    if (itemIds.length > 0) {
+      categories.push({
+        id: `cat-${group}`,
+        name: DOCUMENT_GROUP_LABELS[group] || '주택 및 권리관계',
+        itemIds
+      });
+    }
   });
 
   return {
