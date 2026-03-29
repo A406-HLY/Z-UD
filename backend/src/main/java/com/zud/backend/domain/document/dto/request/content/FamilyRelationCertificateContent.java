@@ -20,8 +20,15 @@ public record FamilyRelationCertificateContent(
 	@Schema(description = "본인 주민등록번호")
 	DataField<String> residentRegistrationNumber,
 	@Schema(description = "배우자 정보")
-	DataField<String> spouse
+	Spouse spouse
 ) implements DocumentContent {
+
+	public record Spouse(
+		DataField<Boolean> exists,
+		DataField<String> name,
+		DataField<String> residentRegistrationNumber
+	) {
+	}
 
 	@Override
 	public DocumentTag getDocumentTag() {
