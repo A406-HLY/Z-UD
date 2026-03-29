@@ -9,12 +9,12 @@ import { ProductTabs, StatusSummaryBoard, LimitVisualizationCard } from '@/widge
 import { ReviewDetailsList } from '@/widgets/review-details';
 import { DocumentImageViewer } from '@/widgets/document-image-viewer/ui/DocumentImageViewer';
 import { useReviewReportController } from '@/features/review/model/use-review-report-controller';
-import { createReportRequestPayload } from '@/entities/verification/model/report-factory';
+import { createReportRequestPayload, createLegacyTransferPayload } from '@/entities/verification/model/report-factory';
 import { MOCK_PDF_FILES } from '@/shared/config/pdfConfig';
 
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { LoanTabs } from '@/widgets/loan-tabs';
-import { useCreateReport } from '@/features/verification/api/use-create-report';
+import { transferConsultationToLegacy } from '@/entities/customer/api/customer.api';
 
 /**
  * @page review-report
@@ -37,8 +37,8 @@ export const ReviewReportPage = () => {
     setPdfScale 
   } = useReviewReportController(consultationId);
 
-  // 1. API Mutation 훅 초기화
-  const { mutate: createReport, isPending: isSubmitting } = useCreateReport();
+  // 1. API 상태 추가
+  const [isTransferring, setIsTransferring] = useState(false);
 
   // 1. Split View 조절 로직
   const [leftWidthPercent, setLeftWidthPercent] = useState<number>(55);
@@ -65,38 +65,62 @@ export const ReviewReportPage = () => {
     document.addEventListener('mouseup', handleMouseUp);
   }, []);
 
-  // 3. 최종 데이터 조립 핸들러 (Simulation)
-  const handleFinalSubmit = useCallback(() => {
-    // (Why) 여러 문서에 흩어진 수정 내역을 하나의 평탄화된 객체로 병합합니다.
-    const allEditsValues: Record<string, any> = {};
-    Object.values(edits).forEach(docEdit => {
-      Object.assign(allEditsValues, docEdit.values);
-    });
+  // 3. 최종 데이터 조립 및 이관 핸들러 (Transfer)
+  const handleFinalSubmit = useCallback(async () => {
+    if (!consultationId || consultationId.includes("TEMP")) {
+      alert("유효한 상담 ID가 존재하지 않습니다.");
+      return;
+    }
 
     try {
-      // 팩토리 함수를 호출하여 최종 API 페이로드 생성
-      const payload = createReportRequestPayload(
+      setIsTransferring(true);
+      // (Why) 여러 문서에 흩어진 수정 내역을 하나의 평탄화된 객체로 병합합니다.
+      const allEditsValues: Record<string, any> = {};
+      Object.values(edits).forEach(docEdit => {
+        Object.assign(allEditsValues, docEdit.values);
+      });
+
+      // 1. 기존 페이로드 뼈대 조립
+      const basePayload = createReportRequestPayload(
         ocrData as any,
         allEditsValues,
-        customerData,
+        customerData as any,
         creditData,
         loanData
       );
 
-      console.log('🚀 [Simulation] 최종 가심사 리포트 페이로드:', payload);
+      // 2. 레거시(은행망) 전산망 이관 페이로드 생성
+      const transferPayload = createLegacyTransferPayload(
+        basePayload.reportInput, 
+        customerData as any, 
+        "싸금자리"
+      );
+
+      console.log('🚀 [Transfer] 최종 이관 페이로드:', transferPayload);
       
-      // (Why) 실제 API 호출을 수행합니다. useMutation 기반이므로 비동기 전처리는 훅 내부에서 담당합니다.
-      createReport(payload);
-    } catch (err) {
-      console.error('❌ 데이터 조립 중 오류 발생:', err);
+      // 3. 실제 전산 이관 API 호출
+      await transferConsultationToLegacy(consultationId, transferPayload);
+      
+      // 4. (프론트 단독 시뮬레이션용) 부모 창(BankSystem)으로 데이터 발송
+      const channel = new BroadcastChannel('bank-system-transfer');
+      channel.postMessage(transferPayload);
+      channel.close();
+      
+      alert('✅ 통합 전산망으로 최종 심사 결과가 성공적으로 전송(이관)되었습니다!');
+      
+    } catch (err: any) {
+      console.error('❌ 데이터 조립 및 이관 중 오류 발생:', err);
+      alert(`전송 실패: ${err?.response?.data?.message || err.message}`);
+    } finally {
+      setIsTransferring(false);
     }
-  }, [ocrData, customerData, creditData, loanData, edits, createReport]);
+  }, [ocrData, customerData, creditData, loanData, edits, consultationId]);
 
   // 4. 전산 액션 버튼 정의
   const approvalButton = {
-    label: isSubmitting ? '전송 중...' : '최종 심사 승언 및 전송',
+    label: isTransferring ? '전송 중...' : '최종 심사 승인 및 전송',
     onClick: handleFinalSubmit,
-    disabled: isLoading || isSubmitting,
+    disabled: isLoading || isTransferring,
     className: 'bg-[#003366] text-white hover:bg-[#002244]'
   };
 

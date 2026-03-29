@@ -13,6 +13,9 @@ import { DeadEndPopup } from '@/features/verification/ui/DeadEndPopup';
 import { OcrWaitModal } from '@/features/verification/ui/OcrWaitModal';
 import { useVerificationStatus } from '@/features/verification/model/use-verification-status';
 import { useVerificationActions } from '@/features/verification/model/use-verification-actions';
+import { useAppSelector } from '@/app/store/hooks';
+import { createLegacyTransferPayload } from '@/entities/verification/model/report-factory';
+import { transferConsultationToLegacy } from '@/entities/customer/api/customer.api';
 
 /**
  * @page verification-result
@@ -35,6 +38,10 @@ export const VerificationResultPage = () => {
   const { isBlocked, isLoading: isStatusLoading } = useVerificationStatus();
   const { handleNextStep } = useVerificationActions();
   const isLoading = isControllerLoading || isStatusLoading;
+
+  const customer = useAppSelector((state) => state.customer.data);
+  const houseAuditData = useAppSelector((state) => state.audit.data.houseAuditData);
+  const [isTransferring, setIsTransferring] = useState(false);
 
   // (Why: 전역 포커스 감시 로직을 훅으로 격리하여 페이지(UI) 코드를 조립 역할에 집중시킵니다.)
   useGlobalFocusRecovery({
@@ -70,6 +77,35 @@ export const VerificationResultPage = () => {
     className: isBlocked ? 'bg-gray-100 text-gray-400 border-gray-200' : 'bg-[#004b93] text-white'
   };
 
+  const handleTransfer = async () => {
+    if (!consultationId) {
+      alert("상담 ID가 존재하지 않습니다. 새로고침 후 다시 시도해주세요.");
+      return;
+    }
+    try {
+      setIsTransferring(true);
+      const mockReport = houseAuditData?.reportInput || {};
+      const payload = createLegacyTransferPayload(mockReport, customer, "싸금자리");
+      
+      await transferConsultationToLegacy(consultationId, payload);
+      alert("✅ 통합 전산망으로 가심사 데이터 이관이 성공적으로 완료되었습니다!");
+    } catch (e: any) {
+      alert(`❌ 전산 이관 오류: ${e.response?.data?.message || e.message}`);
+    } finally {
+      setIsTransferring(false);
+    }
+  };
+
+  const transferButton = (
+    <button
+      onClick={handleTransfer}
+      disabled={isTransferring}
+      className={`h-6 text-[10px] px-4 font-black transition-all rounded-none border shadow-sm uppercase tracking-tighter flex items-center gap-1 ${isTransferring ? 'bg-gray-300 text-gray-500 border-gray-400' : 'bg-teal-600 hover:bg-teal-700 text-white border-teal-700 cursor-pointer'}`}
+    >
+      {isTransferring ? '이관 중...' : '데이터 통합 전산망 이관'}
+    </button>
+  );
+
   if (isLoading || !localResult) {
     return (
       <div className="h-screen flex flex-col bg-gray-50 font-sans overflow-hidden">
@@ -78,7 +114,7 @@ export const VerificationResultPage = () => {
           <section className="shrink-0"><LoanStepper /></section>
           <section className="shrink-0"><CustomerInfoForm /></section>
           <section className="shrink-0">
-            <LoanTabs actionButton={nextStepButton} />
+            <LoanTabs actionButton={nextStepButton} extraActionButton={transferButton} />
           </section>
           <div className="flex-1 flex flex-col items-center justify-center font-black text-gray-300 animate-pulse uppercase tracking-[0.5em] py-20 gap-4">
             <div className="text-xl">Analyzing Document Consistency...</div>
@@ -107,7 +143,7 @@ export const VerificationResultPage = () => {
         </section>
         
         <section className="shrink-0">
-          <LoanTabs actionButton={nextStepButton} />
+          <LoanTabs actionButton={nextStepButton} extraActionButton={transferButton} />
         </section>
         
         <section className="flex-1 min-h-0 flex overflow-hidden border border-gray-300 bg-white rounded-sm">

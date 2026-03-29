@@ -52,3 +52,19 @@ export const createConsultation = async (customer: Customer): Promise<ApiRespons
   const response = await apiClient.post<ApiResponse<{ id: string }>>('/consultations', requestBody);
   return response.data;
 };
+
+/**
+ * 가심사 결과를 전산 목업 서버로 이관합니다.
+ * (Why) 프론트엔드가 Redux와 JSON을 조합한 Payload를 전송하여 레거시 시스템 연동.
+ */
+export const transferConsultationToLegacy = async (
+  consultationId: string, 
+  payload: any // createLegacyTransferPayload의 반환값
+): Promise<ApiResponse<void>> => {
+  const response = await apiClient.post<ApiResponse<void>>(
+    `/consultations/${consultationId}/transfer`, 
+    payload
+  );
+  return response.data;
+};
+

@@ -91,6 +91,7 @@ export const OcrFieldEditor = ({ fields, status, isRisk, selectedId, onFieldChan
                 <Input 
                   value={String(field.value ?? '')}
                   readOnly={!canEdit}
+                  tabIndex={!canEdit ? -1 : 0}
                   data-document-id={selectedId}
                   data-nav-error={isErrorField}
                   onFocus={() => onFocus?.(field.key)}
