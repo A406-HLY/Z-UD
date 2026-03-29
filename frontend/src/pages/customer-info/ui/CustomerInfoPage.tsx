@@ -224,16 +224,6 @@ export const CustomerInfoPage = () => {
             item={itemMap['loan-history'] || { id: 'loan-history', title: '기존 대출 내역', status: 'LOADING', summary: '' }} 
           />
         </div>
-
-      {/* --- [DEV] 하단 테스트용 토글 버튼 --- */}
-       <div className="mt-8 flex justify-center gap-3">
-          <button 
-            onClick={() => dispatch(resetAuditState())}
-            className="flex items-center gap-2 px-3 py-1.5 bg-red-800 text-white rounded text-[11px] hover:bg-red-700 transition-colors opacity-40 hover:opacity-100"
-          >
-            <span>[DEV] 스토어 초기화 (데이터 비우기)</span>
-          </button>
-       </div>
       </main>
     </div>
   );

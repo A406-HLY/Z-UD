@@ -62,7 +62,7 @@ export interface ExtractedField {
   isModified: boolean; // 사용자 수정 여부
   evidence?: {
     pageNum: number;
-    bbox: number[] | null; // [x, y, w, h]
+    bbox: number[] | null; // [x1, y1, x2, y2] (상대 좌표: 0.0 ~ 1.0)
     rawText: string;
     confidence?: number;
   };

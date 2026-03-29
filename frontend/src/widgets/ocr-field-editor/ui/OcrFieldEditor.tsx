@@ -25,13 +25,22 @@ export const OcrFieldEditor = ({ fields, status, isRisk, selectedId, onFieldChan
   const isReviewNeeded = status === 'REVIEW_NEEDED';
 
   // (Point: 렌더링 최적화 및 제어용 인덱스 추출)
-  const { firstErrorIndex, lastErrorIndex } = useMemo(() => {
-    const indices = fields
+  const { visibleFields, firstErrorIndex, lastErrorIndex } = useMemo(() => {
+    // 1. 노출 필드 필터링 (값이 있거나 정합성 오류가 있는 경우만 노출)
+    const vFields = fields.filter(f => {
+      const isEmpty = f.value === null || f.value === undefined || String(f.value).trim() === '';
+      return !isEmpty || f.isViolationTarget;
+    });
+
+    // 2. 노출된 필드들 중에서 에러(정합성 불일치) 필드들의 인덱스 계산
+    const errorIndices = vFields
       .map((f, i) => (!f.isMatch ? i : -1))
       .filter(i => i !== -1);
+
     return {
-      firstErrorIndex: indices[0] ?? -1,
-      lastErrorIndex: indices[indices.length - 1] ?? -1
+      visibleFields: vFields,
+      firstErrorIndex: errorIndices[0] ?? -1,
+      lastErrorIndex: errorIndices[errorIndices.length - 1] ?? -1
     };
   }, [fields]);
 

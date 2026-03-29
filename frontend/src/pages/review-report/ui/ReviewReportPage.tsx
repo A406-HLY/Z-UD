@@ -7,11 +7,14 @@ import { LoanStepper } from '@/widgets/loan-stepper/ui/LoanStepper';
 
 import { ProductTabs, StatusSummaryBoard, LimitVisualizationCard } from '@/widgets/review-summary';
 import { ReviewDetailsList } from '@/widgets/review-details';
-import { DocumentImageViewer } from '@/widgets/document-image-viewer/ui/DocumentImageViewer';
 import { useReviewReportController } from '@/features/review/model/use-review-report-controller';
-import { createReportRequestPayload, createLegacyTransferPayload } from '@/entities/verification/model/report-factory';
-import { MOCK_PDF_FILES } from '@/shared/config/pdfConfig';
-
+import { 
+  createReportRequestPayload, 
+  createLegacyTransferPayload,
+  mapReportToBankSystemFormat 
+} from '@/entities/verification/model/report-factory';
+import { ReportProgressModal } from '@/widgets/review-summary/ui/ReportProgressModal';
+import { ReportPdfViewer } from '@/widgets/document-image-viewer/ui/ReportPdfViewer';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { LoanTabs } from '@/widgets/loan-tabs';
 import { transferConsultationToLegacy } from '@/entities/customer/api/customer.api';
@@ -25,6 +28,8 @@ export const ReviewReportPage = () => {
   const customerData = useSelector((state: RootState) => state.customer.data);
   const { ocrData, creditData, loanData } = useSelector((state: RootState) => state.audit.data);
   const edits = useSelector((state: RootState) => state.verification.edits);
+  const reviewData = useSelector((state: RootState) => state.review.data);
+  const isAllAuditDone = useSelector((state: RootState) => state.audit.isAllAuditDone);
 
   const consultationId = customerData.consultationId || "CONS-2026-TEMP-001";
   const { 
@@ -99,12 +104,13 @@ export const ReviewReportPage = () => {
 
       console.log('🚀 [Transfer] 최종 이관 페이로드:', transferPayload);
       
-      // 3. 실제 전산 이관 API 호출
+      // 3. 실제 전산 이관 API 호출 (원본 타입 유지 페이로드)
       await transferConsultationToLegacy(consultationId, transferPayload);
       
-      // 4. (프론트 단독 시뮬레이션용) 부모 창(BankSystem)으로 데이터 발송
+      // 4. (프론트 단독 시뮬레이션용) 부모 창(BankSystem)으로 가독성 있게 가공된 데이터 발송
+      const uiPayload = mapReportToBankSystemFormat(transferPayload);
       const channel = new BroadcastChannel('bank-system-transfer');
-      channel.postMessage(transferPayload);
+      channel.postMessage(uiPayload);
       channel.close();
       
       alert('✅ 통합 전산망으로 최종 심사 결과가 성공적으로 전송(이관)되었습니다!');
@@ -156,12 +162,16 @@ export const ReviewReportPage = () => {
 
             {/* 메인 리포트 스크롤 영역 */}
             <main className="flex-1 overflow-y-auto bg-[#e2e8f0] p-2 flex flex-col gap-2">
-              {isLoading ? (
-               <div className="flex-1 flex flex-col items-center justify-center bg-white space-y-3 border border-[#cbd5e1]">
-                 <Loader2 className="animate-spin text-[#004b93]" size={32} />
-                 <div className="text-[11px] font-bold text-[#556677] uppercase tracking-widest animate-pulse">심사 결과 데이터를 분석 중입니다...</div>
-               </div>
-             ) : isError ? (
+              {/* (Why) REST API로 데이터를 먼저 받았더라도, SSE 완료(isAllAuditDone)가 오기 전까지는 
+                  사용자에게 2.5초 시뮬레이션 흐름을 일관되게 보여주기 위해 모달을 유지합니다. */}
+              {isLoading || (!reviewData || !isAllAuditDone) ? (
+                <div className="flex-1 flex flex-col items-center justify-center bg-white space-y-3 border border-[#cbd5e1]">
+                  <Loader2 className="animate-spin text-[#004b93]" size={32} />
+                  <div className="text-[11px] font-bold text-[#556677] uppercase tracking-widest animate-pulse">심사 결과 데이터를 분석 중입니다...</div>
+                  {/* (Why) 백그라운드에서 SSE를 대기하는 동안 3단계 시뮬레이션 진행 상황 모달을 띄웁니다. */}
+                  <ReportProgressModal isOpen={true} />
+                </div>
+              ) : isError ? (
                <div className="flex-1 flex flex-col items-center justify-center bg-[#fdf5f4] space-y-3 border border-[#fad2cf] p-6 text-center">
                  <AlertTriangle className="text-[#c5221f]" size={32} />
                  <div className="text-[12px] font-black text-[#a50e0e] uppercase">Data Fetching Error</div>
@@ -197,10 +207,9 @@ export const ReviewReportPage = () => {
 
           {/* Right Section (PDF 뷰어) */}
           <div className="h-full bg-slate-800 flex flex-col flex-1 relative min-w-[300px]">
-            {/* FSD Widget: DocumentImageViewer */}
-            <DocumentImageViewer 
-              fileUrl={guidelineUrl ?? undefined} // (Why) 목업 PDF 대신 서버(Cloudflare)에서 받은 실제 URL을 사용합니다.
-              files={MOCK_PDF_FILES}
+            {/* FSD Widget: ReportPdfViewer (단일 문서 다중 페이지 특화) */}
+            <ReportPdfViewer 
+              fileUrl={guidelineUrl ?? undefined}
               pageNumber={pdfPage}
               scale={pdfScale}
               onPageChange={setPdfPage}

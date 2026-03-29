@@ -44,16 +44,6 @@ export const Header = () => {
         <span className="text-sm font-medium text-gray-600">
           {SHARED_LABELS.WORK_PREFIX} {CURRENT_WORK_NAME}
         </span>
-        
-        {/* [WHY] 개발 환경에서 SSE 신호 없이 OCR 결과를 테스트하기 위한 버튼 */}
-        {import.meta.env.MODE === 'development' && (
-          <button 
-            onClick={handleMockTrigger}
-            className="ml-4 px-3 py-1 bg-red-50 text-red-600 border border-red-200 rounded text-xs font-bold hover:bg-red-100 active:scale-95 transition-all flex items-center gap-1"
-          >
-            <span>🧪</span> MOCK SIGNAL
-          </button>
-        )}
       </div>
 
       <div className="flex items-center gap-6 text-sm">
