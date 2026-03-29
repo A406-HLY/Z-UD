@@ -100,6 +100,12 @@ export const ReviewReportPage = () => {
       
       // 3. 실제 전산 이관 API 호출
       await transferConsultationToLegacy(consultationId, transferPayload);
+      
+      // 4. (프론트 단독 시뮬레이션용) 부모 창(BankSystem)으로 데이터 발송
+      const channel = new BroadcastChannel('bank-system-transfer');
+      channel.postMessage(transferPayload);
+      channel.close();
+      
       alert('✅ 통합 전산망으로 최종 심사 결과가 성공적으로 전송(이관)되었습니다!');
       
     } catch (err: any) {
