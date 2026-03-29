@@ -3,14 +3,13 @@ import { ExtractedField } from '@/entities/verification/model/types';
 import { usePdfController } from '@/features/verification/model/use-pdf-controller';
 import { PdfRenderer } from './PdfRenderer';
 import { BboxOverlay } from './BboxOverlay';
+import { useEffect, useState } from 'react';
 
 interface Props {
   fields?: ExtractedField[];
   focusedFieldKey?: string | null;
   fileUrl?: string; // 백엔드에서 추후 전달받을 실제 PDF 주소
   files?: Array<{ fileId: string; fileUrl?: string; pageNum: number }>;
-  originalWidth?: number; // 원본 해상도 폭
-  originalHeight?: number; // 원본 해상도 높이
   // (Why: 외부(크로스 윈도우 동기화 등)에서 제어하기 위한 상태 및 핸들러)
   scale?: number;
   pageNumber?: number;
@@ -29,8 +28,6 @@ export const DocumentImageViewer = ({
   focusedFieldKey = null, 
   fileUrl, 
   files = [], 
-  originalWidth = 1240, 
-  originalHeight = 1754,
   scale: externalScale,
   pageNumber: externalPageNumber,
   onScaleChange,
@@ -46,16 +43,36 @@ export const DocumentImageViewer = ({
     setIsLoading,
     containerRef,
     setRenderedSize,
-    scaledBboxes,
+    bboxes,
     currentFileUrl
   } = usePdfController(fields, focusedFieldKey, files, fileUrl, {
     scale: externalScale,
     pageNumber: externalPageNumber,
     onScaleChange,
-    onPageChange,
-    originalWidth,
-    originalHeight
+    onPageChange
   });
+  
+  // (Point: 하드코딩된 800px 대신 실제 컨테이너의 너비를 실측하여 뷰어의 기준 너비로 사용합니다.)
+  const [baseWidth, setBaseWidth] = useState(800); 
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    
+    const updateWidth = () => {
+      if (containerRef.current) {
+        // 컨테이너 너비에서 패딩(p-12 = 24px*2 = 48px)과 여유 공간을 제외한 실측 너비 추출
+        const rect = containerRef.current.getBoundingClientRect();
+        const measuredWidth = Math.max(300, rect.width - 100); // 최소 너비 보장 및 여유 공간 확보
+        setBaseWidth(measuredWidth);
+      }
+    };
+
+    updateWidth();
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(containerRef.current);
+    
+    return () => observer.disconnect();
+  }, [containerRef]);
 
   const handleOpenFull = () => {
     // (Why: 전용 뷰어 라우트를 새 창으로 엽니다. 이 창은 BroadcastChannel을 통해 실시간 동기화됩니다.)
@@ -127,7 +144,7 @@ export const DocumentImageViewer = ({
       
       {/* 2. 스크롤 가능한 캔버스 영역 (Viewport 고정 레이어 분리) */}
       <div className="flex-1 relative">
-         {/* (Point: 스크롤 영역과 별개로 뷰포트 정중앙에 플로팅되는 로딩 인디케이터) */}
+         {/* (Point: 초기 로딩 시에만 화려한 로딩창을 띄웁니다.) */}
          {isLoading && (
             <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/5 pointer-events-none">
               <div className="flex flex-col items-center gap-4 bg-[#f4f4f4] px-24 py-10 border-2 border-gray-400 shadow-xl">
@@ -143,19 +160,21 @@ export const DocumentImageViewer = ({
            ref={containerRef}
            className="absolute inset-0 overflow-auto p-12 flex justify-center shadow-[inset_0_0_50px_rgba(0,0,0,0.5)]"
          >
-           <div className="relative shrink-0 transition-transform origin-top">
+           <div 
+             className="relative shrink-0 transition-transform origin-top"
+             style={{ transform: `scale(${scale})` }}
+           >
               <PdfRenderer 
                 key={currentFileUrl}
                 fileUrl={currentFileUrl} 
                 pageNumber={1} 
-                scale={scale}
-                originalWidth={originalWidth}
-                originalHeight={originalHeight}
+                scale={1} // 더루 캔버스 방식에서는 내부 렌더 스케일을 고정합니다.
+                baseWidth={baseWidth}
                 onLoadSuccess={setRenderedSize} 
                 setIsLoading={setIsLoading}
               />
               <BboxOverlay 
-                bboxes={scaledBboxes} 
+                bboxes={bboxes} 
                 focusedFieldKey={focusedFieldKey} 
               />
            </div>
@@ -168,10 +187,10 @@ export const DocumentImageViewer = ({
          <span className="opacity-30">|</span>
          <span className="flex items-center gap-1.5">
            <span className={`w-1.5 h-1.5 rounded-full ${isLoading ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'}`} />
-           Status: {isLoading ? 'Rendering' : 'Ready'}
+           Status: {isLoading ? 'Rendering...' : 'Ready'}
          </span>
          <span className="opacity-30">|</span>
-         <span>Bboxes: {scaledBboxes.length} Active</span>
+         <span>Bboxes: {bboxes.length} Active</span>
       </div>
     </div>
   );

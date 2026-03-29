@@ -143,8 +143,6 @@ export const VerificationResultPage = () => {
             focusedFieldKey={focusedFieldKey}
             fileUrl={selectedDoc?.fileUrl}
             files={selectedDoc?.files}
-            originalWidth={selectedDoc?.resolution?.width}
-            originalHeight={selectedDoc?.resolution?.height}
             scale={scale}
             pageNumber={pageNumber}
             onScaleChange={setScale}

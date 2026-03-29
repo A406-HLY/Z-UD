@@ -9,8 +9,7 @@ interface Props {
   fileUrl?: string; // 백엔드 API로부터 전달받은 PDF 소스 URL
   pageNumber: number;
   scale: number;
-  originalWidth?: number;
-  originalHeight?: number;
+  baseWidth: number; // 부모 컨테이너로부터 전달받은 가로 기준값
   onLoadSuccess: (info: { width: number; height: number }) => void;
   setIsLoading: (loading: boolean) => void;
 }
@@ -24,12 +23,16 @@ interface Props {
  * 2. 렌더링 속도: 1.5초 이내 완료를 위해 Canvas 하드웨어 가속 활용
  * 3. 폐쇄망 대응: public 폴더의 로컬 CMap 데이터 참조로 한글 깨짐 방지
  */
-export const PdfRenderer = ({ fileUrl, pageNumber, scale, originalWidth = 1240, originalHeight = 1754, onLoadSuccess, setIsLoading }: Props) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+export const PdfRenderer = ({ fileUrl, pageNumber, scale, baseWidth, onLoadSuccess, setIsLoading }: Props) => {
+  const lowResCanvasRef = useRef<HTMLCanvasElement>(null);
+  const highResCanvasRef = useRef<HTMLCanvasElement>(null);
   const [pdfDoc, setPdfDoc] = useState<pdfjsLib.PDFDocumentProxy | null>(null);
+  const [aspectRatio, setAspectRatio] = useState(1.414);
+  const [renderPhase, setRenderPhase] = useState<'empty' | 'low' | 'high'>('empty');
   
   // (Point: 수동 메모리 관리를 위한 Ref 참조)
-  const currentRenderTask = useRef<pdfjsLib.RenderTask | null>(null);
+  const lowResRenderTask = useRef<pdfjsLib.RenderTask | null>(null);
+  const highResRenderTask = useRef<pdfjsLib.RenderTask | null>(null);
 
   // 1. [문서로드]: fileUrl이 변경될 때만 PDF 문서를 새롭게 파싱합니다.
   useEffect(() => {
@@ -69,58 +72,67 @@ export const PdfRenderer = ({ fileUrl, pageNumber, scale, originalWidth = 1240, 
     };
   }, [fileUrl]); 
 
-  // (Why: 화면 크기에 상관없이 원본 문서의 비율을 유지하며 줌(scale)을 적용합니다.)
-  const BASE_VIEW_WIDTH = 800; // 가독성 좋은 표준 뷰어 너비
-  const viewWidth = BASE_VIEW_WIDTH * scale;
-  const viewHeight = (originalHeight / originalWidth) * viewWidth;
+  // (Point: 레이아웃 크기는 항상 1배율(baseWidth)로 고정합니다. 줌은 부모에서 CSS transform으로 처리합니다.)
+  const viewWidth = baseWidth;
+  const viewHeight = viewWidth * aspectRatio;
 
   // 2. [페이지 렌더링]: pdfDoc, pageNumber, scale이 변경될 때 Canvas에 다시 그립니다.
   useEffect(() => {
     const renderPage = async () => {
       if (!pdfDoc) {
-        // (Why: 초기 대기 상태 혹은 로딩 실패 시 플레이스홀더 크기를 부모에게 리턴)
-        onLoadSuccess({ width: viewWidth, height: viewHeight });
+        // (Why: 초기 대기 상태 혹은 로딩 실패 시 플레이스홀더 크기를 부모에게 리턴 - 초기 비율은 A4로 가정)
+        onLoadSuccess({ width: viewWidth, height: viewWidth * 1.414 });
         return;
       }
 
       setIsLoading(true);
 
       try {
-        // [Cleanup] 이전 렌더링 태스크 명시적 중단 (Memory Free)
-        if (currentRenderTask.current) {
-          currentRenderTask.current.cancel();
-        }
+        // [Cleanup] 이전 태스크 중단
+        lowResRenderTask.current?.cancel();
+        highResRenderTask.current?.cancel();
+        setRenderPhase('empty');
 
         const page = await pdfDoc.getPage(pageNumber);
-        
-        // (Note: 실제 렌더링 배율은 파일 크기에 맞춰 유동적으로 조절)
-        const viewport = page.getViewport({ scale: viewWidth / page.getViewport({ scale: 1 }).width });
+        const originalViewport = page.getViewport({ scale: 1 });
+        const newAspectRatio = originalViewport.height / originalViewport.width;
+        setAspectRatio(newAspectRatio);
 
-        const canvas = canvasRef.current;
-        if (!canvas) return;
+        // 부모에게 실제 크기 통보 (Bbox 매핑용)
+        onLoadSuccess({ width: viewWidth, height: viewWidth * newAspectRatio });
 
-        const context = canvas.getContext('2d');
-        if (!context) return;
+        const dpr = Math.max(window.devicePixelRatio || 1, 2.0); 
 
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
+        // --- PHASE 1: Low-Res Render (Fast) ---
+        const lowResViewport = page.getViewport({ scale: (viewWidth * dpr) / originalViewport.width });
+        const lowResCanvas = lowResCanvasRef.current;
+        if (lowResCanvas) {
+          const context = lowResCanvas.getContext('2d');
+          if (context) {
+            lowResCanvas.width = lowResViewport.width;
+            lowResCanvas.height = lowResViewport.height;
+            lowResRenderTask.current = page.render({ canvasContext: context, viewport: lowResViewport });
+            await lowResRenderTask.current.promise;
+            setRenderPhase('low');
+            setIsLoading(false); // 1단계 완료 시 로딩 해제 (사용자 경험 우선)
+          }
+        }
 
-        const renderContext = {
-          canvasContext: context,
-          viewport: viewport,
-        };
-
-        // 3. 렌더링 태스크 실행 및 태스크 참조 저장
-        currentRenderTask.current = page.render(renderContext);
-        await currentRenderTask.current.promise;
-
-        // (Why: 렌더링 완료 후 실제 픽셀 좌표 정보를 부모에게 통보 - Bbox 매핑용)
-        onLoadSuccess({ 
-          width: viewport.width, 
-          height: viewport.height 
-        });
-
-        setIsLoading(false);
+        // --- PHASE 2: High-Res Render (Background 2.5x) ---
+        // (Why: 사용자의 줌 조작을 대비하여 미리 고해상도(2.5배) 비트맵을 생성합니다.)
+        const HIGH_RES_SCALE = 2.5;
+        const highResViewport = page.getViewport({ scale: (viewWidth * HIGH_RES_SCALE * dpr) / originalViewport.width });
+        const highResCanvas = highResCanvasRef.current;
+        if (highResCanvas) {
+          const context = highResCanvas.getContext('2d');
+          if (context) {
+            highResCanvas.width = highResViewport.width;
+            highResCanvas.height = highResViewport.height;
+            highResRenderTask.current = page.render({ canvasContext: context, viewport: highResViewport });
+            await highResRenderTask.current.promise;
+            setRenderPhase('high');
+          }
+        }
       } catch (error: unknown) {
         // (Point: unknown 타입 에러에 대해 타입 가드 활용)
         if (error instanceof Error && error.name === 'RenderingCancelledException') return; 
@@ -132,22 +144,31 @@ export const PdfRenderer = ({ fileUrl, pageNumber, scale, originalWidth = 1240, 
     renderPage();
 
     return () => {
-      if (currentRenderTask.current) {
-        currentRenderTask.current.cancel();
-      }
+      lowResRenderTask.current?.cancel();
+      highResRenderTask.current?.cancel();
     };
-  }, [pdfDoc, pageNumber, scale, originalWidth, originalHeight, onLoadSuccess, viewWidth, viewHeight]);
+  }, [pdfDoc, pageNumber, baseWidth, onLoadSuccess]);
 
   return (
-    <div className="relative shadow-2xl bg-white flex justify-center overflow-hidden shrink-0">
-      {/* Actual Drawing Surface */}
-      {fileUrl ? (
-        <canvas ref={canvasRef} className="max-w-full h-auto shadow-inner" />
-      ) : (
-        <div 
-          className="bg-gray-50 flex items-center justify-center border border-gray-300 transition-all shrink-0"
-          style={{ width: `${viewWidth}px`, height: `${viewHeight}px` }}
-        >
+    <div 
+      className="relative shadow-2xl bg-white flex justify-center overflow-hidden shrink-0"
+      style={{ width: `${viewWidth}px`, height: `${viewHeight}px` }}
+    >
+      {/* 1. Low-Res Layer (Fast Start) */}
+      <canvas 
+        ref={lowResCanvasRef} 
+        className={`absolute inset-0 w-full h-full shadow-inner transition-opacity duration-300 ${renderPhase === 'high' ? 'opacity-0' : 'opacity-100'}`} 
+      />
+      
+      {/* 2. High-Res Layer (High Quality Swap) */}
+      <canvas 
+        ref={highResCanvasRef} 
+        className={`absolute inset-0 w-full h-full shadow-inner transition-opacity duration-500 ${renderPhase === 'high' ? 'opacity-100' : 'opacity-0'}`} 
+      />
+
+      {/* (Why: 아직 아무것도 로드되지 않았을 때의 상태) */}
+      {renderPhase === 'empty' && !fileUrl && (
+        <div className="absolute inset-0 bg-gray-50 flex items-center justify-center border border-gray-300">
            <span className="text-gray-400 font-bold tracking-widest text-xs">
              [ 분석 대상 문서 대기 중 ]
            </span>

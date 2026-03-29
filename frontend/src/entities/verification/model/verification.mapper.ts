@@ -8,8 +8,6 @@ import {
   ServerDocItem
 } from './types';
 
-/** 표준 A4 해상도 기본값 (백엔드 미전달 시 사용) */
-const DEFAULT_A4_RESOLUTION = { width: 1240, height: 1754 };
 
 const ARRAY_INDEX_REGEX = /\[\d+\]/g;
 
@@ -176,7 +174,7 @@ export const mapServerResponseToVerificationResult = (
       status, 
       isRisk: false, // 리스크 개념 제거
       // (Why) 백엔드에서 해상도를 주지 않을 경우 프론트엔드 기본값(A4)을 사용합니다.
-      resolution: firstDoc.resolution || resolution || DEFAULT_A4_RESOLUTION,
+      resolution: firstDoc.resolution || resolution,
       rawText: combinedRawText.trim(),
       // 병합된 문서에 포함된 모든 물리적 파일의 메타데이터 수집
       files: sortedDocs.map(d => ({
