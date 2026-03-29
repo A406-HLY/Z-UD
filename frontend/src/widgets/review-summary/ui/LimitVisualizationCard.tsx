@@ -9,8 +9,8 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// 반원형 게이지(SemiCircleGauge) 컴포넌트
-const SemiCircleGauge = ({ 
+// [LEGACY STYLE] 선형 규제 지표 바 (RegulatoryBar) 컴포넌트
+const RegulatoryBar = ({ 
   current, // 신청액 기준 현재 비율 (%)
   limit,   // 규제 한도 비율 (%)
   colorClass 
@@ -22,104 +22,89 @@ const SemiCircleGauge = ({
   const isCalculable = current !== null && limit !== null;
   const safeCurrent = Math.min(Math.max(current ?? 0, 0), 100);
   const safeLimit = Math.min(Math.max(limit ?? 0, 0), 100);
-  const isOver = safeCurrent > safeLimit;
+  const isOver = isCalculable && safeCurrent > safeLimit;
 
-  // Arc Calculation
-  const rUpper = 46; // 외각 (한도)
-  const rLower = 32; // 내각 (신청액)
-  const cUpper = Math.PI * rUpper;
-  const cLower = Math.PI * rLower;
+  // 바 색상 결정 (레거시 스타일은 선명한 빨간색 권장)
+  const barColor = isOver ? "bg-red-600" : colorClass;
   
-  const offsetUpper = cUpper * (1 - safeLimit / 100);
-  const offsetLower = cLower * (1 - safeCurrent / 100);
-
-  // 색상 맵핑
-  const colorMap: Record<string, string> = {
-    "bg-blue-600": "#4a6bba",
-    "bg-[#003366]": "#003366",
-  };
-  const baseColor = colorMap[colorClass] || "#003366";
-  const requestColor = isOver ? "#ef4444" : baseColor;
-
   return (
-    <div className="flex flex-row items-center justify-center gap-4 w-full">
-      {/* --- 좌측 범례 (Legend) --- */}
-      <div className="flex flex-col gap-2 shrink-0 border-r border-slate-100 pr-4">
-        <div className="flex items-center gap-1.5 min-w-[50px]">
-          <div className="w-1 h-3 bg-slate-300 rounded-[1px]"></div>
-          <span className="text-[9px] font-black text-slate-500 uppercase tracking-tighter">신청한도</span>
-          <span className="text-[9px] font-mono text-slate-400 font-bold ml-auto">{isCalculable ? `${safeLimit}%` : "-"}</span>
+    <div className="flex flex-col w-full gap-2 p-2 bg-slate-50/50 border border-slate-200">
+      {/* 상단 수치 정보 (레거시: 두껍고 명확한 정보 배분) */}
+      <div className="flex justify-between items-end px-0.5 border-b border-slate-100 pb-1.5 mb-1">
+        <div className="flex flex-col">
+          <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter mb-0.5">Regulatory Limit</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-2xl font-black font-mono tracking-tighter leading-none text-slate-800">
+              {isCalculable ? `${safeLimit}%` : "-"}
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5 min-w-[50px]">
-          <div className={cn("w-1 h-3 rounded-[1px]", isOver ? "bg-red-500" : "bg-[#4a6bba]")}></div>
-          <span className={cn("text-[9px] font-black uppercase tracking-tighter", isOver ? "text-red-500" : "text-slate-600")}>신청금액</span>
-          <span className={cn("text-[9px] font-mono font-bold ml-auto", isOver ? "text-red-500" : "text-[#4a6bba]")}>{isCalculable ? `${safeCurrent}%` : "-"}</span>
+        <div className="text-right flex flex-col items-end">
+          <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter mb-0.5">Application Ratio</span>
+          <div className="flex items-center gap-1.5">
+            <span className={cn(
+              "text-base font-black font-mono tracking-tighter leading-none", 
+              !isCalculable ? "text-slate-300" : isOver ? "text-red-600" : "text-[#003366]"
+            )}>
+              {isCalculable ? `${safeCurrent}%` : "---%"}
+            </span>
+            {isOver && (
+              <span className="text-[7px] font-black text-red-600 bg-red-50 px-1 border border-red-200 uppercase animate-pulse">OVER</span>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* --- 우측 게이지 (Gauge) --- */}
-      <div className="relative w-[140px] aspect-[2/1] bg-slate-50/20 rounded-t-full border-t border-x border-slate-100/50 pt-1 px-3 overflow-hidden shrink-0">
-        <svg viewBox="0 0 100 60" className="w-full h-full overflow-visible">
-          {/* --- 1. Upper Layer (Regulation Limit) --- */}
-          <path
-            d={`M ${50 - rUpper},55 A ${rUpper},${rUpper} 0 0,1 ${50 + rUpper},55`}
-            fill="none"
-            stroke="#f1f5f9"
-            strokeWidth="8"
-            strokeLinecap="round"
-          />
-          {isCalculable && (
-            <path
-              d={`M ${50 - rUpper},55 A ${rUpper},${rUpper} 0 0,1 ${50 + rUpper},55`}
-              fill="none"
-              stroke="#cbd5e1"
-              strokeWidth="8"
-              strokeLinecap="round"
-              strokeDasharray={cUpper}
-              strokeDashoffset={offsetUpper}
-              className="transition-all duration-1000 ease-out"
-            />
-          )}
+      {/* 바 시각화 컨테이너 (레거시: 직각 및 격자선) */}
+      <div className="relative h-7 border border-slate-800 bg-white shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]">
+        {/* 10% 단위 수직 격자선 (Grid Lines) */}
+        <div className="absolute inset-0 flex justify-between pointer-events-none px-[0.1%]">
+          {Array.from({ length: 11 }).map((_, i) => (
+            <div key={i} className={cn("h-full w-[1px]", i % 5 === 0 ? "bg-slate-300" : "bg-slate-100")} />
+          ))}
+        </div>
 
-          {/* --- 2. Lower Layer (Actual Requested Amount) --- */}
-          <path
-            d={`M ${50 - rLower},55 A ${rLower},${rLower} 0 0,1 ${50 + rLower},55`}
-            fill="none"
-            stroke="#f1f5f9"
-            strokeWidth="8"
-            strokeLinecap="round"
+        {/* 현재 수치 바 (Current) */}
+        {isCalculable && (
+          <div 
+            className={cn("absolute top-0 left-0 h-full transition-all duration-1000 ease-out border-r border-black/20", barColor)}
+            style={{ width: `${safeCurrent}%` }}
           />
-          {isCalculable && (
-            <path
-              d={`M ${50 - rLower},55 A ${rLower},${rLower} 0 0,1 ${50 + rLower},55`}
-              fill="none"
-              stroke={requestColor}
-              strokeWidth="8"
-              strokeLinecap="round"
-              strokeDasharray={cLower}
-              strokeDashoffset={offsetLower}
-              className="transition-all duration-1000 ease-out"
-            />
-          )}
-        </svg>
+        )}
 
-        {/* --- 산정불가 오버레이 --- */}
-        {!isCalculable && (
-          <div className="absolute inset-0 flex items-center justify-center z-10 bg-white/40 backdrop-blur-[1px]">
-             <span className="bg-slate-700 text-white px-2 py-0.5 rounded-[1px] text-[8px] font-black tracking-widest border border-slate-600">
-               산정불가
-             </span>
+        {/* 규제 한도 마커 (Legacy Limit Marker) */}
+        {isCalculable && (
+          <div 
+            className="absolute top-0 h-full w-[4px] bg-black z-10 shadow-[2px_0_4px_rgba(0,0,0,0.2)]"
+            style={{ left: `calc(${safeLimit}% - 2px)` }}
+          >
+            {/* 리미트 레이블 (화살표가 마커를 가리키고 텍스트는 오른쪽) */}
+            <div className="absolute -top-4 left-0 flex items-center gap-1.5 whitespace-nowrap">
+              <span className="text-[7px] font-black text-black w-1 text-center">▼</span>
+              <span className="text-[7px] font-black text-black tracking-tighter">LIMIT</span>
+            </div>
+            <div className="absolute -bottom-4 left-0 flex items-center gap-1.5 whitespace-nowrap">
+              <span className="text-[7px] font-black text-black w-1 text-center">▲</span>
+              <span className="text-[7px] font-black text-black tracking-tighter">{safeLimit}%</span>
+            </div>
           </div>
         )}
 
-        <div className="absolute bottom-0 w-full text-center">
-          <span className={cn(
-            "text-lg font-black font-mono tracking-tighter", 
-            !isCalculable ? "text-slate-400" : isOver ? "text-red-500" : "text-[#003366]"
-          )}>
-            {isCalculable ? `${safeCurrent}%` : "N/A"}
-          </span>
-        </div>
+        {/* 산정불가 상태 (레거시: 대각선 해시 패턴 추천되나 여기서는 오버레이) */}
+        {!isCalculable && (
+          <div className="absolute inset-0 flex items-center justify-center bg-slate-200/50 backdrop-blur-[1px] z-20">
+             <span className="bg-slate-800 text-white px-2 py-0.5 rounded-none text-[8px] font-black tracking-widest border-2 border-slate-600 shadow-lg">
+               NON-CALCULABLE
+             </span>
+          </div>
+        )}
+      </div>
+
+      {/* 하단 눈금 수치 (레거시: 20% 단위) */}
+      <div className="flex justify-between text-[7px] font-black font-mono text-slate-500 px-0.5 mt-4 opacity-80">
+        {[0, 20, 40, 60, 80, 100].map(val => (
+          <span key={val}>{val}%</span>
+        ))}
       </div>
     </div>
   );
@@ -198,8 +183,8 @@ export const LimitVisualizationCard = () => {
             {CARD_TEXT.LTV_HEADING}
           </div>
           
-          <div className="flex justify-center mb-4">
-            <SemiCircleGauge 
+          <div className="flex justify-center mb-2">
+            <RegulatoryBar 
               current={currentLtv !== null ? Math.round(currentLtv) : null} 
               limit={currentProduct.ltvLimit} 
               colorClass="bg-blue-600" 
@@ -237,8 +222,8 @@ export const LimitVisualizationCard = () => {
             {CARD_TEXT.DSR_HEADING}
           </div>
 
-          <div className="flex justify-center mb-4">
-            <SemiCircleGauge 
+          <div className="flex justify-center mb-2">
+            <RegulatoryBar 
               current={currentDsr} 
               limit={REGULATION_MAX.DSR} 
               colorClass="bg-[#003366]" 
