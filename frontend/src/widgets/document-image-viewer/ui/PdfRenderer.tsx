@@ -36,6 +36,7 @@ export const PdfRenderer = ({ fileUrl, pageNumber, baseWidth, onLoadSuccess, onD
   // (Point: 수동 메모리 관리를 위한 Ref 참조)
   const lowResRenderTask = useRef<pdfjsLib.RenderTask | null>(null);
   const highResRenderTask = useRef<pdfjsLib.RenderTask | null>(null);
+  const activeRenderId = useRef<number>(0);
 
   // 1. [문서로드]: fileUrl이 변경될 때만 PDF 문서를 새롭게 파싱합니다.
   useEffect(() => {
@@ -97,6 +98,8 @@ export const PdfRenderer = ({ fileUrl, pageNumber, baseWidth, onLoadSuccess, onD
 
       setIsLoading(true);
 
+      const sessionId = ++activeRenderId.current;
+
       try {
         // [Cleanup] 이전 태스크 중단
         lowResRenderTask.current?.cancel();
@@ -104,6 +107,8 @@ export const PdfRenderer = ({ fileUrl, pageNumber, baseWidth, onLoadSuccess, onD
         setRenderPhase('empty');
 
         const page = await pdfDoc.getPage(pageNumber);
+        if (sessionId !== activeRenderId.current) return;
+
         const originalViewport = page.getViewport({ scale: 1 });
         const newAspectRatio = originalViewport.height / originalViewport.width;
         setAspectRatio(newAspectRatio);
@@ -123,6 +128,9 @@ export const PdfRenderer = ({ fileUrl, pageNumber, baseWidth, onLoadSuccess, onD
             lowResCanvas.height = lowResViewport.height;
             lowResRenderTask.current = page.render({ canvasContext: context, viewport: lowResViewport });
             await lowResRenderTask.current.promise;
+            
+            if (sessionId !== activeRenderId.current) return;
+            
             setRenderPhase('low');
             setIsLoading(false); // 1단계 완료 시 로딩 해제 (사용자 경험 우선)
           }
@@ -140,6 +148,9 @@ export const PdfRenderer = ({ fileUrl, pageNumber, baseWidth, onLoadSuccess, onD
             highResCanvas.height = highResViewport.height;
             highResRenderTask.current = page.render({ canvasContext: context, viewport: highResViewport });
             await highResRenderTask.current.promise;
+            
+            if (sessionId !== activeRenderId.current) return;
+            
             setRenderPhase('high');
           }
         }

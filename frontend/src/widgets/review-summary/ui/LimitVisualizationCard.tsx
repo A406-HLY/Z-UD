@@ -30,11 +30,6 @@ const RegulatoryBar = ({
   
   return (
     <div className="flex flex-col w-full gap-1 p-3 bg-[#e2e8f0] border-2 border-t-white border-l-white border-b-slate-500 border-r-slate-500 shadow-sm relative overflow-visible">
-      
-      {/* 백그라운드 워터마크 (터미널 느낌) */}
-      <div className="absolute top-1 right-2 text-[14px] font-black text-slate-300 pointer-events-none select-none italic tracking-tighter uppercase">
-        Regulatory Chart
-      </div>
 
       {/* 상단 수치 정보 (레거시: 두껍고 명확한 정보 배분) */}
       <div className="flex justify-between items-end mb-3 border-b-2 border-slate-300 pb-1.5 z-10">
