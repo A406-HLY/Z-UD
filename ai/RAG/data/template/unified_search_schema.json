@@ -52,14 +52,14 @@
     "category": "공통",
     "name_en": "isViolationBuilding",
     "name_ko": "위반건축물 확인",
-    "default_value": null,
+    "default_value": false,
     "search_query": "해당 건축물의 불법 위반건축물 지정 여부에 따른 담보 대출 승인 및 거절 내규는?"
   },
   {
     "category": "공통",
     "name_en": "hasTrustRegistration",
     "name_ko": "신탁등기 여부",
-    "default_value": null,
+    "default_value": false,
     "search_query": "해당 부동산의 신탁등기 존재 여부에 따른 권리침해 제약 조건 및 담보 인정 기준은?"
   },
   {
@@ -164,7 +164,13 @@
     "category": "공통",
     "name_en": "floorStatusList",
     "name_ko": "층별 현황 목록",
-    "default_value": null,
+    "default_value": [
+      {
+        "floor": "1층",
+        "usage": "주택",
+        "area": 100.0
+      }
+    ],
     "search_query": "건축물 층별 현황 및 용도에 따른 상가 등 복합 건물의 주택담보대출 적격성 기준은?"
   },
   {

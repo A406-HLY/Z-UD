@@ -223,11 +223,12 @@ def search_rules(user_data: dict):
         if field in payload and payload[field] in mapping:
             payload[field] = mapping[payload[field]]
     for req_key, val in payload.items():
-        if req_key in base_eval_data:
-            base_eval_data[req_key]['value'] = val
-        elif req_key in AppState.korean_to_english_map:
-            eng_key = AppState.korean_to_english_map[req_key]
-            base_eval_data[eng_key]['value'] = val
+        if val is not None:
+            if req_key in base_eval_data:
+                base_eval_data[req_key]['value'] = val
+            elif req_key in AppState.korean_to_english_map:
+                eng_key = AppState.korean_to_english_map[req_key]
+                base_eval_data[eng_key]['value'] = val
     product_results = {doc_name: {} for doc_name in AppState.retrievers.keys()}
     emp_type = payload.get('employmentType', '근로자')
     valid_categories = {'공통', '특수', emp_type}
