@@ -7,16 +7,14 @@ import { LoanStepper } from '@/widgets/loan-stepper/ui/LoanStepper';
 
 import { ProductTabs, StatusSummaryBoard, LimitVisualizationCard } from '@/widgets/review-summary';
 import { ReviewDetailsList } from '@/widgets/review-details';
-import { DocumentImageViewer } from '@/widgets/document-image-viewer/ui/DocumentImageViewer';
 import { useReviewReportController } from '@/features/review/model/use-review-report-controller';
 import { 
   createReportRequestPayload, 
   createLegacyTransferPayload,
   mapReportToBankSystemFormat 
 } from '@/entities/verification/model/report-factory';
-import { MOCK_PDF_FILES } from '@/shared/config/pdfConfig';
 import { ReportProgressModal } from '@/widgets/review-summary/ui/ReportProgressModal';
-
+import { ReportPdfViewer } from '@/widgets/document-image-viewer/ui/ReportPdfViewer';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { LoanTabs } from '@/widgets/loan-tabs';
 import { transferConsultationToLegacy } from '@/entities/customer/api/customer.api';
@@ -209,10 +207,9 @@ export const ReviewReportPage = () => {
 
           {/* Right Section (PDF 뷰어) */}
           <div className="h-full bg-slate-800 flex flex-col flex-1 relative min-w-[300px]">
-            {/* FSD Widget: DocumentImageViewer */}
-            <DocumentImageViewer 
-              fileUrl={guidelineUrl ?? undefined} // (Why) 목업 PDF 대신 서버(Cloudflare)에서 받은 실제 URL을 사용합니다.
-              files={MOCK_PDF_FILES}
+            {/* FSD Widget: ReportPdfViewer (단일 문서 다중 페이지 특화) */}
+            <ReportPdfViewer 
+              fileUrl={guidelineUrl ?? undefined}
               pageNumber={pdfPage}
               scale={pdfScale}
               onPageChange={setPdfPage}

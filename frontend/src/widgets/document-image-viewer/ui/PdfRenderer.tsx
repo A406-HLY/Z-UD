@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { PDF_CONFIG } from '@/shared/config/pdf';
+import { extractOutlineMap } from '@/shared/lib/pdf/pdf-utils';
 
 // 1. 내부망 전용 워커 경로 설정 (Shared Config 참조)
 pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_CONFIG.WORKER_SRC;
@@ -11,6 +12,8 @@ interface Props {
   scale: number;
   baseWidth: number; // 부모 컨테이너로부터 전달받은 가로 기준값
   onLoadSuccess: (info: { width: number; height: number }) => void;
+  onDocumentLoad?: (info: { numPages: number }) => void;
+  onOutlineLoaded?: (outlineMap: Record<string, { pageNumber: number; yRatio: number }>) => void;
   setIsLoading: (loading: boolean) => void;
 }
 
@@ -23,7 +26,7 @@ interface Props {
  * 2. 렌더링 속도: 1.5초 이내 완료를 위해 Canvas 하드웨어 가속 활용
  * 3. 폐쇄망 대응: public 폴더의 로컬 CMap 데이터 참조로 한글 깨짐 방지
  */
-export const PdfRenderer = ({ fileUrl, pageNumber, scale, baseWidth, onLoadSuccess, setIsLoading }: Props) => {
+export const PdfRenderer = ({ fileUrl, pageNumber, scale, baseWidth, onLoadSuccess, onDocumentLoad, onOutlineLoaded, setIsLoading }: Props) => {
   const lowResCanvasRef = useRef<HTMLCanvasElement>(null);
   const highResCanvasRef = useRef<HTMLCanvasElement>(null);
   const [pdfDoc, setPdfDoc] = useState<pdfjsLib.PDFDocumentProxy | null>(null);
@@ -53,6 +56,12 @@ export const PdfRenderer = ({ fileUrl, pageNumber, scale, baseWidth, onLoadSucce
         const pdf = await loadingTask.promise;
         if (isMounted) {
           setPdfDoc(pdf);
+          onDocumentLoad?.({ numPages: pdf.numPages });
+          
+          // [추가] 목차(Outline) 정보 추출 및 상위 레이어 전달
+          extractOutlineMap(pdf).then(map => {
+            if (isMounted) onOutlineLoaded?.(map);
+          });
         } else {
           pdf.destroy();
         }

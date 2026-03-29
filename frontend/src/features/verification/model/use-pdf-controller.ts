@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { ExtractedField } from '@/entities/verification/model/types';
+import { useAppSelector } from '@/app/store/hooks';
 
 /**
  * @feature verification
@@ -16,6 +17,7 @@ export const usePdfController = (
     pageNumber?: number;
     onScaleChange?: (scale: number) => void;
     onPageChange?: (page: number) => void;
+    outlineMap?: Record<string, { pageNumber: number; yRatio: number }>;
   } = {}
 ) => {
 
@@ -115,6 +117,45 @@ export const usePdfController = (
       });
     }
   }, [focusedFieldKey, fields, renderedSize.height, pageNumber, scale]);
+
+  // (Feature: 레포트 조항 클릭 시 해당 북마크 위치로 자동 스크롤)
+  const selectedArticle = useAppSelector(state => state.review.selectedArticle);
+  useEffect(() => {
+    if (!selectedArticle || selectedArticle.length === 0 || !options.outlineMap || !containerRef.current || !renderedSize.height) return;
+
+    const targetArticle = selectedArticle[0];
+    
+    // (Note: "제1조"와 "제1조 대출심사" 등을 매칭하기 위해 공백 제거 후 포함 여부 확인)
+    const normalizedTarget = targetArticle.replace(/\s/g, '');
+    const entry = Object.entries(options.outlineMap).find(([title]) => {
+      const normalizedTitle = title.replace(/\s/g, '');
+      return normalizedTitle.includes(normalizedTarget) || normalizedTarget.includes(normalizedTitle);
+    });
+
+    if (entry) {
+      const { pageNumber: targetPage, yRatio } = entry[1];
+      
+      // 1. 페이지가 다르면 이동
+      if (targetPage !== pageNumber) {
+        setPageNumber(targetPage);
+      }
+      
+      // 2. 현재 페이지가 목표 페이지인 경우 정밀 스크롤 (중앙 정렬)
+      if (targetPage === pageNumber) {
+        const container = containerRef.current;
+        const paddingTop = parseInt(window.getComputedStyle(container).paddingTop, 10) || 0;
+        
+        // yRatio는 상단 기준 비율 (0~1)
+        const visualY = (yRatio * renderedSize.height * scale) + paddingTop;
+        const targetY = visualY - (container.clientHeight / 2);
+        
+        container.scrollTo({ 
+          top: Math.max(0, targetY), 
+          behavior: 'smooth' 
+        });
+      }
+    }
+  }, [selectedArticle, options.outlineMap, pageNumber, renderedSize.height, scale]);
 
   // (Why: Ctrl + Wheel 조작 시 브라우저 기본 확대를 차단하고 PDF 뷰어의 스케일만 조절합니다.)
   useEffect(() => {
