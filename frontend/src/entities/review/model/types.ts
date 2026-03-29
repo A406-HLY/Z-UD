@@ -5,18 +5,22 @@
 
 // 1. 공통 데이터 필드 구조 (값, 사유, 근거 조항 포함)
 export interface CalculationField {
-  value: string | number | boolean | null; // number | string | boolean | null;
-  reason: string;
+  value: string | number | boolean | null;
+  reason?: string; // (Alias for UI)
   usedArticles: string[];
+  explanation?: { summary: string }; // New: 백엔드 V2 상세 사유
 }
 
 // 2. 심사 결과 아이템 (aiResults 및 fieldResults 용)
 export interface ReviewItem {
   fieldKey?: string;
+  koreanField?: string; // New: 백엔드 V2 심사 항목 한글명
   name_ko: string;
   inputValue: string | number | boolean | null; 
-  result: '승인' | '반려' | '검토' | '자료 보완 요망' | '검토 요망' | '상관 없음';
-  reason: string;
+  result: '승인' | '반려' | '검토' | '자료 보완 요망' | '검토 요망' | '상관 없음'; // UI 호환용 상태 필드
+  judgement?: '승인' | '반려' | '검토' | '검토 요망'; // New: 백엔드 V2 심사 결과 상태
+  reason?: string; // UI 호환용 사유 필드 (explanation.summary 매핑용)
+  explanation?: { summary: string }; // New: 백엔드 V2 상세 요약
   usedArticles: string[]; 
   isRequired?: boolean;
   excludedFromFinal?: boolean;

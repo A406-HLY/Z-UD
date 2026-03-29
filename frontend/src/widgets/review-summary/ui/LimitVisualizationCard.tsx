@@ -25,81 +25,91 @@ const RegulatoryBar = ({
   const safeLimit = Math.min(Math.max(limit ?? 0, 0), 100);
   const isOver = isCalculable && safeCurrent > safeLimit;
 
-  // 바 색상 결정 (레거시 스타일은 선명한 빨간색 권장)
-  const barColor = isOver ? "bg-red-600" : colorClass;
+  // 바 색상 결정 (고대비 터미널 스타일)
+  const barColor = isOver ? "bg-[#cc0000]" : "bg-[#1e40af]"; // Navy Blue 800
   
   return (
-    <div className="flex flex-col w-full gap-2 p-2 bg-slate-50/50 border border-slate-300">
+    <div className="flex flex-col w-full gap-1 p-3 bg-[#e2e8f0] border-2 border-t-white border-l-white border-b-slate-500 border-r-slate-500 shadow-sm relative overflow-visible">
+      
+      {/* 백그라운드 워터마크 (터미널 느낌) */}
+      <div className="absolute top-1 right-2 text-[14px] font-black text-slate-300 pointer-events-none select-none italic tracking-tighter uppercase">
+        Regulatory Chart
+      </div>
+
       {/* 상단 수치 정보 (레거시: 두껍고 명확한 정보 배분) */}
-      <div className="flex justify-between items-end px-0.5 border-b border-slate-200 pb-1.5 mb-1">
+      <div className="flex justify-between items-end mb-3 border-b-2 border-slate-300 pb-1.5 z-10">
         <div className="flex flex-col">
-          <span className="text-[9px] font-black text-slate-600 uppercase tracking-tighter mb-0.5">Regulatory Limit</span>
+          <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter mb-0.5">Regulatory Limit</span>
           <div className="flex items-baseline gap-1.5">
             <span className="text-2xl font-black font-mono tracking-tighter leading-none text-black">
               {isCalculable ? `${safeLimit}%` : "-"}
             </span>
           </div>
         </div>
-        <div className="text-right flex flex-col items-end">
-          <span className="text-[9px] font-black text-slate-500 uppercase tracking-tighter mb-0.5">Current Applied</span>
-          <span className={cn(
-            "text-xl font-black font-mono tracking-tighter leading-none",
-            isOver ? "text-red-600" : "text-slate-900"
-          )}>
-            {isCalculable ? `${Math.round(current ?? 0)}%` : "-"}
-          </span>
-        </div>
       </div>
 
-      {/* 바 시각화 컨테이너 (레거시: 직각 및 격자선) */}
-      <div className="relative h-8 border-2 border-slate-900 bg-white shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]">
-        {/* 10% 단위 수직 격자선 (Grid Lines) */}
-        <div className="absolute inset-0 flex justify-between pointer-events-none px-[0.1%]">
+      {/* 바 시각화 컨테이너 (레거시: 직각 및 인셋 효과) */}
+      <div className="relative h-10 border-2 border-t-slate-500 border-l-slate-500 border-b-white border-r-white bg-white shadow-[inset_1px_1px_4px_rgba(0,0,0,0.2)] mb-2">
+        {/* 격자선 (Grid Lines) - 10% 단위 */}
+        <div className="absolute inset-0 flex justify-between pointer-events-none px-[0.1%] overflow-hidden">
           {Array.from({ length: 11 }).map((_, i) => (
-            <div key={i} className={cn("h-full w-[1px]", i % 5 === 0 ? "bg-slate-400" : "bg-slate-200")} />
+            <div key={i} className={cn("h-full w-[1px]", i % 5 === 0 ? "bg-slate-400" : "bg-slate-100")} />
           ))}
         </div>
 
-        {/* 현재 수치 바 (Current) */}
+        {/* 게이지 바 (Current Value) */}
         {isCalculable && (
           <div 
-            className={cn("absolute top-0 left-0 h-full transition-all duration-1000 ease-out border-r-2 border-black/30", barColor)}
+            className={cn("absolute top-0 left-0 h-full transition-all duration-1000 ease-out flex items-center justify-end overflow-hidden", barColor)}
             style={{ width: `${safeCurrent}%` }}
-          />
+          >
+
+            {/* 현재 값 레이블 (바 내부에 작게 보일 경우) */}
+            {safeCurrent > 15 && (
+              <span className="text-white text-[9px] font-black font-mono px-2 opacity-60 pointer-events-none">
+                {Math.round(safeCurrent)}%
+              </span>
+            )}
+          </div>
         )}
 
-        {/* 규제 한도 마커 (Legacy Limit Marker) */}
+        {/* 규제 한도 마커 (Legacy Schematic Marker) */}
         {isCalculable && (
           <div 
-            className="absolute top-0 h-full w-[4px] bg-black z-10 shadow-[2px_0_4px_rgba(0,0,0,0.4)]"
-            style={{ left: `calc(${safeLimit}% - 2px)` }}
+            className="absolute top-0 h-full w-[3px] bg-black z-20 shadow-[2px_0_4px_rgba(0,0,0,0.4)]"
+            style={{ left: `calc(${safeLimit}% - 1.5px)` }}
           >
-            {/* 리미트 레이블 (화살표가 마커를 가리키고 텍스트는 오른쪽) */}
-            <div className="absolute -top-4 left-0 flex items-center gap-1.5 whitespace-nowrap">
-              <span className="text-[8px] font-black text-black w-1 text-center">▼</span>
-              <span className="text-[8px] font-black text-black tracking-tighter">LIMIT</span>
+            {/* 상단 포인터 (Down Arrow) */}
+            <div className="absolute -top-7 left-1/2 -translate-x-1/2 flex flex-col items-center">
+              <div className="bg-black text-white text-[9px] font-black px-1.5 py-0.5 whitespace-nowrap tracking-tighter leading-none mb-0.5 uppercase">LMT</div>
+              <span className="text-[12px] font-black text-black leading-none">▼</span>
             </div>
-            <div className="absolute -bottom-4 left-0 flex items-center gap-1.5 whitespace-nowrap">
-              <span className="text-[8px] font-black text-black w-1 text-center">▲</span>
-              <span className="text-[8px] font-black text-black tracking-tighter">{safeLimit}%</span>
+            
+            {/* 하단 포인터 (Up Arrow) */}
+            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center">
+              <span className="text-[12px] font-black text-black leading-none mb-0.5">▲</span>
+              <span className="text-[10px] font-black text-black font-mono leading-none">{safeLimit}%</span>
             </div>
           </div>
         )}
 
-        {/* 산정불가 상태 (레거시: 대각선 해시 패턴 추천되나 여기서는 오버레이) */}
+        {/* 계산불가 상태 */}
         {!isCalculable && (
-          <div className="absolute inset-0 flex items-center justify-center bg-slate-200/50 backdrop-blur-[1px] z-20">
-             <span className="bg-slate-900 text-white px-3 py-1 rounded-none text-[9px] font-black tracking-widest border-2 border-slate-700 shadow-xl">
-               NON-CALCULABLE
+          <div className="absolute inset-0 flex items-center justify-center bg-slate-200/60 backdrop-blur-[1px] z-30">
+             <span className="bg-[#445566] text-white px-3 py-1 text-[11px] font-black tracking-widest border-2 border-[#1e293b] shadow-xl uppercase">
+               No Data Available
              </span>
           </div>
         )}
       </div>
 
-      {/* 하단 눈금 수치 (레거시: 20% 단위) */}
-      <div className="flex justify-between text-[8px] font-black font-mono text-slate-700 px-0.5 mt-4 opacity-90">
-        {[0, 20, 40, 60, 80, 100].map(val => (
-          <span key={val}>{val}%</span>
+      {/* 하단 눈금 수치 (레거시: 25% 단위) */}
+      <div className="flex justify-between text-[9px] font-black font-mono text-slate-600 px-0.5 mt-6 border-t border-slate-300 pt-1.5">
+        {[0, 25, 50, 75, 100].map(val => (
+          <div key={val} className="flex flex-col items-center relative">
+            <div className="absolute -top-[10px] w-[1px] h-2 bg-slate-400"></div>
+            <span>{val}%</span>
+          </div>
         ))}
       </div>
     </div>

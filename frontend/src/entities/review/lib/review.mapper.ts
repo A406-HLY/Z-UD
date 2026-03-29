@@ -12,9 +12,12 @@ export const mapLoanProductToViewModel = (
   // 1. 심사 상세 결과(fieldResults) 평탄화 및 UI 호환성 매핑
   const items: ProcessedReviewItem[] = (productData.forReport?.fieldResults || []).map((item) => ({
     ...item,
+    name_ko: item.koreanField || '항목명 없음', // V2: koreanField 사용
+    result: (item.judgement as any) || '검토', // V2: judgement 사용
+    reason: item.explanation?.summary || '', // V2: explanation.summary 사용
     key: item.fieldKey || 'unknown',
-    value: item.inputValue, // UI에서 value 필드명을 사용하므로 별칭 매핑
-    matched_articles: item.usedArticles || [], // UI에서 matched_articles 필드명을 사용하므로 별칭 매핑
+    value: item.inputValue, 
+    matched_articles: item.usedArticles || [],
     isRequired: item.isRequired ?? false,
     excludedFromFinal: item.excludedFromFinal ?? false
   }));
@@ -32,7 +35,7 @@ export const mapLoanProductToViewModel = (
       limitParams.push({ 
         label: CALCULATE_LABELS.MARKET_PRICE, 
         value: `${Number(calc.collateralMarketPrice.value).toLocaleString()} 원`,
-        reason: calc.collateralMarketPrice.reason,
+        reason: calc.collateralMarketPrice.explanation?.summary || calc.collateralMarketPrice.reason,
         usedArticles: calc.collateralMarketPrice.usedArticles
       });
     }
@@ -42,7 +45,7 @@ export const mapLoanProductToViewModel = (
       limitParams.push({
         label: CALCULATE_LABELS.MAX_CLAIM_AMOUNT,
         value: `${Number(calc.maximumClaimAmount.value).toLocaleString()} 원`,
-        reason: calc.maximumClaimAmount.reason,
+        reason: calc.maximumClaimAmount.explanation?.summary || calc.maximumClaimAmount.reason,
         usedArticles: calc.maximumClaimAmount.usedArticles
       });
     }
@@ -51,7 +54,7 @@ export const mapLoanProductToViewModel = (
       limitParams.push({ 
         label: CALCULATE_LABELS.REMAINING_BALANCE, 
         value: `${Number(calc.totalRemainingLoanBalance.value).toLocaleString()} 원`,
-        reason: calc.totalRemainingLoanBalance.reason,
+        reason: calc.totalRemainingLoanBalance.explanation?.summary || calc.totalRemainingLoanBalance.reason,
         usedArticles: calc.totalRemainingLoanBalance.usedArticles
       });
     }
@@ -69,7 +72,7 @@ export const mapLoanProductToViewModel = (
       limitParams.push({ 
         label: `${CALCULATE_LABELS.APPLIED_LTV}${houseCountSuffix}`, 
         value: ltvValueText,
-        reason: calc.LTVRatio.reason,
+        reason: calc.LTVRatio.explanation?.summary || calc.LTVRatio.reason,
         usedArticles: calc.LTVRatio.usedArticles
       });
     }
@@ -85,7 +88,7 @@ export const mapLoanProductToViewModel = (
       limitParams.push({ 
         label: CALCULATE_LABELS.ANNUAL_INCOME, 
         value: `${Number(calc.annualIncomeTotal.value).toLocaleString()} 원`,
-        reason: calc.annualIncomeTotal.reason,
+        reason: calc.annualIncomeTotal.explanation?.summary || calc.annualIncomeTotal.reason,
         usedArticles: calc.annualIncomeTotal.usedArticles
       });
     }
@@ -95,7 +98,7 @@ export const mapLoanProductToViewModel = (
       limitParams.push({
         label: CALCULATE_LABELS.ANNUAL_REPAYMENT,
         value: `${Number(calc.annualPrincipalAndInterestRepayment.value).toLocaleString()} 원`,
-        reason: calc.annualPrincipalAndInterestRepayment.reason,
+        reason: calc.annualPrincipalAndInterestRepayment.explanation?.summary || calc.annualPrincipalAndInterestRepayment.reason,
         usedArticles: calc.annualPrincipalAndInterestRepayment.usedArticles
       });
     }
@@ -105,7 +108,7 @@ export const mapLoanProductToViewModel = (
       limitParams.push({ 
         label: CALCULATE_LABELS.APPLIED_DSR, 
         value: isDsrCalculable ? `${(Number(calc.DSRRatio.value) * 100).toFixed(0)}%` : '산정불가',
-        reason: calc.DSRRatio.reason,
+        reason: calc.DSRRatio.explanation?.summary || calc.DSRRatio.reason,
         usedArticles: calc.DSRRatio.usedArticles
       });
     }

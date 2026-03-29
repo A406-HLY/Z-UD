@@ -126,76 +126,89 @@ export const ReviewDetailsList = () => {
       </div>
 
       {/* List Body with Sticky Header */}
-      <div className="flex-1 overflow-y-auto relative bg-[#f8fafc]">
-        {/* Table Header */}
-        <div className="flex bg-[#e2e8f0] text-[#334455] font-black text-[9px] uppercase tracking-tighter border-b border-[#556677] sticky top-0 z-10 shadow-sm backdrop-blur-sm">
-          <div className="w-[30%] px-3 py-1.5 border-r border-[#cbd5e1]">{TABLE_HEADERS.ITEM}</div>
-          <div className="w-[12%] px-3 py-1.5 border-r border-[#cbd5e1] text-center">{TABLE_HEADERS.RESULT}</div>
-          <div className="flex-1 px-3 py-1.5 border-r border-[#cbd5e1]">{TABLE_HEADERS.VALUE_REASON}</div>
-          <div className="w-[20%] px-3 py-1.5 text-center">{TABLE_HEADERS.REFERENCE}</div>
+      <div className="flex-1 overflow-y-auto relative bg-[#f1f5f9]">
+        {/* Table Header (Windows Classic Style) */}
+        <div className="flex bg-[#cbd5e1] text-[#334455] font-black text-[9px] uppercase tracking-tighter border-b-2 border-[#475569] sticky top-0 z-10 shadow-sm">
+          <div className="w-[22%] px-3 py-1.5 border-r border-[#94a3b8]">{TABLE_HEADERS.ITEM}</div>
+          <div className="w-[10%] px-3 py-1.5 border-r border-[#94a3b8] text-center">{TABLE_HEADERS.RESULT}</div>
+          <div className="flex-1 px-3 py-1.5 border-r border-[#94a3b8] bg-[#dee4ed]">{TABLE_HEADERS.VALUE_REASON}</div>
+          <div className="w-[18%] px-3 py-1.5 text-center">{TABLE_HEADERS.REFERENCE}</div>
         </div>
 
         {items.length === 0 ? (
-          <div className="p-8 text-center text-slate-400 font-bold text-[11px] bg-white">{LIST_TEXT.EMPTY_RESULT}</div>
+          <div className="p-12 text-center text-slate-400 font-bold text-[12px] bg-white border m-4 border-dashed border-slate-300">{LIST_TEXT.EMPTY_RESULT}</div>
         ) : (
           items.map((item, idx) => (
             <div key={idx} className={clsx(
-              "flex border-b border-[#cbd5e1] hover:bg-[#f1f5f9] transition-colors group min-h-[48px] bg-white", 
-              item.result === APPROVAL_STATUS.REJECT && "bg-[#fdf5f4] hover:bg-[#fce8e6]",
-              item.excludedFromFinal && "opacity-80 grayscale-[20%]"
+              "flex border-b border-[#cbd5e1] hover:bg-[#ebf0f5] transition-colors group min-h-[56px] bg-white", 
+              item.result === APPROVAL_STATUS.REJECT && "bg-[#fff5f5] hover:bg-[#ffebeb]",
+              item.excludedFromFinal && "opacity-75"
             )}>
-              {/* 항목명 */}
-              <div className="w-[30%] px-3 py-2 border-r border-[#cbd5e1] flex flex-col justify-center">
-                <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                  <span className="font-black text-[#334455] text-[10px] leading-tight">{item.name_ko}</span>
-                  {/* (New) 필수/참고 뱃지 */}
+              {/* 항목명 영역 */}
+              <div className="w-[22%] px-3 py-2 border-r border-[#cbd5e1] flex flex-col justify-center bg-slate-50/30">
+                <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                  <span className="font-black text-[#1e293b] text-[11px] leading-tight tracking-tight">{item.name_ko}</span>
                   {item.isRequired && (
-                    <span className="bg-[#003366] text-white px-1 py-[1px] rounded-[1px] text-[8px] font-black tracking-tighter shrink-0 animate-pulse">{LIST_TEXT.BADGE_REQUIRED}</span>
-                  )}
-                  {item.excludedFromFinal && (
-                    <span className="bg-slate-200 text-slate-600 px-1 py-[1px] rounded-[1px] text-[8px] font-bold tracking-tighter shrink-0">{LIST_TEXT.BADGE_INFORMATIONAL}</span>
+                    <span className="bg-[#003366] text-white px-1.5 py-[2px] text-[8px] font-black tracking-tighter shrink-0 shadow-[1px_1px_0px_rgba(0,0,0,0.3)] border-t border-l border-white/20">
+                      {LIST_TEXT.BADGE_REQUIRED}
+                    </span>
                   )}
                 </div>
-                <span className="text-[8px] text-[#94a3b8] font-mono">ID: {item.key}</span>
+                <span className="text-[8.5px] text-[#94a3b8] font-mono font-bold">ID_{item.key}</span>
               </div>
               
-              {/* 결과 */}
-              <div className="w-[12%] px-2 py-2 border-r border-[#cbd5e1] flex items-center justify-center">
+              {/* 결과 상태 배지 영역 */}
+              <div className="w-[10%] px-1 py-2 border-r border-[#cbd5e1] flex items-center justify-center">
                 <span className={clsx(
-                  "px-2 py-0.5 text-[9px] font-black uppercase text-center w-full border rounded-[2px]",
-                  item.result === APPROVAL_STATUS.PASS ? "text-[#137333] bg-[#e6f4ea] border-[#ceead6]" : 
-                  item.result === APPROVAL_STATUS.REJECT ? "text-[#c5221f] bg-[#fce8e6] border-[#fad2cf]" :
-                  "text-[#b06000] bg-[#fef7e0] border-[#fef0b3]"
+                  "px-1 py-1 text-[10px] font-black uppercase text-center w-full border-2 shadow-[1px_1px_0px_white_inset]",
+                  item.result === APPROVAL_STATUS.PASS ? 
+                    "text-[#065f46] bg-[#d1fae5] border-[#059669]" : 
+                  item.result === APPROVAL_STATUS.REJECT ? 
+                    "text-[#991b1b] bg-[#fee2e2] border-[#dc2626] animate-pulse" :
+                    "text-[#92400e] bg-[#fef3c7] border-[#d97706]"
                 )}>
                   {item.result}
                 </span>
               </div>
               
-              {/* 입력값 & 사유 */}
-              <div className="flex-1 px-3 py-2 border-r border-[#cbd5e1] text-[10px] flex flex-col justify-center">
-                <div className={clsx("font-bold mb-1", item.result === APPROVAL_STATUS.REJECT ? "text-[#a50e0e]" : "text-[#475569]")}>
+              {/* 심사 상세 사유 및 데이터 영역 (가장 중요) */}
+              <div className="flex-1 px-4 py-2 border-r border-[#cbd5e1] flex flex-col justify-center gap-1.5">
+                <div className={clsx(
+                  "text-[11.5px] font-black leading-snug tracking-tight",
+                  item.result === APPROVAL_STATUS.REJECT ? "text-[#b91c1c]" : "text-[#1e3a8a]"
+                )}>
+                  <span className="mr-1.5 opacity-40">▶</span>
                   {item.reason || LIST_TEXT.DEFAULT_REASON}
                 </div>
-                <div className="text-[9px] text-[#64748b] font-mono bg-[#f8fafc] px-1.5 py-0.5 rounded-[2px] self-start inline-block border border-[#e2e8f0]">
-                  <strong className="text-[#334455]">{LIST_TEXT.LABEL_VALUE}</strong> {formatValueForUI(item.value)}
+                
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{LIST_TEXT.LABEL_VALUE}</span>
+                  <div className="text-[9.5px] text-slate-700 font-mono bg-slate-100 px-2 py-0.5 border border-slate-200 shadow-[inset_1px_1px_2px_rgba(0,0,0,0.05)]">
+                    {formatValueForUI(item.value)}
+                  </div>
                 </div>
               </div>
               
-              {/* 근거 조항 조항별 하이퍼링크 */}
-              <div className="w-[20%] px-3 py-2 flex flex-col items-start justify-center gap-1 bg-[#f8fafc] group-hover:bg-[#f1f5f9] transition-colors min-w-[120px]">
+              {/* 근거 조항 (Reference Buttons) */}
+              <div className="w-[18%] px-3 py-2 flex flex-col items-center justify-center gap-1.5 bg-slate-50/50 group-hover:bg-slate-100/80 transition-colors">
                 {item.matched_articles.length > 0 ? (
                   item.matched_articles.map((art, idx) => (
                     <button 
                       key={idx}
                       onClick={() => handleArticleClick([art])}
-                      className="text-[#004b93] hover:text-[#003366] hover:underline text-[9px] font-bold flex items-center gap-1.5 whitespace-nowrap bg-white px-1.5 py-0.5 border border-[#cbd5e1] rounded-[2px] transition-colors w-full text-left shadow-sm hover:shadow-md hover:-translate-y-[0.5px]"
+                      className={clsx(
+                        "w-full px-2 py-1 text-[9px] font-black text-[#334455] bg-[#e2e8f0] border-2 transition-all",
+                        "border-t-white border-l-white border-b-[#94a3b8] border-r-[#94a3b8]",
+                        "hover:bg-[#cbd5e1] active:border-t-[#94a3b8] active:border-l-[#94a3b8] active:border-b-white active:border-r-white",
+                        "flex items-center gap-1.5 shadow-[inset_1px_1px_0px_white]"
+                      )}
                     >
-                      <FileText size={10} className="shrink-0 text-[#004b93]" />
+                      <FileText size={10} className="shrink-0 text-[#475569]" />
                       <span className="truncate">{art}</span>
                     </button>
                   ))
                 ) : (
-                  <span className="text-[9px] text-[#94a3b8] cursor-not-allowed font-mono text-center w-full">{LIST_TEXT.NA}</span>
+                  <span className="text-[9px] text-slate-300 font-mono italic">{LIST_TEXT.NA}</span>
                 )}
               </div>
             </div>
