@@ -10,14 +10,9 @@ export default defineConfig({
     viteStaticCopy({
       targets: [
         {
-          // (Fix) 폴더 경로 자체를 지정하여 dist/cmaps 내부로 정확히 복사합니다.
-          src: 'node_modules/pdfjs-dist/cmaps',
-          dest: '.'
-        },
-        {
-          // (Fix) PDF 워커 단일 파일을 dist 최상단 경로로 복사합니다. Nginx 404 에러 방지용.
-          src: 'node_modules/pdfjs-dist/build/pdf.worker.mjs',
-          dest: '.'
+          // (Fix) glob 패턴(*)을 사용해야 상위 폴더(node_modules) 구조가 날아가고(flatten) 내부 파일만 뽑힙니다.
+          src: 'node_modules/pdfjs-dist/cmaps/*',
+          dest: 'cmaps' // flatten 되어서 cmaps 껍데기가 날아가므로, 목적지에 cmaps를 만들어줍니다.
         }
       ],
     }),
