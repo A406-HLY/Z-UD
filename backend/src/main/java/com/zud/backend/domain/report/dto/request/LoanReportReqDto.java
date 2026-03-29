@@ -12,28 +12,19 @@ import com.zud.backend.domain.report.enums.EmploymentType;
 public record LoanReportReqDto(
 	@JsonProperty("consultationId")
 	UUID consultationId,
-
 	ReportInput reportInput
 ) {
 	public record ReportInput(
 		String headOfHouseholdName,
-
 		List<HouseholdMember> householdMembers,
-
 		EmploymentType employmentType,
-
 		String currentAddress,
-
 		String name,
-
 		String residentRegistrationNumber,
-
+		Integer ownedHouseCount,
 		Spouse spouse,
-
-		Boolean representativeName,
-
+		Boolean hasRepresentativeName,
 		Boolean hasCompanySeal,
-
 		String subscriberType,
 		@JsonFormat(pattern = "yyyy-MM-dd")
 		LocalDate latestAcquisitionDate,
@@ -43,71 +34,35 @@ public record LoanReportReqDto(
 		String incomeRecipientResidentRegistrationNumber,
 		String workPeriod,
 		Long annualIncomeTotal,
-
 		String businessName,
 		String businessRegistrationNumber,
 		String incomeYear,
 		Long incomeAmount,
-		Long determinedTaxAmount,
-		String corporateRegistrationNumber,
 		Long taxableSalesAmount,
-
-		List<DepositAmount> depositAmountList,
-
 		Boolean manualReviewRequired,
-
-		String registrationNumber,
-
-		String identifierNumber,
-
 		List<TaxItem> taxItems,
-
 		String registrationType,
-
 		String buildingType,
-
 		Boolean hasDongho,
-
 		String lotAddress,
-
 		Boolean hasLandRightCause,
-
 		Boolean hasOwnershipTransferClaim,
-
 		Boolean hasTrustRegistration,
-
 		String ownerName,
-
+		Deposit deposit,
 		List<SeniorRight> seniorRights,
-
 		Boolean isViolationBuilding,
-
 		String mainUsage,
-
 		List<FloorStatus> floorStatusList,
-
 		String propertyAddress,
-
 		Long salePrice,
-
 		String specialTerms,
-
 		Seller seller,
-
 		Buyer buyer,
-
-		String inspectionAddress,
-
-		List<MoveInHousehold> moveInHouseholds,
-
 		Long collateralMarketPrice,
-
 		Long totalRemainingLoanBalance,
-
 		Long monthlyRepaymentAmount,
-
 		String creditRating,
-
 		Long annualPrincipalAndInterestRepayment
 	) {
 	}
@@ -125,9 +80,8 @@ public record LoanReportReqDto(
 	) {
 	}
 
-	public record DepositAmount(
-		@JsonFormat(pattern = "yyyy-MM-dd")
-		LocalDate depositDate,
+	public record Deposit(
+		Boolean hasDeposit,
 		Long depositAmount
 	) {
 	}
@@ -158,13 +112,6 @@ public record LoanReportReqDto(
 
 	public record Buyer(
 		String name
-	) {
-	}
-
-	public record MoveInHousehold(
-		String headOfHouseholdName,
-		@JsonFormat(pattern = "yyyy-MM-dd")
-		LocalDate moveInDate
 	) {
 	}
 }
