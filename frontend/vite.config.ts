@@ -10,16 +10,14 @@ export default defineConfig({
     viteStaticCopy({
       targets: [
         {
-          // 폴더 경로 자체만 지정하면 플러그인이 내부 파일들을 자동 인식합니다.
-          src: normalizePath(path.resolve(__dirname, 'node_modules/pdfjs-dist/cmaps')),
-          dest: 'cmaps',
-          // 가장 중요한 부분: 상위 폴더 구조를 전부 날려버리고 파일만 복사합니다.
-          rename: { stripBase: true } 
+          // (Fix) 폴더 경로 자체를 지정하여 dist/cmaps 내부로 정확히 복사합니다.
+          src: 'node_modules/pdfjs-dist/cmaps',
+          dest: '.'
         },
         {
-          // PDF 워커를 루트(dist/)로 복사하여 정적 원본 파일로 취급하게 만듭니다. (MIME 에러 해결)
-          src: normalizePath(path.resolve(__dirname, 'node_modules/pdfjs-dist/build/pdf.worker.mjs')),
-          dest: ''
+          // (Fix) PDF 워커 단일 파일을 dist 최상단 경로로 복사합니다. Nginx 404 에러 방지용.
+          src: 'node_modules/pdfjs-dist/build/pdf.worker.mjs',
+          dest: '.'
         }
       ],
     }),
