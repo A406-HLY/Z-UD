@@ -73,13 +73,13 @@ export const usePdfController = (
   const bboxes = useMemo(() => {
     return fields.filter(f => f.evidence && f.evidence.bbox && f.evidence.bbox.length >= 4 && f.evidence.pageNum === pageNumber)
       .map(f => {
-        const bbox = f.evidence!.bbox!; // [x1, y1, x2, y2]
-        const [x1, y1, x2, y2] = bbox;
+        // (Why: Bbox는 [x1, y1, x2, y2] 형태의 상대 좌표 비율입니다.)
+        const [x1, y1, x2, y2] = f.evidence!.bbox!;  
         
-        // 원본 좌표를 그대로 반환 (SVG viewBox에서 자동 매핑)
+        // 원본 비율 좌표를 그대로 반환 (SVG viewBox="0 0 1 1"에서 자동 매핑)
         return {
           key: f.key,
-          points: `${x1},${y1} ${x2},${y1} ${x2},${y2} ${x1},${y2}` // typo 방지 및 가독성
+          points: `${x1},${y1} ${x2},${y1} ${x2},${y2} ${x1},${y2}`
         };
       });
   }, [fields, pageNumber]);
@@ -97,18 +97,24 @@ export const usePdfController = (
     }
 
     if (field.evidence.bbox && field.evidence.bbox.length >= 4 && field.evidence.pageNum === pageNumber) {
-      const minY = field.evidence.bbox[1]; // y1 (상대 좌표: 0.0 ~ 1.0)
+      const [,, , y2] = field.evidence.bbox;
+      const y1 = field.evidence.bbox[1];
       
-      // 스크롤 위치 계산: 상대 좌표 * 실제 렌더링 높이
-      const targetY = (minY * renderedSize.height) - (containerRef.current.clientHeight / 2) + 100;
+      // (Why: Bbox의 기하학적 중앙(y1, y2의 평균)이 뷰어의 세로 중앙에 오도록 계산합니다.)
+      // (Note: 컨테이너의 상단 패딩(p-12=48px)과 현재 확대 배율(scale)을 모두 반영하여 위치를 잡습니다.)
+      const centerY = (y1 + y2) / 2;
+      const container = containerRef.current;
+      const paddingTop = parseInt(window.getComputedStyle(container).paddingTop, 10) || 0;
       
-      // (Why: 더 이상 줌 완료 시점의 튐 현상이 없으므로 부드러운 스크롤을 기본으로 사용합니다.)
-      containerRef.current.scrollTo({ 
+      const visualY = (centerY * renderedSize.height * scale) + paddingTop;
+      const targetY = visualY - (container.clientHeight / 2);
+      
+      container.scrollTo({ 
         top: Math.max(0, targetY), 
         behavior: 'smooth' 
       });
     }
-  }, [focusedFieldKey, fields, renderedSize.height, pageNumber]);
+  }, [focusedFieldKey, fields, renderedSize.height, pageNumber, scale]);
 
   // (Why: Ctrl + Wheel 조작 시 브라우저 기본 확대를 차단하고 PDF 뷰어의 스케일만 조절합니다.)
   useEffect(() => {
@@ -138,6 +144,7 @@ export const usePdfController = (
     isLoading,
     setIsLoading,
     containerRef,
+    renderedSize,
     setRenderedSize,
     bboxes,
     currentFileUrl

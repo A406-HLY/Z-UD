@@ -42,6 +42,7 @@ export const DocumentImageViewer = ({
     isLoading,
     setIsLoading,
     containerRef,
+    renderedSize,
     setRenderedSize,
     bboxes,
     currentFileUrl
@@ -162,7 +163,11 @@ export const DocumentImageViewer = ({
          >
            <div 
              className="relative shrink-0 transition-transform origin-top"
-             style={{ transform: `scale(${scale})` }}
+             style={{ 
+               width: renderedSize.width > 0 ? `${renderedSize.width}px` : 'auto',
+               height: renderedSize.height > 0 ? `${renderedSize.height}px` : 'auto',
+               transform: `scale(${scale})` 
+             }}
            >
               <PdfRenderer 
                 key={currentFileUrl}

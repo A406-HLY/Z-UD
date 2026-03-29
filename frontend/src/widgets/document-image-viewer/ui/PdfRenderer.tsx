@@ -27,7 +27,7 @@ export const PdfRenderer = ({ fileUrl, pageNumber, scale, baseWidth, onLoadSucce
   const lowResCanvasRef = useRef<HTMLCanvasElement>(null);
   const highResCanvasRef = useRef<HTMLCanvasElement>(null);
   const [pdfDoc, setPdfDoc] = useState<pdfjsLib.PDFDocumentProxy | null>(null);
-  const [aspectRatio, setAspectRatio] = useState(1.414);
+  const [aspectRatio, setAspectRatio] = useState<number>(0);
   const [renderPhase, setRenderPhase] = useState<'empty' | 'low' | 'high'>('empty');
   
   // (Point: 수동 메모리 관리를 위한 Ref 참조)
@@ -81,7 +81,8 @@ export const PdfRenderer = ({ fileUrl, pageNumber, scale, baseWidth, onLoadSucce
     const renderPage = async () => {
       if (!pdfDoc) {
         // (Why: 초기 대기 상태 혹은 로딩 실패 시 플레이스홀더 크기를 부모에게 리턴 - 초기 비율은 A4로 가정)
-        onLoadSuccess({ width: viewWidth, height: viewWidth * 1.414 });
+        // (Why: 파일 로드 전에는 비율 정보를 전달하지 않아 초기 렌더링 오차를 방지합니다.)
+        onLoadSuccess({ width: viewWidth, height: 0 });
         return;
       }
 
