@@ -23,16 +23,23 @@ import { transferConsultationToLegacy } from '@/entities/customer/api/customer.a
 /**
  * @page review-report
  * 심사레포트 단계 최상위 화면 (데이터 연동 및 Split 뷰 스켈레톤)
- */setTimeout
+ */
 export const ReviewReportPage = () => {
   // 0. Redux 상태 구독 (지연 조립을 위한 원천 데이터)
+  const dispatch = useAppDispatch();
+  const [isComponentReady, setIsComponentReady] = useState(false);
   const customerData = useSelector((state: RootState) => state.customer.data);
+  const consultationId = customerData.consultationId || "CONS-2026-TEMP-001";
+
+  // (Why) 상담 ID가 바뀌면(새로운 리포트 요청) 컴포넌트 준비 상태를 초기화합니다.
+  useEffect(() => {
+    setIsComponentReady(false);
+  }, [consultationId]);
+
   const { ocrData, creditData, loanData } = useSelector((state: RootState) => state.audit.data);
   const edits = useSelector((state: RootState) => state.verification.edits);
   const reviewData = useSelector((state: RootState) => state.review.data);
   const isAllAuditDone = useSelector((state: RootState) => state.audit.isAllAuditDone);
-
-  const consultationId = customerData.consultationId || "CONS-2026-TEMP-001";
   const { 
     isLoading, 
     isError, 
@@ -136,18 +143,18 @@ export const ReviewReportPage = () => {
    * (Why) 리포트 데이터 조회가 완료(REST/SSE)되고 로딩 상태가 해제되어 
    * "내부 리포트 컴포넌트"가 사용자 화면에 실제로 렌더링된 시점에 팝업을 닫습니다.
    */
-  const dispatch = useAppDispatch();
   const reportStatus = useSelector((state: RootState) => state.audit.steps.report);
 
   useEffect(() => {
-    if (!isLoading && reviewData && isAllAuditDone && reportStatus === 'LOADING') {
-      // (Why) 리액트 렌더 사이클 후 실제 DOM 페인팅 시간을 벌기 위해 600ms의 시각적 여유를 둡니다.
+    // (Why) 데이터 준비 완료 + 컴포넌트 마운트 완료 두 가지 조건이 모두 충족되어야 합니다.
+    if (!isLoading && reviewData && isAllAuditDone && isComponentReady && reportStatus === 'LOADING') {
+      // (Why) 리액트 렌더 사이클 후 실제 DOM 페인팅 시간을 벌기 위해 800ms의 시각적 여유를 둡니다.
       const timer = setTimeout(() => {
         dispatch(updateStepStatus({ step: 'report', status: 'SUCCESS' }));
-      }, 3500);
+      }, 800);
       return () => clearTimeout(timer);
     }
-  }, [isLoading, reviewData, isAllAuditDone, reportStatus, dispatch]);
+  }, [isLoading, reviewData, isAllAuditDone, isComponentReady, reportStatus, dispatch]);
 
   return (
     <div className="h-screen flex flex-col bg-gray-50 font-sans overflow-hidden">
@@ -202,7 +209,7 @@ export const ReviewReportPage = () => {
                  <StatusSummaryBoard />
                  
                  {/* 한도 시각화 카드 */}
-                 <LimitVisualizationCard />
+                 <LimitVisualizationCard onMounted={() => setIsComponentReady(true)} />
 
                  {/* 상세 항목 리스트 */}
                  <ReviewDetailsList />

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useAppSelector } from '@/app/store/hooks';
 import { mapServerResponseToVerificationResult } from '@/entities/verification/model/verification.mapper';
@@ -26,9 +26,16 @@ export const PdfViewerPage = () => {
   const [pageNumber, setPageNumber] = useState(initialPage);
   const [scale, setScale] = useState(initialScale);
   const [focusedFieldKey, setFocusedFieldKey] = useState<string | null>(null);
+  const initialFileUrl = searchParams.get('fileUrl');
 
   // (Why: 문서가 변경되면 페이지 번호(1)와 배율(80%)을 초기화하여 싱크를 맞춥니다.)
+  // (Note: 초기 마운트 시에는 쿼리 파라미터로 받은 페이지/배율을 유지하기 위해 초기화 로직을 건너뜁니다.)
+  const isInitialMount = useRef(true);
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     setPageNumber(1);
     setScale(0.8);
   }, [selectedId]);
@@ -47,11 +54,24 @@ export const PdfViewerPage = () => {
 
   // 4. 데이터 매핑
   const localResult = useMemo(() => {
+    // (Why: fileUrl이 직접 전달된 경우, ocrData가 없더라도 가상 문서 정보를 생성하여 즉시 렌더링을 지원합니다.)
+    if (initialFileUrl) {
+      const docId = id || 'v-report';
+      return {
+        selectedDocId: docId,
+        documents: {
+          [docId]: { fileUrl: initialFileUrl, files: [], id: docId, fileName: 'Document' }
+        },
+        documentFields: { [docId]: [] }
+      } as any;
+    }
+
     if (!ocrData || !id) return null;
     return mapServerResponseToVerificationResult(ocrData, id);
-  }, [ocrData, id]);
+  }, [ocrData, id, initialFileUrl]);
 
-  if (isLoading || !localResult) {
+  // (Why: fileUrl이 전달된 경우에는 Redux 상태(ocrStatus)와 무관하게 즉시 렌더링을 진행합니다.)
+  if (!initialFileUrl && (isLoading || !localResult)) {
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-[#808080] text-white font-mono animate-pulse">
         SYNCING VIEWER...
@@ -74,6 +94,7 @@ export const PdfViewerPage = () => {
         pageNumber={pageNumber}
         onScaleChange={setScale}
         onPageChange={setPageNumber}
+        showFullButton={false}
       />
     </div>
   );

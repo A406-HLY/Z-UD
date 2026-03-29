@@ -15,12 +15,6 @@ export const ReportProgressModal = ({ isOpen }: ReportProgressModalProps) => {
   const { currentMessage, steps: auditSteps } = useAppSelector((state) => state.audit);
   const reportStatus = auditSteps.report;
   const reviewData = useAppSelector((state) => state.review.data);
-  const labels = [
-    '심사 결과 수신 중...',
-    '내규 위반 여부 분석 중...',
-    '리포트 작성 중...',
-    '심사 데이터 정합성 검증 완료'
-  ];
 
   // (Why) 4단계 진행 상황을 위한 로컬 상태 관리
   const [steps, setSteps] = useState<StepStatus[]>(['IDLE', 'IDLE', 'IDLE', 'IDLE']);
@@ -29,18 +23,18 @@ export const ReportProgressModal = ({ isOpen }: ReportProgressModalProps) => {
     if (!isOpen) return;
 
     // 1.0s ~ 2.5s: 내규 검색 중
-    // 2.5s ~ (SSE 대기): 리포트 생성 중
+    // (Why) 사용자 요구사항에 따른 4단계 시뮬레이션 타이머 설정
+    // 0 ~ 1.0s: 심사 결과 수신 중
+    // 1.0s ~ 2.2s: 내규 위반 분석 중
+    // 2.2s ~ 렌더링 전: 리포트 작성 중
     
-    // 1단계 시작
-    setSteps(['LOADING', 'IDLE', 'IDLE']);
-
     const timer1 = setTimeout(() => {
-      setSteps((prev) => [ 'SUCCESS', 'LOADING', prev[2] ]);
+      setSteps([ 'SUCCESS', 'LOADING', 'IDLE', 'IDLE' ]);
     }, 1000);
 
     const timer2 = setTimeout(() => {
-      setSteps([ 'SUCCESS', 'SUCCESS', 'LOADING' ]);
-    }, 2500);
+      setSteps([ 'SUCCESS', 'SUCCESS', 'LOADING', 'IDLE' ]);
+    }, 2200);
 
     return () => {
       clearTimeout(timer1);
@@ -48,12 +42,19 @@ export const ReportProgressModal = ({ isOpen }: ReportProgressModalProps) => {
     };
   }, [isOpen]);
 
-  // (Why) 실제 SSE REPORT_COMPLETED 이벤트 수신 후 Redux 데이터가 채워지면 즉시 강제로 모든 단계를 완료 처리합니다.
+  // (Why) 실제 리포트 데이터(reviewData)가 도착하면 "리포트 작성 중" 단계로 강제 진입합니다.
   useEffect(() => {
     if (reviewData) {
-      setSteps(['SUCCESS', 'SUCCESS', 'SUCCESS']);
+      setSteps(['SUCCESS', 'SUCCESS', 'LOADING', 'IDLE']);
     }
   }, [reviewData]);
+
+  // (Why) 최종적으로 리포트가 렌더링되어 SUCCESS 상태가 되면 모든 단계를 완료 처리합니다.
+  useEffect(() => {
+    if (reportStatus === 'SUCCESS') {
+      setSteps(['SUCCESS', 'SUCCESS', 'SUCCESS', 'SUCCESS']);
+    }
+  }, [reportStatus]);
 
   // (Why) Redux 상태가 LOADING이거나 상위에서 isOpen을 명시적으로 주었을 때 팝업을 유지합니다.
   const isVisible = isOpen || reportStatus === 'LOADING';

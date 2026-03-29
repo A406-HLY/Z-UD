@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { ExtractedField } from '@/entities/verification/model/types';
-import { useAppSelector } from '@/app/store/hooks';
+import { useAppSelector, useAppDispatch } from '@/app/store/hooks';
+import { setSelectedArticle } from '@/entities/review/model/review.slice';
 
 /**
  * @feature verification
@@ -20,6 +21,8 @@ export const usePdfController = (
     outlineMap?: Record<string, { pageNumber: number; yRatio: number }>;
   } = {}
 ) => {
+  const dispatch = useAppDispatch();
+
 
   const [scale, setInternalScale] = useState(options.scale ?? 1);
   // (Note: 더블 캔버스 및 정적 고해상도 도입으로 renderScale/renderMode 관리를 제거합니다.)
@@ -140,7 +143,7 @@ export const usePdfController = (
         setPageNumber(targetPage);
       }
       
-      // 2. 현재 페이지가 목표 페이지인 경우 정밀 스크롤 (중앙 정렬)
+      // 2. 현재 페이지가 목표 페이지인 경우 정밀 스크롤 (중앙 정렬) 및 상태 클리어
       if (targetPage === pageNumber) {
         const container = containerRef.current;
         const paddingTop = parseInt(window.getComputedStyle(container).paddingTop, 10) || 0;
@@ -153,9 +156,16 @@ export const usePdfController = (
           top: Math.max(0, targetY), 
           behavior: 'smooth' 
         });
+
+        // (Why) 이동이 완료되었으므로 Redux 상태를 초기화하여 수동 내비게이션을 허용합니다.
+        dispatch(setSelectedArticle(null));
       }
+    } else {
+        // (Why) 아웃라인 맵에 해당 조항이 없는 경우에도 무한 루프 방지를 위해 상태를 조기 초기화합니다.
+        // 단, 외부 articlePageMap(Parent)에 의해 이미 페이지 이동이 일어난 상황일 수 있습니다.
+        dispatch(setSelectedArticle(null));
     }
-  }, [selectedArticle, options.outlineMap, pageNumber, renderedSize.height, scale]);
+  }, [selectedArticle, options.outlineMap, pageNumber, renderedSize.height, scale, dispatch]);
 
   // (Why: Ctrl + Wheel 조작 시 브라우저 기본 확대를 차단하고 PDF 뷰어의 스케일만 조절합니다.)
   useEffect(() => {

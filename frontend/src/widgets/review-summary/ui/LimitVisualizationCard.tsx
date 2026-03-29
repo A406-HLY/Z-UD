@@ -4,6 +4,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { RootState } from '@/app/store';
 import { setSelectedArticle } from '@/entities/review/model/review.slice';
+import { useEffect } from 'react';
 
 
 function cn(...inputs: ClassValue[]) {
@@ -13,8 +14,7 @@ function cn(...inputs: ClassValue[]) {
 // [LEGACY STYLE] 선형 규제 지표 바 (RegulatoryBar) 컴포넌트
 const RegulatoryBar = ({ 
   current, // 신청액 기준 현재 비율 (%)
-  limit,   // 규제 한도 비율 (%)
-  colorClass 
+  limit,   // 규제 한도 비율 (%) 
 }: { 
   current: number | null, 
   limit: number | null,
@@ -146,10 +146,17 @@ const DSR_PARAM_LABELS = [
   CALCULATE_LABELS.APPLIED_DSR,
 ];
 
-export const LimitVisualizationCard = () => {
+export const LimitVisualizationCard = ({ onMounted }: { onMounted?: () => void }) => {
   const dispatch = useAppDispatch();
   const currentProduct = useAppSelector(selectCurrentProduct);
   const customer = useAppSelector((state: RootState) => state.customer.data);
+
+  // (Why) 컴포넌트가 실제로 마운트되고, '유효한 데이터(currentProduct)'가 존재할 때만 콜백을 호출합니다.
+  useEffect(() => {
+    if (onMounted && currentProduct) {
+      onMounted();
+    }
+  }, [onMounted, currentProduct]);
 
   if (!currentProduct) return null;
 

@@ -14,7 +14,7 @@ import {
   selectGuidelineUrl,
   selectSelectedArticle 
 } from '@/entities/review/model/review.selectors';
-import { updateStepStatus } from '@/entities/audit/model/audit.slice';
+import { resetReview } from '@/entities/review/model/review.slice';
 import { ARTICLE_PAGE_MAP } from '@/shared/config/pdfConfig';
 
 /**
@@ -42,8 +42,16 @@ export const useReviewReportController = (consultationId: string) => {
    */
   useEffect(() => {
     const loadReportData = async () => {
-      // 1. 이미 데이터가 있으면 fetch 생략 (중복 요청 방지)
-      if (reviewData && guidelineUrl) return;
+      // 1. 데이터 무결성 체크: 현재 상담 ID와 저장된 데이터의 ID가 다르면 초기화
+      if (reviewData && reviewData.consultationId !== consultationId) {
+        console.warn('[ReviewController] Stale data detected. Resetting review state.');
+        dispatch(resetReview());
+        // (Why) 리셋 후 즉시 return 하지 않고 아래의 setLoading(true)으로 이어지게 합니다.
+      }
+
+      // 2. 이미 데이터가 있으면 fetch 생략 (중복 요청 방지)
+      // (Why) 단, 위에서 리셋되었거나 데이터가 없는 경우에만 통과합니다.
+      if (reviewData && reviewData.consultationId === consultationId && guidelineUrl) return;
 
       dispatch(setLoading(true));
       dispatch(setError(null));

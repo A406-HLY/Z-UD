@@ -92,7 +92,7 @@ export const ReviewDetailsList = () => {
   };
 
   return (
-    <div className="bg-white border border-[#556677] shadow-sm flex flex-col h-full animate-fade-in flex-1 min-h-[300px] rounded-none">
+    <div className="bg-white border border-[#556677] shadow-sm flex flex-col h-full animate-fade-in flex-1 min-h-[600px] rounded-none">
       {/* Header & Controls */}
       <div className="bg-[#445566] text-white text-[10px] font-bold px-3 py-1.5 flex justify-between items-center shrink-0">
         <div className="flex items-center gap-2">

@@ -16,6 +16,7 @@ interface Props {
   onScaleChange?: (scale: number) => void;
   onPageChange?: (page: number) => void;
   verificationId?: string;
+  showFullButton?: boolean;
 }
 
 /**
@@ -32,8 +33,10 @@ export const DocumentImageViewer = ({
   pageNumber: externalPageNumber,
   onScaleChange,
   onPageChange,
-  verificationId
+  verificationId,
+  showFullButton = true
 }: Props) => {
+  const [totalPages, setTotalPages] = useState(1);
   const {
     scale,
     setScale,
@@ -82,8 +85,14 @@ export const DocumentImageViewer = ({
     const left = (window.screen.availWidth - width) / 2;
     const top = (window.screen.availHeight - height) / 2;
 
+    const params = new URLSearchParams({
+      page: pageNumber.toString(),
+      scale: scale.toString(),
+      fileUrl: currentFileUrl || ''
+    });
+
     window.open(
-      `/viewer/${verificationId || 'v-12345'}?page=${pageNumber}&scale=${scale}`, 
+      `/viewer/${verificationId || 'v-12345'}?${params.toString()}`, 
       'PdfFullViewer', 
       `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=no`
     );
@@ -94,7 +103,7 @@ export const DocumentImageViewer = ({
       {/* 1. 뷰어 컨트롤 헤더 (중복 테두리 제거 및 높이 통일) */}
       <div className="h-[40px] bg-gray-200 border-b border-gray-300 flex items-center px-4 justify-between shrink-0 z-20">
         <span className="text-[11px] font-bold text-[#444] uppercase tracking-wider font-mono">
-          Page {pageNumber}/{files.length}
+          Page {pageNumber}/{files.length > 0 ? files.length : totalPages}
         </span>
         <div className="flex items-center gap-2">
           {/* Prev button */}
@@ -106,11 +115,16 @@ export const DocumentImageViewer = ({
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           </button>
+          
+          <span className="text-[11px] font-mono font-bold w-12 text-center text-[#333]">
+            {pageNumber} / {files.length > 0 ? files.length : totalPages}
+          </span>
+
           {/* Next button */}
           <button
             type="button"
-            onClick={() => setPageNumber(p => Math.min(files.length, p + 1))}
-            disabled={pageNumber >= files.length}
+            onClick={() => setPageNumber(p => Math.min(files.length > 0 ? files.length : totalPages, p + 1))}
+            disabled={pageNumber >= (files.length > 0 ? files.length : totalPages)}
             className="p-1.5 bg-white border border-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
@@ -133,13 +147,15 @@ export const DocumentImageViewer = ({
             <ZoomIn className="w-4 h-4 text-gray-700" />
           </button>
           <div className="w-px h-5 bg-gray-400 mx-2" />
-          <button 
-            type="button" 
-            onClick={handleOpenFull}
-            className="h-7 px-3 bg-white border border-gray-400 text-[10px] font-bold hover:bg-gray-50 flex items-center gap-2 text-gray-700 transition-colors"
-          >
-            <Maximize2 className="w-3.5 h-3.5" /> FULL
-          </button>
+          {showFullButton && (
+            <button 
+              type="button" 
+              onClick={handleOpenFull}
+              className="h-7 px-3 bg-white border border-gray-400 text-[10px] font-bold hover:bg-gray-50 flex items-center gap-2 text-gray-700 transition-colors"
+            >
+              <Maximize2 className="w-3.5 h-3.5" /> FULL
+            </button>
+          )}
         </div>
       </div>
       
@@ -172,10 +188,11 @@ export const DocumentImageViewer = ({
               <PdfRenderer 
                 key={currentFileUrl}
                 fileUrl={currentFileUrl} 
-                pageNumber={1} 
+                pageNumber={pageNumber} 
                 scale={1} // 더루 캔버스 방식에서는 내부 렌더 스케일을 고정합니다.
                 baseWidth={baseWidth}
                 onLoadSuccess={setRenderedSize} 
+                onDocumentLoad={({ numPages }) => setTotalPages(numPages)}
                 setIsLoading={setIsLoading}
               />
               <BboxOverlay 

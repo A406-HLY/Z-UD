@@ -80,8 +80,14 @@ export const ReportPdfViewer = ({
     const left = (window.screen.availWidth - width) / 2;
     const top = (window.screen.availHeight - height) / 2;
 
+    const params = new URLSearchParams({
+      page: pageNumber.toString(),
+      scale: scale.toString(),
+      fileUrl: currentFileUrl || ''
+    });
+
     window.open(
-      `/viewer/${verificationId || 'v-report'}?page=${pageNumber}&scale=${scale}`, 
+      `/viewer/${verificationId || 'v-report'}?${params.toString()}`, 
       'PdfFullViewer', 
       `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=no`
     );
