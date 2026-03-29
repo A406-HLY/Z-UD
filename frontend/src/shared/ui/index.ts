@@ -5,3 +5,4 @@ export * from './Card';
 export * from './Select';
 export * from './LegacySpinner';
 export * from './FormField';
+export * from './LegacyAlertModal';

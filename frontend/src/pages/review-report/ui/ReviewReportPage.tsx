@@ -8,6 +8,7 @@ import { useAppDispatch } from '@/app/store/hooks';
 import { updateStepStatus } from '@/entities/audit/model/audit.slice';
 import { ProductTabs, StatusSummaryBoard, LimitVisualizationCard } from '@/widgets/review-summary';
 import { ReviewDetailsList } from '@/widgets/review-details';
+import { LegacyAlertModal } from '@/shared/ui';
 import { useReviewReportController } from '@/features/review/model/use-review-report-controller';
 import { 
   createReportRequestPayload, 
@@ -19,6 +20,7 @@ import { ReportPdfViewer } from '@/widgets/document-image-viewer/ui/ReportPdfVie
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { LoanTabs } from '@/widgets/loan-tabs';
 import { transferConsultationToLegacy } from '@/entities/customer/api/customer.api';
+import { selectCurrentProduct } from '@/entities/review/model/review.selectors';
 
 /**
  * @page review-report
@@ -39,6 +41,7 @@ export const ReviewReportPage = () => {
   const { ocrData, creditData, loanData } = useSelector((state: RootState) => state.audit.data);
   const edits = useSelector((state: RootState) => state.verification.edits);
   const reviewData = useSelector((state: RootState) => state.review.data);
+  const currentProduct = useSelector(selectCurrentProduct);
   const isAllAuditDone = useSelector((state: RootState) => state.audit.isAllAuditDone);
   const { 
     isLoading, 
@@ -53,6 +56,21 @@ export const ReviewReportPage = () => {
 
   // 1. API 상태 추가
   const [isTransferring, setIsTransferring] = useState(false);
+  
+  // 2. 알림 팝업 상태 추가
+  const [alertState, setAlertState] = useState<{
+    isOpen: boolean;
+    message: string;
+    type: 'SUCCESS' | 'ERROR' | 'INFO';
+  }>({
+    isOpen: false,
+    message: '',
+    type: 'INFO'
+  });
+
+  const showAlert = useCallback((message: string, type: 'SUCCESS' | 'ERROR' | 'INFO' = 'INFO') => {
+    setAlertState({ isOpen: true, message, type });
+  }, []);
 
   // 1. Split View 조절 로직
   const [leftWidthPercent, setLeftWidthPercent] = useState<number>(55);
@@ -82,7 +100,7 @@ export const ReviewReportPage = () => {
   // 3. 최종 데이터 조립 및 이관 핸들러 (Transfer)
   const handleFinalSubmit = useCallback(async () => {
     if (!consultationId || consultationId.includes("TEMP")) {
-      alert("유효한 상담 ID가 존재하지 않습니다.");
+      showAlert("유효한 상담 ID가 존재하지 않습니다.", "ERROR");
       return;
     }
 
@@ -107,7 +125,7 @@ export const ReviewReportPage = () => {
       const transferPayload = createLegacyTransferPayload(
         basePayload.reportInput, 
         customerData as any, 
-        "싸금자리"
+        currentProduct?.productName
       );
 
       console.log('🚀 [Transfer] 최종 이관 페이로드:', transferPayload);
@@ -121,19 +139,19 @@ export const ReviewReportPage = () => {
       channel.postMessage(uiPayload);
       channel.close();
       
-      alert('✅ 통합 전산망으로 최종 심사 결과가 성공적으로 전송(이관)되었습니다!');
+      showAlert('✅ 통합 전산망으로 데이터가 이관 되었습니다\n\n확인 시 서비스 창이 자동 종료됩니다.', 'SUCCESS');
       
     } catch (err: any) {
       console.error('❌ 데이터 조립 및 이관 중 오류 발생:', err);
-      alert(`전송 실패: ${err?.response?.data?.message || err.message}`);
+      showAlert(`전송 실패: ${err?.response?.data?.message || err.message}`, 'ERROR');
     } finally {
       setIsTransferring(false);
     }
-  }, [ocrData, customerData, creditData, loanData, edits, consultationId]);
+  }, [ocrData, customerData, creditData, loanData, edits, consultationId, currentProduct]);
 
   // 4. 전산 액션 버튼 정의
   const approvalButton = {
-    label: isTransferring ? '전송 중...' : '최종 심사 승인 및 전송',
+    label: isTransferring ? '전송 중...' : '전산 이관',
     onClick: handleFinalSubmit,
     disabled: isLoading || isTransferring,
     className: 'bg-[#003366] text-white hover:bg-[#002244]'
@@ -244,6 +262,20 @@ export const ReviewReportPage = () => {
           </div>
         </div>
       </main>
+
+      {/* 레거시 알림 팝업 */}
+      <LegacyAlertModal 
+        isOpen={alertState.isOpen}
+        message={alertState.message}
+        type={alertState.type}
+        onClose={() => {
+          setAlertState(prev => ({ ...prev, isOpen: false }));
+          // (Why) 전산 이관 성공 시, 확인 버튼을 누르면 창을 닫아 금융 서비스 종료 시뮬레이션
+          if (alertState.type === 'SUCCESS') {
+            window.close();
+          }
+        }}
+      />
     </div>
   );
 };

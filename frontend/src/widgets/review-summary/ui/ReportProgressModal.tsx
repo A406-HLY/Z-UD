@@ -57,7 +57,8 @@ export const ReportProgressModal = ({ isOpen }: ReportProgressModalProps) => {
   }, [reportStatus]);
 
   // (Why) Redux 상태가 LOADING이거나 상위에서 isOpen을 명시적으로 주었을 때 팝업을 유지합니다.
-  const isVisible = isOpen || reportStatus === 'LOADING';
+  // 단, 이미 리포트가 성공적으로 렌더링(SUCCESS)된 상태라면 팝업을 즉시 닫습니다.
+  const isVisible = (isOpen || reportStatus === 'LOADING') && reportStatus !== 'SUCCESS';
 
   if (!isVisible) return null;
 
@@ -101,8 +102,8 @@ export const ReportProgressModal = ({ isOpen }: ReportProgressModalProps) => {
                 </div>
 
                 <div className="z-10 flex flex-col items-center">
-                  <span className="text-3xl drop-shadow-sm animate-pulse-slow">🧠</span>
-                  <span className="text-[8px] font-bold text-blue-600 mt-1 uppercase tracking-tighter">AI Core Cluster</span>
+                  <span className="text-3xl drop-shadow-sm animate-pulse-slow">🌐</span>
+                  <span className="text-[8px] font-bold text-blue-600 mt-1 uppercase tracking-tighter">Central System</span>
                 </div>
               </div>
 
