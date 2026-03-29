@@ -43,13 +43,13 @@ export const VerificationResultPage = () => {
   });
 
   // (Why: 크로스 윈도우 동기화를 위한 로컬 상태 관리 - 기본 배율은 가독성을 위해 80%로 설정합니다.)
-  const [scale, setScale] = useState(0.8);
+  const [scale, setScale] = useState(1);
   const [pageNumber, setPageNumber] = useState(1);
 
   // (Why: 문서가 변경되면 페이지 번호(1)와 배율(80%)을 초기화합니다.)
   useEffect(() => {
     setPageNumber(1);
-    setScale(0.8);
+    setScale(1);
   }, [selectedId]);
 
   // (Why: 메인 창에서 발생하는 모든 뷰어 상태 변경을 BroadcastChannel로 송신합니다.)

@@ -17,8 +17,8 @@ export const ProductTabs = () => {
 
   return (
     <div className="bg-[#e4ebf1] flex border-b border-gray-400 shrink-0 select-none overflow-x-auto">
-      {products.slice(0, UI_LIMITS.MAX_VISIBLE_TABS).map(prod => {
-        const isSelected = selectedTab === prod.productKey;
+      {products.slice(0, UI_LIMITS.MAX_VISIBLE_TABS).map((prod, index) => {
+        const isSelected = selectedTab === prod.productKey || (!selectedTab && index === 0);
         
         // 미선택 탭 테두리 색상: 승인(초록) / 거절(빨강)
         const outlineColor = prod.isApproved ? '#22c55e' : '#ef4444';
