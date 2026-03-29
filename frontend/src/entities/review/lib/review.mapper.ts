@@ -112,8 +112,8 @@ export const mapLoanProductToViewModel = (
   }
 
   // 4. 숫자형 한도 값 추출 (UI 게이지용)
-  const ltvVal = calc?.LTVRatio?.value !== null ? Number(calc?.LTVRatio?.value) * 100 : 0;
-  const dsrVal = calc?.DSRRatio?.value !== null ? Number(calc?.DSRRatio?.value) * 100 : 0;
+  const ltvVal = calc?.LTVRatio?.value !== null ? Number(calc?.LTVRatio?.value) * 100 : null;
+  const dsrVal = calc?.DSRRatio?.value !== null ? Number(calc?.DSRRatio?.value) * 100 : null;
 
   // 5. 최종 산출 한도 계산 (백엔드 실제 산출액 우선, 없을 시 가계산)
   const marketPrice = Number(calc?.collateralMarketPrice?.value || 0);

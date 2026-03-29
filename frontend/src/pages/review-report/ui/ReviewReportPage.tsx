@@ -199,7 +199,7 @@ export const ReviewReportPage = () => {
           <div className="h-full bg-slate-800 flex flex-col flex-1 relative min-w-[300px]">
             {/* FSD Widget: DocumentImageViewer */}
             <DocumentImageViewer 
-              fileUrl={guidelineUrl} // (Why) 목업 PDF 대신 서버(Cloudflare)에서 받은 실제 URL을 사용합니다.
+              fileUrl={guidelineUrl ?? undefined} // (Why) 목업 PDF 대신 서버(Cloudflare)에서 받은 실제 URL을 사용합니다.
               files={MOCK_PDF_FILES}
               pageNumber={pdfPage}
               scale={pdfScale}

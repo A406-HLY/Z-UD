@@ -81,8 +81,8 @@ export interface ProcessedProduct {
   isApproved: boolean;
   finalResult: string; // "승인", "반려", "검표" 등
   finalReason: string;
-  ltvLimit: number; // % 값
-  dsrLimit: number; // % 값
+  ltvLimit: number | null; // % 값
+  dsrLimit: number | null; // % 값
   calculatedLimit: number; // 최종 한도 금액 (원)
   ltvArticles: string[]; // (New) LTV 관련 내규 조항
   dsrArticles: string[]; // (New) DSR 관련 내규 조항
