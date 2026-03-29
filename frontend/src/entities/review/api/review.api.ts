@@ -23,12 +23,3 @@ export const fetchGuideline = async (): Promise<string> => {
   const response = await apiClient.get<ApiResponse<string>>('/documents/rules/presigned-url?directory=rules');
   return response.data.data;
 };
-/**
- * @feature review/api/fetchGuideline
- * 내규 가이드라인 PDF 주소를 (Presigned URL) 조회합니다.
- * (Why) 클레임/한도 심사 보고서 우측에서 레퍼런스로 활용됩니다.
- */
-export const fetchGuideline = async (): Promise<string> => {
-  const response = await apiClient.get<ApiResponse<string>>('/documents/rules/presigned-url?directory=rules');
-  return response.data.data;
-};
