@@ -8,9 +8,7 @@ import { useEffect, useState } from 'react';
 interface Props {
   fields?: ExtractedField[];
   focusedFieldKey?: string | null;
-  fileUrl?: string; // 백엔드에서 추후 전달받을 실제 PDF 주소
-  files?: Array<{ fileId: string; fileUrl?: string; pageNum: number }>;
-  // (Why: 외부(크로스 윈도우 동기화 등)에서 제어하기 위한 상태 및 핸들러)
+  fileUrl?: string; 
   scale?: number;
   pageNumber?: number;
   onScaleChange?: (scale: number) => void;
@@ -20,20 +18,22 @@ interface Props {
 
 /**
  * @widget document-image-viewer
- * 실제 PDF 렌더링 및 OCR 좌표 기반 Bounding Box 오버레이를 담당하는 메인 위젯 컨테이너입니다.
- * (Why: 하위 세부 컴포넌트와 비즈니스 로직(Hook)을 결합하여 캡슐화하고 외부에는 데이터 Props만 노출합니다.)
+ * 심사 레포트 전용 PDF 뷰어 위젯입니다.
+ * (Why: 단일 PDF 문서 내에서 다중 페이지를 탐색해야 하는 레포트 특성에 맞춰 페이지 전환 로직을 단순화했습니다.)
  */
-export const DocumentImageViewer = ({ 
+export const ReportPdfViewer = ({ 
   fields = [], 
   focusedFieldKey = null, 
   fileUrl, 
-  files = [], 
   scale: externalScale,
   pageNumber: externalPageNumber,
   onScaleChange,
   onPageChange,
   verificationId
 }: Props) => {
+  const [totalPages, setTotalPages] = useState(1);
+  const [outlineMap, setOutlineMap] = useState<Record<string, { pageNumber: number; yRatio: number }>>({});
+
   const {
     scale,
     setScale,
@@ -46,14 +46,14 @@ export const DocumentImageViewer = ({
     setRenderedSize,
     bboxes,
     currentFileUrl
-  } = usePdfController(fields, focusedFieldKey, files, fileUrl, {
+  } = usePdfController(fields, focusedFieldKey, [], fileUrl, {
     scale: externalScale,
     pageNumber: externalPageNumber,
     onScaleChange,
-    onPageChange
+    onPageChange,
+    outlineMap
   });
   
-  // (Point: 하드코딩된 800px 대신 실제 컨테이너의 너비를 실측하여 뷰어의 기준 너비로 사용합니다.)
   const [baseWidth, setBaseWidth] = useState(800); 
 
   useEffect(() => {
@@ -61,9 +61,8 @@ export const DocumentImageViewer = ({
     
     const updateWidth = () => {
       if (containerRef.current) {
-        // 컨테이너 너비에서 패딩(p-12 = 24px*2 = 48px)과 여유 공간을 제외한 실측 너비 추출
         const rect = containerRef.current.getBoundingClientRect();
-        const measuredWidth = Math.max(300, rect.width - 100); // 최소 너비 보장 및 여유 공간 확보
+        const measuredWidth = Math.max(300, rect.width - 100); 
         setBaseWidth(measuredWidth);
       }
     };
@@ -76,25 +75,24 @@ export const DocumentImageViewer = ({
   }, [containerRef]);
 
   const handleOpenFull = () => {
-    // (Why: 전용 뷰어 라우트를 새 창으로 엽니다. 이 창은 BroadcastChannel을 통해 실시간 동기화됩니다.)
     const width = window.screen.availWidth * 0.8;
     const height = window.screen.availHeight * 0.8;
     const left = (window.screen.availWidth - width) / 2;
     const top = (window.screen.availHeight - height) / 2;
 
     window.open(
-      `/viewer/${verificationId || 'v-12345'}?page=${pageNumber}&scale=${scale}`, 
+      `/viewer/${verificationId || 'v-report'}?page=${pageNumber}&scale=${scale}`, 
       'PdfFullViewer', 
       `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=no`
     );
   };
 
   return (
-    <div className="flex-[1.3] h-full flex flex-col bg-[#808080] overflow-hidden relative">
+    <div className="flex-1 h-full flex flex-col bg-[#808080] overflow-hidden relative border-l border-gray-600">
       {/* 1. 뷰어 컨트롤 헤더 (중복 테두리 제거 및 높이 통일) */}
       <div className="h-[40px] bg-gray-200 border-b border-gray-300 flex items-center px-4 justify-between shrink-0 z-20">
         <span className="text-[11px] font-bold text-[#444] uppercase tracking-wider font-mono">
-          Page {pageNumber}/{files.length}
+          Page {pageNumber}/{totalPages}
         </span>
         <div className="flex items-center gap-2">
           {/* Prev button */}
@@ -106,15 +104,23 @@ export const DocumentImageViewer = ({
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           </button>
+          
+          <span className="text-[11px] font-mono font-bold w-12 text-center text-[#333]">
+            {pageNumber} / {totalPages}
+          </span>
+
           {/* Next button */}
           <button
             type="button"
-            onClick={() => setPageNumber(p => Math.min(files.length, p + 1))}
-            disabled={pageNumber >= files.length}
+            onClick={() => setPageNumber(p => Math.min(totalPages, p + 1))}
+            disabled={pageNumber >= totalPages}
             className="p-1.5 bg-white border border-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
           </button>
+          
+          <div className="w-px h-5 bg-gray-400 mx-1" />
+
           <button 
             type="button"
             onClick={() => setScale(s => Math.max(0.4, Number((s - 0.2).toFixed(1))))} 
@@ -143,15 +149,14 @@ export const DocumentImageViewer = ({
         </div>
       </div>
       
-      {/* 2. 스크롤 가능한 캔버스 영역 (Viewport 고정 레이어 분리) */}
+      {/* 2. 스크롤 가능한 캔버스 영역 */}
       <div className="flex-1 relative">
-         {/* (Point: 초기 로딩 시에만 화려한 로딩창을 띄웁니다.) */}
          {isLoading && (
             <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/5 pointer-events-none">
               <div className="flex flex-col items-center gap-4 bg-[#f4f4f4] px-24 py-10 border-2 border-gray-400 shadow-xl">
                 <div className="w-8 h-8 border-4 border-[#004b93] border-t-transparent rounded-full animate-spin" />
                 <span className="text-[12px] font-bold text-[#333] tracking-[0.2em] uppercase font-mono">
-                  PROCESSING
+                  LOADING REPORT
                 </span>
               </div>
             </div>
@@ -169,13 +174,16 @@ export const DocumentImageViewer = ({
                transform: `scale(${scale})` 
              }}
            >
+              {/* (Point): Report 전용이므로 pageNumber를 그대로 전달합니다. */}
               <PdfRenderer 
                 key={currentFileUrl}
                 fileUrl={currentFileUrl} 
-                pageNumber={1} 
-                scale={1} // 더루 캔버스 방식에서는 내부 렌더 스케일을 고정합니다.
+                pageNumber={pageNumber} 
+                scale={1}
                 baseWidth={baseWidth}
                 onLoadSuccess={setRenderedSize} 
+                onDocumentLoad={({ numPages }) => setTotalPages(numPages)}
+                onOutlineLoaded={setOutlineMap}
                 setIsLoading={setIsLoading}
               />
               <BboxOverlay 
@@ -188,14 +196,14 @@ export const DocumentImageViewer = ({
       
       {/* 3. 하단 메타데이터 바 */}
       <div className="h-[24px] bg-[#333] flex items-center px-4 gap-6 text-[9px] font-mono text-gray-400 uppercase shrink-0 z-20">
-         <span>Viewer: React-PDF Engine</span>
+         <span>Report Viewer: PDF Engine</span>
          <span className="opacity-30">|</span>
          <span className="flex items-center gap-1.5">
            <span className={`w-1.5 h-1.5 rounded-full ${isLoading ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'}`} />
            Status: {isLoading ? 'Rendering...' : 'Ready'}
          </span>
          <span className="opacity-30">|</span>
-         <span>Bboxes: {bboxes.length} Active</span>
+         <span>Page: {pageNumber} of {totalPages}</span>
       </div>
     </div>
   );

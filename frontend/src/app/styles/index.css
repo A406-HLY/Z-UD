@@ -40,6 +40,7 @@ input[type=number] {
 html {
   font-family: 'Inter', sans-serif;
   scrollbar-gutter: stable;
+  overflow: hidden; /* Hide window scrollbar */
 }
 
 /* (Security): 금융권 보안 정책 - 무단 인쇄 방지 */
