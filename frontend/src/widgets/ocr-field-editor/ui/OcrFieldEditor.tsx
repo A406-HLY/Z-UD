@@ -79,12 +79,7 @@ export const OcrFieldEditor = ({ fields, status, isRisk, selectedId, onFieldChan
       {/* Field List Section */}
       <div className="flex-1 overflow-auto p-6 space-y-4">
         <div className="grid grid-cols-2 gap-x-8 gap-y-6">
-          {fields.map((field, index) => {
-            // (Feature) 상실일자(latestLossDate)가 null인 경우(정합성 통과로 간주) 뷰에서 완전히 숨깁니다.
-            if (field.key === 'latestLossDate' && field.value === null) {
-              return null;
-            }
-
+          {visibleFields.map((field, index) => {
             // 정합성 통과 여부 및 수정 가능 여부 판단
             const isErrorField = !field.isMatch;
 

@@ -179,8 +179,8 @@ export const ReportPdfViewer = ({
                 key={currentFileUrl}
                 fileUrl={currentFileUrl} 
                 pageNumber={pageNumber} 
-                scale={1}
                 baseWidth={baseWidth}
+                scale={scale}
                 onLoadSuccess={setRenderedSize} 
                 onDocumentLoad={({ numPages }) => setTotalPages(numPages)}
                 onOutlineLoaded={setOutlineMap}

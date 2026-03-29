@@ -13,7 +13,7 @@ import {
   AuditSummaryItem,
   AuditStatus
 } from '@/entities/audit';
-import { SseAuditStatus, resetAuditState, setAllAuditDone, updateStepStatus, setHouseAuditData, setCreditData, setLoanData } from '@/entities/audit/model/audit.slice';
+import { SseAuditStatus, setAllAuditDone, updateStepStatus, setHouseAuditData, setCreditData, setLoanData } from '@/entities/audit/model/audit.slice';
 import { useAppSelector, useAppDispatch } from '@/app/store/hooks';
 import { useCallback } from 'react';
 import { useCreateReport } from '@/features/verification/api/use-create-report';

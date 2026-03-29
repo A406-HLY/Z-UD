@@ -26,7 +26,7 @@ interface Props {
  * 2. 렌더링 속도: 1.5초 이내 완료를 위해 Canvas 하드웨어 가속 활용
  * 3. 폐쇄망 대응: public 폴더의 로컬 CMap 데이터 참조로 한글 깨짐 방지
  */
-export const PdfRenderer = ({ fileUrl, pageNumber, scale, baseWidth, onLoadSuccess, onDocumentLoad, onOutlineLoaded, setIsLoading }: Props) => {
+export const PdfRenderer = ({ fileUrl, pageNumber, baseWidth, onLoadSuccess, onDocumentLoad, onOutlineLoaded, setIsLoading }: Props) => {
   const lowResCanvasRef = useRef<HTMLCanvasElement>(null);
   const highResCanvasRef = useRef<HTMLCanvasElement>(null);
   const [pdfDoc, setPdfDoc] = useState<pdfjsLib.PDFDocumentProxy | null>(null);
