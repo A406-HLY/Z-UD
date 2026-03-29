@@ -11,6 +11,8 @@ import { useUploadDocuments } from '@/features/document-sync/api/use-upload-docu
 import { useAgentDocs } from '@/features/document-sync/model/use-agent-docs';
 
 import { DocumentTransferModal } from '@/features/document-sync/ui/DocumentTransferModal';
+import { updateStepStatus } from '@/entities/audit/model/audit.slice';
+import { useAppDispatch } from '@/app/store/hooks';
 
 /**
  * @page LoanApplicationPage
@@ -18,6 +20,7 @@ import { DocumentTransferModal } from '@/features/document-sync/ui/DocumentTrans
  * (Why) 페이지 레벨에서는 위젯 간 상태 공유(Selection 등)를 조율하고, 전역 상태(Redux)를 구독하여 하위 위젯에 전달하거나 직접 관리합니다.
  */
 export const LoanApplicationPage = () => {
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const consultationId = useAppSelector((state) => state.customer.data.consultationId);
   const customerName = useAppSelector((state) => state.customer.data.name);
@@ -51,6 +54,9 @@ export const LoanApplicationPage = () => {
       { consultationId: consultationId, mode: 'selected', sequenceIds },
       {
         onSuccess: () => {
+          // (Why) 다음 사이트로 넘어가기 전, 로딩 팝업(OcrWaitModal)을 즉시 띄우기 위해 
+          // Redux 전역 상태의 OCR 단계를 LOADING으로 수동 변경합니다.
+          dispatch(updateStepStatus({ step: 'ocr', status: 'LOADING' }));
           navigate('/verification-result');
         },
         onError: () => {

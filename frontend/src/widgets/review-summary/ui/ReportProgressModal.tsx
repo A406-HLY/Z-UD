@@ -12,17 +12,22 @@ type StepStatus = 'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR';
  * 리포트 생성 단계의 진행 상황을 (Backend SSE 부재로 인해) 프론트엔드 시뮬레이션 타이머 기반으로 시각화합니다.
  */
 export const ReportProgressModal = ({ isOpen }: ReportProgressModalProps) => {
-  const { currentMessage } = useAppSelector((state) => state.audit);
+  const { currentMessage, steps: auditSteps } = useAppSelector((state) => state.audit);
+  const reportStatus = auditSteps.report;
   const reviewData = useAppSelector((state) => state.review.data);
+  const labels = [
+    '심사 결과 수신 중...',
+    '내규 위반 여부 분석 중...',
+    '리포트 작성 중...',
+    '심사 데이터 정합성 검증 완료'
+  ];
 
-  // (Why) 3단계 진행 상황을 위한 로컬 상태 관리 (심사 진행, 내규 검색, 리포트 생성)
-  const [steps, setSteps] = useState<StepStatus[]>(['IDLE', 'IDLE', 'IDLE']);
+  // (Why) 4단계 진행 상황을 위한 로컬 상태 관리
+  const [steps, setSteps] = useState<StepStatus[]>(['IDLE', 'IDLE', 'IDLE', 'IDLE']);
 
   useEffect(() => {
     if (!isOpen) return;
 
-    // (Why) 사용자 요구사항에 따른 3단계 시뮬레이션 타이머 설정
-    // 0 ~ 1.0s: 심사 진행 중
     // 1.0s ~ 2.5s: 내규 검색 중
     // 2.5s ~ (SSE 대기): 리포트 생성 중
     
@@ -50,7 +55,10 @@ export const ReportProgressModal = ({ isOpen }: ReportProgressModalProps) => {
     }
   }, [reviewData]);
 
-  if (!isOpen) return null;
+  // (Why) Redux 상태가 LOADING이거나 상위에서 isOpen을 명시적으로 주었을 때 팝업을 유지합니다.
+  const isVisible = isOpen || reportStatus === 'LOADING';
+
+  if (!isVisible) return null;
 
   return (
     <div className="fixed inset-0 z-110 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">

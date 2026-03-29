@@ -5,6 +5,7 @@ import { LoanTabs } from '@/widgets/loan-tabs';
 import { CustomerInfoForm } from '@/widgets/customer-info-form';
 import { LoanStepper } from '@/widgets/loan-stepper/ui/LoanStepper';
 import { AuditReportSection, AuditProgressModal } from '@/widgets/audit-result';
+import { ReportProgressModal } from '@/widgets/review-summary';
 import { 
   useHouseAuditQuery, 
   useMyDataAuditQuery,
@@ -151,7 +152,11 @@ export const CustomerInfoPage = () => {
 
       // (Step 3) API 호출 및 이동
       createReport(payload, {
-        onSuccess: () => navigate('/review-report'),
+        onSuccess: () => {
+          // (Why) 리포트로 넘어가기 전 수동으로 LOADING 상태를 주입하여 팝업이 즉시 뜨게 합니다.
+          dispatch(updateStepStatus({ step: 'report', status: 'LOADING' }));
+          navigate('/review-report');
+        },
         onError: (err) => alert(`리포트 생성 실패: ${err.message}`)
       });
     } catch (error) {
@@ -182,6 +187,7 @@ export const CustomerInfoPage = () => {
       
       {/* 다시 심사 결과 페이지 내부로 모달을 이동시켰습니다. */}
       <AuditProgressModal isOpen={!isAllAuditDone} />
+      <ReportProgressModal isOpen={false} />
 
       <main className="flex-1 p-4 space-y-4">
         {/* 상단 진행 상태 */}

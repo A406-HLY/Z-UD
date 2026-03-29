@@ -21,6 +21,7 @@ export interface AuditState {
     credit: SseAuditStatus;
     loanHistory: SseAuditStatus;
     houseAudit: SseAuditStatus;
+    report: SseAuditStatus; // (New) 리포트 생성 및 전환 상태
   };
 
   // 수신된 페이로드 데이터 저장
@@ -44,6 +45,7 @@ const initialState: AuditState = {
     credit: 'IDLE',
     loanHistory: 'IDLE',
     houseAudit: 'IDLE',
+    report: 'IDLE',
   },
   data: {
     ocrData: null,

@@ -14,6 +14,7 @@ import {
   selectGuidelineUrl,
   selectSelectedArticle 
 } from '@/entities/review/model/review.selectors';
+import { updateStepStatus } from '@/entities/audit/model/audit.slice';
 import { ARTICLE_PAGE_MAP } from '@/shared/config/pdfConfig';
 
 /**

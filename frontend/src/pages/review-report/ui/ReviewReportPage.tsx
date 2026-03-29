@@ -1,10 +1,11 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/app/store';
 import { Header } from '@/widgets/header';
 import { CustomerInfoForm } from '@/widgets/customer-info-form';
 import { LoanStepper } from '@/widgets/loan-stepper/ui/LoanStepper';
-
+import { useAppDispatch } from '@/app/store/hooks';
+import { updateStepStatus } from '@/entities/audit/model/audit.slice';
 import { ProductTabs, StatusSummaryBoard, LimitVisualizationCard } from '@/widgets/review-summary';
 import { ReviewDetailsList } from '@/widgets/review-details';
 import { useReviewReportController } from '@/features/review/model/use-review-report-controller';
@@ -22,7 +23,7 @@ import { transferConsultationToLegacy } from '@/entities/customer/api/customer.a
 /**
  * @page review-report
  * 심사레포트 단계 최상위 화면 (데이터 연동 및 Split 뷰 스켈레톤)
- */
+ */setTimeout
 export const ReviewReportPage = () => {
   // 0. Redux 상태 구독 (지연 조립을 위한 원천 데이터)
   const customerData = useSelector((state: RootState) => state.customer.data);
@@ -131,6 +132,23 @@ export const ReviewReportPage = () => {
     className: 'bg-[#003366] text-white hover:bg-[#002244]'
   };
 
+  /**
+   * (Why) 리포트 데이터 조회가 완료(REST/SSE)되고 로딩 상태가 해제되어 
+   * "내부 리포트 컴포넌트"가 사용자 화면에 실제로 렌더링된 시점에 팝업을 닫습니다.
+   */
+  const dispatch = useAppDispatch();
+  const reportStatus = useSelector((state: RootState) => state.audit.steps.report);
+
+  useEffect(() => {
+    if (!isLoading && reviewData && isAllAuditDone && reportStatus === 'LOADING') {
+      // (Why) 리액트 렌더 사이클 후 실제 DOM 페인팅 시간을 벌기 위해 600ms의 시각적 여유를 둡니다.
+      const timer = setTimeout(() => {
+        dispatch(updateStepStatus({ step: 'report', status: 'SUCCESS' }));
+      }, 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, reviewData, isAllAuditDone, reportStatus, dispatch]);
+
   return (
     <div className="h-screen flex flex-col bg-gray-50 font-sans overflow-hidden">
       <Header />
@@ -151,6 +169,8 @@ export const ReviewReportPage = () => {
 
         {/* --- 메인 Split View 영역 --- */}
         <div ref={containerRef} className="flex-1 flex overflow-hidden border border-[#556677] bg-white rounded-none">
+          {/* 전역 상태 기반 리포트 로딩 팝업 */}
+          <ReportProgressModal isOpen={false} />
           
           {/* Left Section (심사 리포트) */}
           <div 
@@ -163,13 +183,11 @@ export const ReviewReportPage = () => {
             {/* 메인 리포트 스크롤 영역 */}
             <main className="flex-1 overflow-y-auto bg-[#e2e8f0] p-2 flex flex-col gap-2">
               {/* (Why) REST API로 데이터를 먼저 받았더라도, SSE 완료(isAllAuditDone)가 오기 전까지는 
-                  사용자에게 2.5초 시뮬레이션 흐름을 일관되게 보여주기 위해 모달을 유지합니다. */}
+                  사용자에게 2.5초 시뮬레이션 흐름을 일관되게 보여주기 위해 스켈레톤을 유지합니다. */}
               {isLoading || (!reviewData || !isAllAuditDone) ? (
                 <div className="flex-1 flex flex-col items-center justify-center bg-white space-y-3 border border-[#cbd5e1]">
                   <Loader2 className="animate-spin text-[#004b93]" size={32} />
                   <div className="text-[11px] font-bold text-[#556677] uppercase tracking-widest animate-pulse">심사 결과 데이터를 분석 중입니다...</div>
-                  {/* (Why) 백그라운드에서 SSE를 대기하는 동안 3단계 시뮬레이션 진행 상황 모달을 띄웁니다. */}
-                  <ReportProgressModal isOpen={true} />
                 </div>
               ) : isError ? (
                <div className="flex-1 flex flex-col items-center justify-center bg-[#fdf5f4] space-y-3 border border-[#fad2cf] p-6 text-center">
