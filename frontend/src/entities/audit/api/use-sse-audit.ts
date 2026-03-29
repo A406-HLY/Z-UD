@@ -214,7 +214,7 @@ export const useSseAudit = (consultationId: string | undefined, isTriggered: boo
       eventSource.close();
       dispatch(setSseConnected(false));
     };
-  }, [consultationId, isTriggered, dispatch]);
+  }, [consultationId, isTriggered, dispatch, handleOcrCompleted, handleReportCompleted]);
 
   useEffect(() => {
     const cleanup = connectSse();

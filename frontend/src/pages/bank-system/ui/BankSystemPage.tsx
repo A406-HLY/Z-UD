@@ -37,11 +37,9 @@ export const BankSystemPage = () => {
   const v = (val: string | number | undefined | null) =>
     transferData ? { value: String(val ?? ''), readOnly: true } : {};
 
-  const vBool = (val: boolean | undefined | null) =>
-    transferData ? { value: val ? 'true' : 'false', readOnly: true } : {};
-
-  const vJson = (val: unknown) =>
-    transferData ? { value: val ? JSON.stringify(val) : '', readOnly: true } : {};
+  // (Why) 이미 report-factory에서 매핑된 홍보용 데이터를 그대로 사용하므로 vBool/vJson은 v로 대체 가능합니다.
+  const vBool = v;
+  const vJson = v;
 
   /** 가심사 업무 시스템 실행 (SSO 새 창) */
   const handleOpenLoanSystem = () => {
@@ -177,7 +175,7 @@ export const BankSystemPage = () => {
             {/* Section 1: Basic & Customer */}
             <SectionHeader title="기본 정보 및 고객 인적 정보" code="SCN-B101" />
             <div className={cn("flex flex-wrap border-l border-gray-300", denseInputStyle, dataStyle)}>
-              <Field label="상품명" width="w-full"><Input id="productName" {...v(transferData?.reportInput?.productName)} placeholder="ex) 싸금자리" className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
+              <Field label="상품명" width="w-full"><Input id="productName" {...v(transferData?.reportInput?.productName)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
               
               <Field label="성명" width="w-1/4"><Input id="name" {...v(transferData?.reportInput?.name)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
               <Field label="세대주 성명" width="w-1/4"><Input id="headOfHouseholdName" {...v(transferData?.reportInput?.headOfHouseholdName)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
@@ -188,13 +186,13 @@ export const BankSystemPage = () => {
               <Field label="발급일자" width="w-1/4"><Input id="issueDate" type="date" {...v(transferData?.reportInput?.issueDate)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
               <Field label="현주소(차주)" width="w-1/2"><Input id="currentAddress" {...v(transferData?.reportInput?.currentAddress)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
 
-              <Field label="세대원 목록" width="w-full"><Input id="householdMembers" {...vJson(transferData?.reportInput?.householdMembers)} placeholder="[{name, residentRegistrationNumber}]" className="h-5 rounded-none border-gray-200 text-[10px] w-full font-mono text-blue-600 bg-slate-50" /></Field>
-              <Field label="전입세대 내역" width="w-full"><Input id="moveInHouseholds" {...vJson(transferData?.reportInput?.moveInHouseholds)} placeholder="['name1', 'name2']" className="h-5 rounded-none border-gray-200 text-[10px] w-full font-mono text-blue-600 bg-slate-50" /></Field>
+              <Field label="세대원 목록" width="w-full"><Input id="householdMembers" {...vJson(transferData?.reportInput?.householdMembers)} className="h-5 rounded-none border-gray-200 text-[10px] w-full font-mono text-blue-600 bg-slate-50" /></Field>
+              <Field label="전입세대 내역" width="w-full"><Input id="moveInHouseholds" {...vJson(transferData?.reportInput?.moveInHouseholds)} className="h-5 rounded-none border-gray-200 text-[10px] w-full font-mono text-blue-600 bg-slate-50" /></Field>
               
               <div className="w-full bg-slate-50 px-2 py-0.5 text-[9px] font-bold text-slate-500 border-t border-b border-gray-200 flex items-center">배우자 정보</div>
-              <Field label="배우자 유무" width="w-1/3"><Input id="spouse.exists" {...vBool(transferData?.reportInput?.spouse?.exists)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" placeholder="true/false" /></Field>
-              <Field label="배우자 성명" width="w-1/3"><Input id="spouse.name" {...v(transferData?.reportInput?.spouse?.name)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
-              <Field label="배우자 주민번호" width="w-1/3"><Input id="spouse.residentRegistrationNumber" {...v(transferData?.reportInput?.spouse?.residentRegistrationNumber)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
+              <Field label="배우자 유무" width="w-1/3"><Input id="spouse.exists" {...v(transferData?.reportInput?.['spouse.exists'])} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
+              <Field label="배우자 성명" width="w-1/3"><Input id="spouse.name" {...v(transferData?.reportInput?.['spouse.name'])} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
+              <Field label="배우자 주민번호" width="w-1/3"><Input id="spouse.residentRegistrationNumber" {...v(transferData?.reportInput?.['spouse.residentRegistrationNumber'])} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
             </div>
 
             <div className="h-4 bg-slate-50 border-y border-gray-300"></div>
@@ -205,26 +203,26 @@ export const BankSystemPage = () => {
               <Field label="대상부동산 주소" width="w-1/2"><Input id="propertyAddress" {...v(transferData?.reportInput?.propertyAddress)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
               <Field label="지번 주소" width="w-1/2"><Input id="lotAddress" {...v(transferData?.reportInput?.lotAddress)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
               <Field label="실사 주소" width="w-1/2"><Input id="inspectionAddress" {...v(transferData?.reportInput?.inspectionAddress)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
-              <Field label="동호포함여부" width="w-1/4"><Input id="hasDongho" {...vBool(transferData?.reportInput?.hasDongho)} placeholder="true/false" className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
-              <Field label="위반건축물" width="w-1/4"><Input id="isViolationBuilding" {...vBool(transferData?.reportInput?.isViolationBuilding)} placeholder="true/false" className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
+              <Field label="동호포함여부" width="w-1/4"><Input id="hasDongho" {...vBool(transferData?.reportInput?.hasDongho)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
+              <Field label="위반건축물" width="w-1/4"><Input id="isViolationBuilding" {...vBool(transferData?.reportInput?.isViolationBuilding)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
               
               <Field label="등기 유형" width="w-1/4"><Input id="registrationType" {...v(transferData?.reportInput?.registrationType)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
               <Field label="건물 종류" width="w-1/4"><Input id="buildingType" {...v(transferData?.reportInput?.buildingType)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
               <Field label="주용도" width="w-1/4"><Input id="mainUsage" {...v(transferData?.reportInput?.mainUsage)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
               <Field label="소유자 성명" width="w-1/4"><Input id="ownerName" {...v(transferData?.reportInput?.ownerName)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
 
-              <Field label="대지권원인여부" width="w-1/3"><Input id="hasLandRightCause" {...vBool(transferData?.reportInput?.hasLandRightCause)} placeholder="true/false" className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
-              <Field label="소유권이전청구권" width="w-1/3"><Input id="hasOwnershipTransferClaim" {...vBool(transferData?.reportInput?.hasOwnershipTransferClaim)} placeholder="true/false" className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
-              <Field label="신탁등기여부" width="w-1/3"><Input id="hasTrustRegistration" {...vBool(transferData?.reportInput?.hasTrustRegistration)} placeholder="true/false" className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
+              <Field label="대지권원인여부" width="w-1/3"><Input id="hasLandRightCause" {...vBool(transferData?.reportInput?.hasLandRightCause)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
+              <Field label="소유권이전청구권" width="w-1/3"><Input id="hasOwnershipTransferClaim" {...vBool(transferData?.reportInput?.hasOwnershipTransferClaim)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
+              <Field label="신탁등기여부" width="w-1/3"><Input id="hasTrustRegistration" {...vBool(transferData?.reportInput?.hasTrustRegistration)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
 
               <div className="w-full bg-slate-50 px-2 py-0.5 text-[9px] font-bold text-slate-500 border-t border-b border-gray-200 flex items-center">매매 및 권리 내역</div>
               <Field label="매매금액" width="w-1/3" unit="원"><Input id="salePrice" {...v(transferData?.reportInput?.salePrice)} className="h-5 rounded-none border-gray-200 text-[10px] w-full text-right" /></Field>
               <Field label="매도인 성명" width="w-1/3"><Input id="seller.name" {...v(transferData?.reportInput?.seller?.name)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
               <Field label="매수인 성명" width="w-1/3"><Input id="buyer.name" {...v(transferData?.reportInput?.buyer?.name)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
               
-              <Field label="보증금 목록" width="w-1/2"><Input id="depositAmountList" {...vJson(transferData?.reportInput?.depositAmountList)} placeholder="[100000000]" className="h-5 rounded-none border-gray-200 text-[10px] w-full font-mono text-blue-600 bg-slate-50" /></Field>
-              <Field label="선순위 권리" width="w-1/2"><Input id="seniorRights" {...vJson(transferData?.reportInput?.seniorRights)} placeholder="[{}]" className="h-5 rounded-none border-gray-200 text-[10px] w-full font-mono text-blue-600 bg-slate-50" /></Field>
-              <Field label="층별 상세현황" width="w-1/2"><Input id="floorStatusList" {...vJson(transferData?.reportInput?.floorStatusList)} placeholder="[{floor, usage, area}]" className="h-5 rounded-none border-gray-200 text-[10px] w-full font-mono text-blue-600 bg-slate-50" /></Field>
+              <Field label="보증금 목록" width="w-1/2"><Input id="depositAmountList" {...vJson(transferData?.reportInput?.depositAmountList)} className="h-5 rounded-none border-gray-200 text-[10px] w-full font-mono text-blue-600 bg-slate-50" /></Field>
+              <Field label="선순위 권리" width="w-1/2"><Input id="seniorRights" {...vJson(transferData?.reportInput?.seniorRights)} className="h-5 rounded-none border-gray-200 text-[10px] w-full font-mono text-blue-600 bg-slate-50" /></Field>
+              <Field label="층별 상세현황" width="w-1/2"><Input id="floorStatusList" {...vJson(transferData?.reportInput?.floorStatusList)} className="h-5 rounded-none border-gray-200 text-[10px] w-full font-mono text-blue-600 bg-slate-50" /></Field>
               <Field label="특약사항" width="w-1/2"><Input id="specialTerms" {...v(transferData?.reportInput?.specialTerms)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
             </div>
 
@@ -236,7 +234,7 @@ export const BankSystemPage = () => {
               <div className="w-full md:w-2/3 border-r border-gray-300">
                 <SectionHeader title="소득 및 직장 증빙 (Group 001/002)" code="SCN-I303" />
                 <div className="flex flex-wrap">
-                  <Field label="근무 유형" width="w-1/3"><Input id="employmentType" {...v(transferData?.reportInput?.employmentType)} placeholder="EMPLOYEE" className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
+                  <Field label="근무 유형" width="w-1/3"><Input id="employmentType" {...v(transferData?.reportInput?.employmentType)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
                   <Field label="대출 목적" width="w-1/3"><Input id="loanPurpose" {...v(transferData?.reportInput?.loanPurpose)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
                   <Field label="보유주택수" width="w-1/3" unit="채"><Input id="ownedHouseCount" {...v(transferData?.reportInput?.ownedHouseCount)} type="number" className="h-5 rounded-none border-gray-200 text-[10px] w-full text-right" /></Field>
 
@@ -244,8 +242,8 @@ export const BankSystemPage = () => {
                   <Field label="가입자구분" width="w-1/3"><Input id="subscriberType" {...v(transferData?.reportInput?.subscriberType)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
                   <Field label="최득일자" width="w-1/3"><Input id="latestAcquisitionDate" type="date" {...v(transferData?.reportInput?.latestAcquisitionDate)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
                   <Field label="상실일자" width="w-1/3"><Input id="latestLossDate" type="date" {...v(transferData?.reportInput?.latestLossDate)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
-                  <Field label="대표자명 유무" width="w-1/3"><Input id="representativeName" {...vBool(transferData?.reportInput?.representativeName)} placeholder="true/false" className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
-                  <Field label="직인여부" width="w-1/3"><Input id="hasCompanySeal" {...vBool(transferData?.reportInput?.hasCompanySeal)} placeholder="true/false" className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
+                  <Field label="대표자명 유무" width="w-1/3"><Input id="representativeName" {...vBool(transferData?.reportInput?.representativeName)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
+                  <Field label="직인여부" width="w-1/3"><Input id="hasCompanySeal" {...vBool(transferData?.reportInput?.hasCompanySeal)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
                   <Field label="소득자 성명" width="w-1/3"><Input id="incomeRecipientName" {...v(transferData?.reportInput?.incomeRecipientName)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
                   <Field label="소득자 주민번호" width="w-1/2"><Input id="incomeRecipientResidentRegistrationNumber" {...v(transferData?.reportInput?.incomeRecipientResidentRegistrationNumber)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
                   <Field label="근무기간" width="w-1/2"><Input id="workPeriod" {...v(transferData?.reportInput?.workPeriod)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
@@ -266,8 +264,8 @@ export const BankSystemPage = () => {
               <div className="w-full md:w-1/3">
                 <SectionHeader title="심사 지표 및 세금" code="SCN-A404" />
                 <div className="flex flex-col h-full border-b border-gray-300">
-                  <Field label="세목(체납) 목록" width="w-full"><Input id="taxItems" {...vJson(transferData?.reportInput?.taxItems)} placeholder="[{taxItemName, taxAmount, remark}]" className="h-5 rounded-none border-gray-200 text-[10px] w-full font-mono text-blue-600 bg-slate-50" /></Field>
-                  <Field label="수기심사요건" width="w-full"><Input id="manualReviewRequired" {...vBool(transferData?.reportInput?.manualReviewRequired)} placeholder="true/false" className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
+                   <Field label="세목(체납) 목록" width="w-full"><Input id="taxItems" {...vJson(transferData?.reportInput?.taxItems)} className="h-5 rounded-none border-gray-200 text-[10px] w-full font-mono text-blue-600 bg-slate-50" /></Field>
+                  <Field label="수기심사요건" width="w-full"><Input id="manualReviewRequired" {...vBool(transferData?.reportInput?.manualReviewRequired)} className="h-5 rounded-none border-gray-200 text-[10px] w-full" /></Field>
                   <Field label="담보 시세" width="w-full" unit="원"><Input id="collateralMarketPrice" {...v(transferData?.reportInput?.collateralMarketPrice)} className="h-5 rounded-none border-gray-200 text-[10px] w-full text-right" /></Field>
                   <Field label="총대출잔액" width="w-full" unit="원"><Input id="totalRemainingLoanBalance" type="number" {...v(transferData?.reportInput?.totalRemainingLoanBalance)} className="h-5 rounded-none border-gray-200 text-[10px] w-full text-right" /></Field>
                   <Field label="월상환액" width="w-full" unit="원"><Input id="monthlyRepaymentAmount" type="number" {...v(transferData?.reportInput?.monthlyRepaymentAmount)} className="h-5 rounded-none border-gray-200 text-[10px] w-full text-right" /></Field>

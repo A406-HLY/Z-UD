@@ -120,6 +120,7 @@ export interface ReportInput {
   loanPurpose: string | null;
   ownedHouseCount: number | null;
   targetLoanAmount: number | null;
+  issueDate: string | null;
 }
 
 /** 
