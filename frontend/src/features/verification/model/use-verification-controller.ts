@@ -80,7 +80,14 @@ export const useVerificationController = () => {
   // (Why: 선택된 문서가 없을 경우 첫 번째 유효한 문서를 자동으로 활성화합니다.)
   useEffect(() => {
     if (localResult && !selectedId) {
-      onSelectDocument(localResult.selectedDocId);
+      const firstId = localResult.selectedDocId;
+      onSelectDocument(firstId);
+
+      // (Why: 최초 진입 시 사용자가 즉시 키보드 방향키 등으로 탐색할 수 있도록 첫 번째 버튼에 포커스를 줍니다.)
+      setTimeout(() => {
+        const firstButton = document.querySelector(`button[data-doc-id="${firstId}"]`) as HTMLButtonElement | null;
+        if (firstButton) firstButton.focus();
+      }, 100);
     }
   }, [localResult, selectedId, onSelectDocument]);
 
@@ -93,6 +100,10 @@ export const useVerificationController = () => {
         const nextButton = document.querySelector(`button[data-doc-id="${nextId}"]`) as HTMLButtonElement | null;
         if (nextButton) nextButton.focus();
       }, 30);
+    } else {
+      // (Why: 더 이상 다음 서류가 브라우저 상에 없을 경우, 최종 단계인 '검증 완료' 버튼으로 포커스를 보냅니다.)
+      const nextStepBtn = document.getElementById('next-step-button');
+      if (nextStepBtn) nextStepBtn.focus();
     }
   };
 

@@ -218,7 +218,7 @@ export const mapServerResponseToVerificationResult = (
 
   return {
     id,
-    selectedDocId: processedDocs[0]?.id || '',
+    selectedDocId: categories[0]?.itemIds[0] || '',
     categories,
     documents: documentsMap,
     documentFields,

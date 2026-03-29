@@ -60,6 +60,7 @@ export const LoanTabs = ({ actionButton, extraActionButton, onNextStep, isNextSt
         {/* (Why) 사용자가 지정한 고정 위치(네비게이션바 맨 우측)의 메인 액션 버튼 */}
         {actionButton ? (
           <Button 
+            id="next-step-button"
             size="sm" 
             className={cn(
               "h-6 text-[10px] px-4 font-black transition-all rounded-none border shadow-sm uppercase italic tracking-tighter",
@@ -72,6 +73,7 @@ export const LoanTabs = ({ actionButton, extraActionButton, onNextStep, isNextSt
           </Button>
         ) : onNextStep && (
           <Button 
+            id="next-step-button"
             size="sm" 
             variant="primary"
             className={cn(
