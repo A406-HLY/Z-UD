@@ -9,12 +9,12 @@ import { ProductTabs, StatusSummaryBoard, LimitVisualizationCard } from '@/widge
 import { ReviewDetailsList } from '@/widgets/review-details';
 import { DocumentImageViewer } from '@/widgets/document-image-viewer/ui/DocumentImageViewer';
 import { useReviewReportController } from '@/features/review/model/use-review-report-controller';
-import { createReportRequestPayload } from '@/entities/verification/model/report-factory';
+import { createReportRequestPayload, createLegacyTransferPayload } from '@/entities/verification/model/report-factory';
 import { MOCK_PDF_FILES } from '@/shared/config/pdfConfig';
 
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { LoanTabs } from '@/widgets/loan-tabs';
-import { useCreateReport } from '@/features/verification/api/use-create-report';
+import { transferConsultationToLegacy } from '@/entities/customer/api/customer.api';
 
 /**
  * @page review-report
@@ -34,11 +34,12 @@ export const ReviewReportPage = () => {
     pdfPage, 
     setPdfPage, 
     pdfScale, 
-    setPdfScale 
+    setPdfScale,
+    guidelineUrl // (New) 컨트롤러에서 가져온 동적 URL
   } = useReviewReportController(consultationId);
 
-  // 1. API Mutation 훅 초기화
-  const { mutate: createReport, isPending: isSubmitting } = useCreateReport();
+  // 1. API 상태 추가
+  const [isTransferring, setIsTransferring] = useState(false);
 
   // 1. Split View 조절 로직
   const [leftWidthPercent, setLeftWidthPercent] = useState<number>(55);
@@ -65,38 +66,62 @@ export const ReviewReportPage = () => {
     document.addEventListener('mouseup', handleMouseUp);
   }, []);
 
-  // 3. 최종 데이터 조립 핸들러 (Simulation)
-  const handleFinalSubmit = useCallback(() => {
-    // (Why) 여러 문서에 흩어진 수정 내역을 하나의 평탄화된 객체로 병합합니다.
-    const allEditsValues: Record<string, any> = {};
-    Object.values(edits).forEach(docEdit => {
-      Object.assign(allEditsValues, docEdit.values);
-    });
+  // 3. 최종 데이터 조립 및 이관 핸들러 (Transfer)
+  const handleFinalSubmit = useCallback(async () => {
+    if (!consultationId || consultationId.includes("TEMP")) {
+      alert("유효한 상담 ID가 존재하지 않습니다.");
+      return;
+    }
 
     try {
-      // 팩토리 함수를 호출하여 최종 API 페이로드 생성
-      const payload = createReportRequestPayload(
+      setIsTransferring(true);
+      // (Why) 여러 문서에 흩어진 수정 내역을 하나의 평탄화된 객체로 병합합니다.
+      const allEditsValues: Record<string, any> = {};
+      Object.values(edits).forEach(docEdit => {
+        Object.assign(allEditsValues, docEdit.values);
+      });
+
+      // 1. 기존 페이로드 뼈대 조립
+      const basePayload = createReportRequestPayload(
         ocrData as any,
         allEditsValues,
-        customerData,
+        customerData as any,
         creditData,
         loanData
       );
 
-      console.log('🚀 [Simulation] 최종 가심사 리포트 페이로드:', payload);
+      // 2. 레거시(은행망) 전산망 이관 페이로드 생성
+      const transferPayload = createLegacyTransferPayload(
+        basePayload.reportInput, 
+        customerData as any, 
+        "싸금자리"
+      );
+
+      console.log('🚀 [Transfer] 최종 이관 페이로드:', transferPayload);
       
-      // (Why) 실제 API 호출을 수행합니다. useMutation 기반이므로 비동기 전처리는 훅 내부에서 담당합니다.
-      createReport(payload);
-    } catch (err) {
-      console.error('❌ 데이터 조립 중 오류 발생:', err);
+      // 3. 실제 전산 이관 API 호출
+      await transferConsultationToLegacy(consultationId, transferPayload);
+      
+      // 4. (프론트 단독 시뮬레이션용) 부모 창(BankSystem)으로 데이터 발송
+      const channel = new BroadcastChannel('bank-system-transfer');
+      channel.postMessage(transferPayload);
+      channel.close();
+      
+      alert('✅ 통합 전산망으로 최종 심사 결과가 성공적으로 전송(이관)되었습니다!');
+      
+    } catch (err: any) {
+      console.error('❌ 데이터 조립 및 이관 중 오류 발생:', err);
+      alert(`전송 실패: ${err?.response?.data?.message || err.message}`);
+    } finally {
+      setIsTransferring(false);
     }
-  }, [ocrData, customerData, creditData, loanData, edits, createReport]);
+  }, [ocrData, customerData, creditData, loanData, edits, consultationId]);
 
   // 4. 전산 액션 버튼 정의
   const approvalButton = {
-    label: isSubmitting ? '전송 중...' : '최종 심사 승언 및 전송',
+    label: isTransferring ? '전송 중...' : '최종 심사 승인 및 전송',
     onClick: handleFinalSubmit,
-    disabled: isLoading || isSubmitting,
+    disabled: isLoading || isTransferring,
     className: 'bg-[#003366] text-white hover:bg-[#002244]'
   };
 
@@ -119,29 +144,29 @@ export const ReviewReportPage = () => {
         </section>
 
         {/* --- 메인 Split View 영역 --- */}
-        <div ref={containerRef} className="flex-1 flex overflow-hidden border border-gray-300 bg-white rounded-sm">
+        <div ref={containerRef} className="flex-1 flex overflow-hidden border border-[#556677] bg-white rounded-none">
           
           {/* Left Section (심사 리포트) */}
           <div 
-            className="h-full bg-white flex flex-col relative"
+            className="h-full flex flex-col relative bg-[#f8fafc]"
             style={{ width: `${leftWidthPercent}%` }}
           >
             {/* 상품 탭 영역 */}
             <ProductTabs />
 
             {/* 메인 리포트 스크롤 영역 */}
-            <main className="flex-1 overflow-y-auto bg-[#f8fafc] p-3 flex flex-col space-y-4">
+            <main className="flex-1 overflow-y-auto bg-[#e2e8f0] p-2 flex flex-col gap-2">
               {isLoading ? (
-               <div className="flex-1 flex flex-col items-center justify-center bg-white space-y-3 border border-gray-200">
-                 <Loader2 className="animate-spin text-blue-600" size={32} />
-                 <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest animate-pulse">심사 결과 데이터를 분석 중입니다...</div>
+               <div className="flex-1 flex flex-col items-center justify-center bg-white space-y-3 border border-[#cbd5e1]">
+                 <Loader2 className="animate-spin text-[#004b93]" size={32} />
+                 <div className="text-[11px] font-bold text-[#556677] uppercase tracking-widest animate-pulse">심사 결과 데이터를 분석 중입니다...</div>
                </div>
              ) : isError ? (
-               <div className="flex-1 flex flex-col items-center justify-center bg-red-50 space-y-3 border border-red-200 p-6 text-center">
-                 <AlertTriangle className="text-red-500" size={32} />
-                 <div className="text-[12px] font-black text-red-800 uppercase">Data Fetching Error</div>
-                 <div className="text-[10px] text-red-600 font-medium max-w-[240px]">{(error as Error)?.message || "알 수 없는 전산 오류가 발생했습니다. 시스템 관리자에게 문의하세요."}</div>
-                 <button onClick={() => window.location.reload()} className="mt-2 px-4 py-1.5 bg-red-600 text-white font-bold rounded-sm text-[10px] uppercase hover:bg-red-700 shadow-sm">Retry Connection</button>
+               <div className="flex-1 flex flex-col items-center justify-center bg-[#fdf5f4] space-y-3 border border-[#fad2cf] p-6 text-center">
+                 <AlertTriangle className="text-[#c5221f]" size={32} />
+                 <div className="text-[12px] font-black text-[#a50e0e] uppercase">Data Fetching Error</div>
+                 <div className="text-[10px] text-[#c5221f] font-medium max-w-[240px]">{(error as Error)?.message || "알 수 없는 전산 오류가 발생했습니다. 시스템 관리자에게 문의하세요."}</div>
+                 <button onClick={() => window.location.reload()} className="mt-2 px-4 py-1.5 bg-[#c5221f] text-white font-bold rounded-[2px] text-[10px] uppercase hover:bg-[#a50e0e] shadow-sm transition-colors border border-[#a50e0e]">Retry Connection</button>
                </div>
              ) : (
                <>
@@ -154,8 +179,8 @@ export const ReviewReportPage = () => {
                  {/* 상세 항목 리스트 */}
                  <ReviewDetailsList />
                  
-                 {/* 하단 패널(임시 전송 버튼 등 기능 확장용 패딩) */}
-                 <div className="h-4 shrink-0"></div>
+                 {/* 하단 패널(임시 패딩) */}
+                 <div className="h-2 shrink-0"></div>
                </>
              )}
             </main>
@@ -163,7 +188,7 @@ export const ReviewReportPage = () => {
 
           {/* Resizer 바 */}
           <div 
-            className="w-1.5 bg-gray-300 hover:bg-blue-400 cursor-col-resize shrink-0 transition-colors group relative z-40 border-r border-indigo-200"
+            className="w-1.5 bg-[#556677] hover:bg-[#004b93] cursor-col-resize shrink-0 transition-colors group relative z-40 border-x border-[#334455]"
             onMouseDown={startResizing}
           >
             {/* 드래그 용이성을 위해 투명 히트박스 확장 */}
@@ -174,7 +199,7 @@ export const ReviewReportPage = () => {
           <div className="h-full bg-slate-800 flex flex-col flex-1 relative min-w-[300px]">
             {/* FSD Widget: DocumentImageViewer */}
             <DocumentImageViewer 
-              fileUrl="/mock-guideline.pdf"
+              fileUrl={guidelineUrl ?? undefined} // (Why) 목업 PDF 대신 서버(Cloudflare)에서 받은 실제 URL을 사용합니다.
               files={MOCK_PDF_FILES}
               pageNumber={pdfPage}
               scale={pdfScale}

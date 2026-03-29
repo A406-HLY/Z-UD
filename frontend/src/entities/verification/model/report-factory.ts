@@ -4,6 +4,7 @@ import {
 } from '@/entities/verification/model/report.types';
 import { ServerDocItem } from '@/entities/verification/model/types';
 import { Customer } from '@/entities/customer/model/types';
+import { LOAN_PURPOSE_MAP, LoanPurposeOption } from '@/entities/customer/model/customer.constants';
 import { MyDataResDto, HouseAuditResponseDto } from '@/entities/audit/model/types';
 import { mergeDotNotation } from '@/shared/lib/utils/merge-utils';
 
@@ -74,26 +75,26 @@ const FIELD_SOURCE_RULES: Record<string, { docType: string; path: string }> = {
  * 백엔드 엄격 스키마 검사를 통과하기 위해 null 대신 기본값(Zero-value)을 할당합니다.
  */
 const REPORT_SKELETON: ReportInput = {
-  headOfHouseholdName: "", name: "", residentRegistrationNumber: "",
+  headOfHouseholdName: null, name: null, residentRegistrationNumber: null,
   employmentType: "EMPLOYEE",
-  householdMembers: [], currentAddress: "", moveInHouseholds: [],
-  spouse: { exists: false, name: "", residentRegistrationNumber: "" }, 
-  registrationType: "", buildingType: "", hasDongho: false,
-  lotAddress: "", hasLandRightCause: false, hasOwnershipTransferClaim: false,
-  hasTrustRegistration: false, ownerName: "", depositAmountList: [], seniorRights: [],
-  isViolationBuilding: false, mainUsage: "", floorStatusList: [],
-  propertyAddress: "", salePrice: 0, specialTerms: "", seller: { name: "" },
-  buyer: { name: "" }, taxItems: [], manualReviewRequired: false,
-  registrationNumber: "", identifierNumber: "", inspectionAddress: "",
-  collateralMarketPrice: 0, totalRemainingLoanBalance: 0,
-  monthlyRepaymentAmount: 0, creditRating: "", annualPrincipalAndInterestRepayment: 0,
-  businessName: "", businessRegistrationNumber: "", incomeYear: "",
-  incomeAmount: 0, determinedTaxAmount: 0, corporateRegistrationNumber: "", taxableSalesAmount: 0, 
-  representativeName: false, hasCompanySeal: false, subscriberType: "", 
-  latestAcquisitionDate: "", latestLossDate: "", 
-  incomeRecipientName: "", incomeRecipientResidentRegistrationNumber: "",
-  workPeriod: "", annualIncomeTotal: 0,
-  loanPurpose: "", ownedHouseCount: 0,
+  householdMembers: null, currentAddress: null, moveInHouseholds: null,
+  spouse: null, 
+  registrationType: null, buildingType: null, hasDongho: null,
+  lotAddress: null, hasLandRightCause: null, hasOwnershipTransferClaim: null,
+  hasTrustRegistration: null, ownerName: null, depositAmountList: null, seniorRights: null,
+  isViolationBuilding: null, mainUsage: null, floorStatusList: null,
+  propertyAddress: null, salePrice: null, specialTerms: null, seller: null,
+  buyer: null, taxItems: null, manualReviewRequired: null,
+  registrationNumber: null, identifierNumber: null, inspectionAddress: null,
+  collateralMarketPrice: null, totalRemainingLoanBalance: null,
+  monthlyRepaymentAmount: null, creditRating: null, annualPrincipalAndInterestRepayment: null,
+  businessName: null, businessRegistrationNumber: null, incomeYear: null,
+  incomeAmount: null, determinedTaxAmount: null, corporateRegistrationNumber: null, taxableSalesAmount: null, 
+  representativeName: null, hasCompanySeal: null, subscriberType: null, 
+  latestAcquisitionDate: null, latestLossDate: null, 
+  incomeRecipientName: null, incomeRecipientResidentRegistrationNumber: null,
+  workPeriod: null, annualIncomeTotal: null,
+  loanPurpose: null, ownedHouseCount: null, targetLoanAmount: null,
 } as any;
 
 /**
@@ -236,16 +237,17 @@ export const createReportRequestPayload = (
     name: userInputData.name,
     residentRegistrationNumber: userInputData.residentRegistrationNumber,
     employmentType: isSelfEmployed ? 'SELF_EMPLOYED' : 'EMPLOYEE',
-    loanPurpose: userInputData.loanPurpose,
-    ownedHouseCount: parseInt(userInputData.ownedHouseCount) || 0,
+    loanPurpose: LOAN_PURPOSE_MAP[userInputData.loanPurpose as LoanPurposeOption] || userInputData.loanPurpose,
+    ownedHouseCount: userInputData.ownedHouseCount ? parseInt(userInputData.ownedHouseCount, 10) : null,
+    targetLoanAmount: userInputData.targetLoanAmount ? parseInt(userInputData.targetLoanAmount.replace(/,/g, ''), 10) : null,
 
     // (B) 마이데이터 연동 정보 주입 (영문 등급 문자열 그대로 전달)
     creditRating: creditData ? creditData.ratingName : null,
-    totalRemainingLoanBalance: loanData?.totalRemainingLoanBalance || 0,
-    annualPrincipalAndInterestRepayment: loanData?.totalAnnualPrincipalAndInterestRepayment || 0,
+    totalRemainingLoanBalance: loanData?.totalRemainingLoanBalance ?? null,
+    annualPrincipalAndInterestRepayment: loanData?.totalAnnualPrincipalAndInterestRepayment ?? null,
 
     // (C) 주택 심사 정보 주입 (price는 만원 단위이므로 그대로 전달 또는 원 단위 변환 필요 여부 확인 - 백엔드 규격에 따름)
-    collateralMarketPrice: houseData?.housePrice?.price || 0,
+    collateralMarketPrice: houseData?.housePrice?.price ?? null,
   } as ReportInput;
 
   return {
@@ -253,3 +255,58 @@ export const createReportRequestPayload = (
     reportInput: finalReportInput,
   };
 };
+
+/**
+ * @feature verification/report-factory
+ * Redux 상태(본인인증 Customer 정보)와 기존 가심사 결과(ReportInput)를 혼합하여
+ * 백엔드 전산 이관(Transfer) API 스펙에 맞는 최종 Payload를 생성합니다.
+ * 백엔드가 배열형 데이터를 수용하기로 협의됨에 따라, 원본 배열형은 그대로 유지하되
+ * 날짜 포맷팅 및 Redux 필수값(phoneNumber 등)만 추가 주입합니다.
+ */
+export const createLegacyTransferPayload = (
+  originalReport: ReportInput,
+  customerData: Customer,
+  productName: string
+): any => { // 백엔드의 ConsultationTransferReqDto 구조
+  const transferReportInput: any = { ...originalReport };
+
+  // 1. 날짜 필드 포맷 정규화 (YYYY-MM-DD 변환)
+  if (transferReportInput.issueDate) {
+    transferReportInput.issueDate = standardizeDateFormat(transferReportInput.issueDate);
+  }
+  if (transferReportInput.latestAcquisitionDate) {
+    transferReportInput.latestAcquisitionDate = standardizeDateFormat(transferReportInput.latestAcquisitionDate);
+  }
+  if (transferReportInput.latestLossDate) {
+    transferReportInput.latestLossDate = standardizeDateFormat(transferReportInput.latestLossDate);
+  }
+
+  // 2. Redux Store(Customer)에서 누락되었던 전산 기입 필수값 채우기
+  transferReportInput.phoneNumber = customerData.phoneNumber || "";
+  
+  // 콤마 제거 후 숫자로 파싱 (100,000,000 -> 100000000)
+  const sanitizeNumber = (val: any) => typeof val === 'string' ? Number(val.replace(/,/g, '')) || 0 : Number(val) || 0;
+  
+  transferReportInput.targetLoanAmount = sanitizeNumber(customerData.targetLoanAmount);
+  transferReportInput.ownedHouseCount = sanitizeNumber(customerData.ownedHouseCount);
+
+  // 대출 목적 매핑 (한글 -> 영문 Enum 상수)
+  switch (customerData.loanPurpose) {
+    case '생활안정자금목적':
+      transferReportInput.loanPurpose = 'LIVING_STABILITY';
+      break;
+    case '주택구입목적':
+    default:
+      transferReportInput.loanPurpose = 'HOME_PURCHASE';
+      break;
+  }
+
+  // 3. 사용자가 최종 선택한 상품명 주입
+  transferReportInput.productName = productName;
+
+  // 4. 백엔드 DTO { reportInput: { ... } } 형태로 감싸서 반환
+  return {
+    reportInput: transferReportInput
+  };
+};
+

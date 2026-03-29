@@ -16,6 +16,7 @@ interface LoanTabsProps {
     disabled?: boolean;
     className?: string;
   };
+  extraActionButton?: React.ReactNode;
   onNextStep?: () => void;
   isNextStepPending?: boolean;
   isScanComplete?: boolean;
@@ -26,7 +27,7 @@ interface LoanTabsProps {
  * 대출 프로세스 탭 네비게이션 위젯입니다.
  * (P1) 피드백 반영: 우측 고정 위치에 심사 상태에 따른 동적 액션 버튼을 렌더링할 수 있도록 확장되었습니다.
  */
-export const LoanTabs = ({ actionButton, onNextStep, isNextStepPending, isScanComplete }: LoanTabsProps) => {
+export const LoanTabs = ({ actionButton, extraActionButton, onNextStep, isNextStepPending, isScanComplete }: LoanTabsProps) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -55,6 +56,7 @@ export const LoanTabs = ({ actionButton, onNextStep, isNextStepPending, isScanCo
       </div>
 
       <div className="px-2 flex items-center gap-2">
+        {extraActionButton}
         {/* (Why) 사용자가 지정한 고정 위치(네비게이션바 맨 우측)의 메인 액션 버튼 */}
         {actionButton ? (
           <Button 
