@@ -10,12 +10,18 @@ export interface ReviewState {
   data: ConsultationResponse | null;
   selectedProductKey: string | null;
   selectedArticle: string[] | null; // PDF 뷰어 연동용 조항 데이터 (문자열 배열)
+  loading: boolean;
+  error: string | null;
+  guidelineUrl: string | null;
 }
 
 const initialState: ReviewState = {
   data: null,
   selectedProductKey: null,
   selectedArticle: null,
+  loading: false,
+  error: null,
+  guidelineUrl: null,
 };
 
 export const reviewSlice = createSlice({
@@ -35,6 +41,15 @@ export const reviewSlice = createSlice({
     setSelectedArticle: (state, action: PayloadAction<string[] | null>) => {
       state.selectedArticle = action.payload;
     },
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
+    },
+    setError: (state, action: PayloadAction<string | null>) => {
+      state.error = action.payload;
+    },
+    setGuidelineUrl: (state, action: PayloadAction<string | null>) => {
+      state.guidelineUrl = action.payload;
+    },
     resetReview: () => initialState,
   },
 });
@@ -43,6 +58,9 @@ export const {
   setReviewData, 
   setSelectedProductKey, 
   setSelectedArticle, 
+  setLoading,
+  setError,
+  setGuidelineUrl,
   resetReview 
 } = reviewSlice.actions;
 

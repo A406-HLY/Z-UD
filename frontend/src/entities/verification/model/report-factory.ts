@@ -4,6 +4,7 @@ import {
 } from '@/entities/verification/model/report.types';
 import { ServerDocItem } from '@/entities/verification/model/types';
 import { Customer } from '@/entities/customer/model/types';
+import { LOAN_PURPOSE_MAP, LoanPurposeOption } from '@/entities/customer/model/customer.constants';
 import { MyDataResDto, HouseAuditResponseDto } from '@/entities/audit/model/types';
 import { mergeDotNotation } from '@/shared/lib/utils/merge-utils';
 
@@ -74,26 +75,26 @@ const FIELD_SOURCE_RULES: Record<string, { docType: string; path: string }> = {
  * 백엔드 엄격 스키마 검사를 통과하기 위해 null 대신 기본값(Zero-value)을 할당합니다.
  */
 const REPORT_SKELETON: ReportInput = {
-  headOfHouseholdName: "", name: "", residentRegistrationNumber: "",
+  headOfHouseholdName: null, name: null, residentRegistrationNumber: null,
   employmentType: "EMPLOYEE",
-  householdMembers: [], currentAddress: "", moveInHouseholds: [],
-  spouse: { exists: false, name: "", residentRegistrationNumber: "" }, 
-  registrationType: "", buildingType: "", hasDongho: false,
-  lotAddress: "", hasLandRightCause: false, hasOwnershipTransferClaim: false,
-  hasTrustRegistration: false, ownerName: "", depositAmountList: [], seniorRights: [],
-  isViolationBuilding: false, mainUsage: "", floorStatusList: [],
-  propertyAddress: "", salePrice: 0, specialTerms: "", seller: { name: "" },
-  buyer: { name: "" }, taxItems: [], manualReviewRequired: false,
-  registrationNumber: "", identifierNumber: "", inspectionAddress: "",
-  collateralMarketPrice: 0, totalRemainingLoanBalance: 0,
-  monthlyRepaymentAmount: 0, creditRating: "", annualPrincipalAndInterestRepayment: 0,
-  businessName: "", businessRegistrationNumber: "", incomeYear: "",
-  incomeAmount: 0, determinedTaxAmount: 0, corporateRegistrationNumber: "", taxableSalesAmount: 0, 
-  representativeName: false, hasCompanySeal: false, subscriberType: "", 
-  latestAcquisitionDate: "", latestLossDate: "", 
-  incomeRecipientName: "", incomeRecipientResidentRegistrationNumber: "",
-  workPeriod: "", annualIncomeTotal: 0,
-  loanPurpose: "", ownedHouseCount: 0,
+  householdMembers: null, currentAddress: null, moveInHouseholds: null,
+  spouse: null, 
+  registrationType: null, buildingType: null, hasDongho: null,
+  lotAddress: null, hasLandRightCause: null, hasOwnershipTransferClaim: null,
+  hasTrustRegistration: null, ownerName: null, depositAmountList: null, seniorRights: null,
+  isViolationBuilding: null, mainUsage: null, floorStatusList: null,
+  propertyAddress: null, salePrice: null, specialTerms: null, seller: null,
+  buyer: null, taxItems: null, manualReviewRequired: null,
+  registrationNumber: null, identifierNumber: null, inspectionAddress: null,
+  collateralMarketPrice: null, totalRemainingLoanBalance: null,
+  monthlyRepaymentAmount: null, creditRating: null, annualPrincipalAndInterestRepayment: null,
+  businessName: null, businessRegistrationNumber: null, incomeYear: null,
+  incomeAmount: null, determinedTaxAmount: null, corporateRegistrationNumber: null, taxableSalesAmount: null, 
+  representativeName: null, hasCompanySeal: null, subscriberType: null, 
+  latestAcquisitionDate: null, latestLossDate: null, 
+  incomeRecipientName: null, incomeRecipientResidentRegistrationNumber: null,
+  workPeriod: null, annualIncomeTotal: null,
+  loanPurpose: null, ownedHouseCount: null, targetLoanAmount: null,
 } as any;
 
 /**
@@ -236,16 +237,17 @@ export const createReportRequestPayload = (
     name: userInputData.name,
     residentRegistrationNumber: userInputData.residentRegistrationNumber,
     employmentType: isSelfEmployed ? 'SELF_EMPLOYED' : 'EMPLOYEE',
-    loanPurpose: userInputData.loanPurpose,
-    ownedHouseCount: parseInt(userInputData.ownedHouseCount) || 0,
+    loanPurpose: LOAN_PURPOSE_MAP[userInputData.loanPurpose as LoanPurposeOption] || userInputData.loanPurpose,
+    ownedHouseCount: userInputData.ownedHouseCount ? parseInt(userInputData.ownedHouseCount, 10) : null,
+    targetLoanAmount: userInputData.targetLoanAmount ? parseInt(userInputData.targetLoanAmount.replace(/,/g, ''), 10) : null,
 
     // (B) 마이데이터 연동 정보 주입 (영문 등급 문자열 그대로 전달)
     creditRating: creditData ? creditData.ratingName : null,
-    totalRemainingLoanBalance: loanData?.totalRemainingLoanBalance || 0,
-    annualPrincipalAndInterestRepayment: loanData?.totalAnnualPrincipalAndInterestRepayment || 0,
+    totalRemainingLoanBalance: loanData?.totalRemainingLoanBalance ?? null,
+    annualPrincipalAndInterestRepayment: loanData?.totalAnnualPrincipalAndInterestRepayment ?? null,
 
     // (C) 주택 심사 정보 주입 (price는 만원 단위이므로 그대로 전달 또는 원 단위 변환 필요 여부 확인 - 백엔드 규격에 따름)
-    collateralMarketPrice: houseData?.housePrice?.price || 0,
+    collateralMarketPrice: houseData?.housePrice?.price ?? null,
   } as ReportInput;
 
   return {

@@ -34,7 +34,8 @@ export const ReviewReportPage = () => {
     pdfPage, 
     setPdfPage, 
     pdfScale, 
-    setPdfScale 
+    setPdfScale,
+    guidelineUrl // (New) 컨트롤러에서 가져온 동적 URL
   } = useReviewReportController(consultationId);
 
   // 1. API 상태 추가
@@ -143,29 +144,29 @@ export const ReviewReportPage = () => {
         </section>
 
         {/* --- 메인 Split View 영역 --- */}
-        <div ref={containerRef} className="flex-1 flex overflow-hidden border border-gray-300 bg-white rounded-sm">
+        <div ref={containerRef} className="flex-1 flex overflow-hidden border border-[#556677] bg-white rounded-none">
           
           {/* Left Section (심사 리포트) */}
           <div 
-            className="h-full bg-white flex flex-col relative"
+            className="h-full flex flex-col relative bg-[#f8fafc]"
             style={{ width: `${leftWidthPercent}%` }}
           >
             {/* 상품 탭 영역 */}
             <ProductTabs />
 
             {/* 메인 리포트 스크롤 영역 */}
-            <main className="flex-1 overflow-y-auto bg-[#f8fafc] p-3 flex flex-col space-y-4">
+            <main className="flex-1 overflow-y-auto bg-[#e2e8f0] p-2 flex flex-col gap-2">
               {isLoading ? (
-               <div className="flex-1 flex flex-col items-center justify-center bg-white space-y-3 border border-gray-200">
-                 <Loader2 className="animate-spin text-blue-600" size={32} />
-                 <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest animate-pulse">심사 결과 데이터를 분석 중입니다...</div>
+               <div className="flex-1 flex flex-col items-center justify-center bg-white space-y-3 border border-[#cbd5e1]">
+                 <Loader2 className="animate-spin text-[#004b93]" size={32} />
+                 <div className="text-[11px] font-bold text-[#556677] uppercase tracking-widest animate-pulse">심사 결과 데이터를 분석 중입니다...</div>
                </div>
              ) : isError ? (
-               <div className="flex-1 flex flex-col items-center justify-center bg-red-50 space-y-3 border border-red-200 p-6 text-center">
-                 <AlertTriangle className="text-red-500" size={32} />
-                 <div className="text-[12px] font-black text-red-800 uppercase">Data Fetching Error</div>
-                 <div className="text-[10px] text-red-600 font-medium max-w-[240px]">{(error as Error)?.message || "알 수 없는 전산 오류가 발생했습니다. 시스템 관리자에게 문의하세요."}</div>
-                 <button onClick={() => window.location.reload()} className="mt-2 px-4 py-1.5 bg-red-600 text-white font-bold rounded-sm text-[10px] uppercase hover:bg-red-700 shadow-sm">Retry Connection</button>
+               <div className="flex-1 flex flex-col items-center justify-center bg-[#fdf5f4] space-y-3 border border-[#fad2cf] p-6 text-center">
+                 <AlertTriangle className="text-[#c5221f]" size={32} />
+                 <div className="text-[12px] font-black text-[#a50e0e] uppercase">Data Fetching Error</div>
+                 <div className="text-[10px] text-[#c5221f] font-medium max-w-[240px]">{(error as Error)?.message || "알 수 없는 전산 오류가 발생했습니다. 시스템 관리자에게 문의하세요."}</div>
+                 <button onClick={() => window.location.reload()} className="mt-2 px-4 py-1.5 bg-[#c5221f] text-white font-bold rounded-[2px] text-[10px] uppercase hover:bg-[#a50e0e] shadow-sm transition-colors border border-[#a50e0e]">Retry Connection</button>
                </div>
              ) : (
                <>
@@ -178,8 +179,8 @@ export const ReviewReportPage = () => {
                  {/* 상세 항목 리스트 */}
                  <ReviewDetailsList />
                  
-                 {/* 하단 패널(임시 전송 버튼 등 기능 확장용 패딩) */}
-                 <div className="h-4 shrink-0"></div>
+                 {/* 하단 패널(임시 패딩) */}
+                 <div className="h-2 shrink-0"></div>
                </>
              )}
             </main>
@@ -187,7 +188,7 @@ export const ReviewReportPage = () => {
 
           {/* Resizer 바 */}
           <div 
-            className="w-1.5 bg-gray-300 hover:bg-blue-400 cursor-col-resize shrink-0 transition-colors group relative z-40 border-r border-indigo-200"
+            className="w-1.5 bg-[#556677] hover:bg-[#004b93] cursor-col-resize shrink-0 transition-colors group relative z-40 border-x border-[#334455]"
             onMouseDown={startResizing}
           >
             {/* 드래그 용이성을 위해 투명 히트박스 확장 */}
@@ -198,7 +199,7 @@ export const ReviewReportPage = () => {
           <div className="h-full bg-slate-800 flex flex-col flex-1 relative min-w-[300px]">
             {/* FSD Widget: DocumentImageViewer */}
             <DocumentImageViewer 
-              fileUrl="/mock-guideline.pdf"
+              fileUrl={guidelineUrl ?? undefined} // (Why) 목업 PDF 대신 서버(Cloudflare)에서 받은 실제 URL을 사용합니다.
               files={MOCK_PDF_FILES}
               pageNumber={pdfPage}
               scale={pdfScale}
