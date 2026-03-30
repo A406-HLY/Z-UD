@@ -1,0 +1,211 @@
+[
+  {
+    "category": "공통",
+    "name_en": "creditRating",
+    "name_ko": "신용등급",
+    "default_value": null,
+    "search_query": "고객의 신용등급에 따른 주택담보대출 취급 기준 및 자격 요건은 어떻게 되는가?"
+  },
+  {
+    "category": "공통",
+    "name_en": "loanPurpose",
+    "name_ko": "대출 목적",
+    "default_value": null,
+    "search_query": "고객의 대출 목적에 따른 대출 심사 조건 및 담보 취급 기준은 어떻게 되는가?"
+  },
+  {
+    "category": "공통",
+    "name_en": "ownedHouseCount",
+    "name_ko": "보유주택수",
+    "default_value": null,
+    "search_query": "고객의 다주택 여부 및 보유주택 수에 따른 주택담보대출 한도 및 제약 사항은 무엇인가?"
+  },
+  {
+    "category": "공통",
+    "name_en": "ownerName",
+    "name_ko": "소유자 성명",
+    "default_value": null,
+    "search_query": "담보 부동산 소유자 확인 및 본인 외 소유자에 대한 담보 제공 규정은 어떻게 되는가?"
+  },
+  {
+    "category": "공통",
+    "name_en": "buyer",
+    "name_ko": "매수인 성명",
+    "default_value": null,
+    "search_query": "차주와 매수인 및 담보 부동산 소유자 간의 관계 확인 및 매매계약상 매수인 일치 여부 심사 규정은?"
+  },
+  {
+    "category": "공통",
+    "name_en": "buildingType",
+    "name_ko": "건물 종류",
+    "default_value": null,
+    "search_query": "요청된 주택담보대출의 대상 건물 종류에 따른 대출 가능 유형 및 제한 규정은?"
+  },
+  {
+    "category": "공통",
+    "name_en": "mainUsage",
+    "name_ko": "주용도",
+    "default_value": null,
+    "search_query": "건축물대장상 부동산의 주용도 구분에 따른 담보 취급 제한 및 제약 조건은?"
+  },
+  {
+    "category": "공통",
+    "name_en": "isViolationBuilding",
+    "name_ko": "위반건축물 확인",
+    "default_value": false,
+    "search_query": "해당 건축물의 불법 위반건축물 지정 여부에 따른 담보 대출 승인 및 거절 내규는?"
+  },
+  {
+    "category": "공통",
+    "name_en": "hasTrustRegistration",
+    "name_ko": "신탁등기 여부",
+    "default_value": false,
+    "search_query": "해당 부동산의 신탁등기 존재 여부에 따른 권리침해 제약 조건 및 담보 인정 기준은?"
+  },
+  {
+    "category": "공통",
+    "name_en": "hasLandRightCause",
+    "name_ko": "토지 별도등기 여부",
+    "default_value": false,
+    "search_query": "담보 부동산 적격성 심사 시 토지 별도등기 존재 여부 및 대지권 등기원인에 따른 권리관계 분리 확인 및 대출 제한 규정은?"
+  },
+  {
+    "category": "공통",
+    "name_en": "collateralMarketPrice",
+    "name_ko": "담보 시세",
+    "default_value": null,
+    "search_query": "아파트의 담보 시세 및 감정가에 따른 LTV(대출인정비율) 적용과 대출 가능 금액 산정 기준은?"
+  },
+  {
+    "category": "공통",
+    "name_en": "salePrice",
+    "name_ko": "최근 실거래가",
+    "default_value": null,
+    "search_query": "최근 실거래가 기록을 바탕으로 한 부동산 담보 가치 산정 방법 및 대출 평가 기준은?"
+  },
+  {
+    "category": "공통",
+    "name_en": "totalRemainingLoanBalance",
+    "name_ko": "총 대출 잔액",
+    "default_value": null,
+    "search_query": "고객의 기존 부채 및 총 대출 잔액 수준에 따른 DSR 산출 지표와 대출 가능 금액 산정 방식은?"
+  },
+  {
+    "category": "공통",
+    "name_en": "annualPrincipalAndInterestRepayment",
+    "name_ko": "연간 원리금 상환액",
+    "default_value": null,
+    "search_query": "차주가 보유한 기존 대출의 연간 원리금 상환액 합산에 따른 총부채원리금상환비율(DSR) 한도 적용 기준은?"
+  },
+  {
+    "category": "공통",
+    "name_en": "employmentType",
+    "name_ko": "근무 유형",
+    "default_value": null,
+    "search_query": "대출 신청 고객의 직장 재직, 근로, 또는 사업 영위 등 근무 유형에 따른 상환 능력 산정 및 증빙 기준은?"
+  },
+  {
+    "category": "근로자",
+    "name_en": "workPeriod",
+    "name_ko": "근무기간",
+    "default_value": null,
+    "search_query": "현 직장의 재직 기간 및 근무 상태 유지 여부에 따른 소득 증빙 인정 요건 및 심사 기준은?"
+  },
+  {
+    "category": "근로자",
+    "name_en": "annualIncomeTotal",
+    "name_ko": "연간 소득 합계",
+    "default_value": null,
+    "search_query": "대출 신청 고객의 연간 소득 합계에 따른 상환 능력 평가 및 총부채원리금상환비율(DSR) 산정 규정은?"
+  },
+  {
+    "category": "개인사업자",
+    "name_en": "incomeAmount",
+    "name_ko": "소득금액",
+    "default_value": null,
+    "search_query": "개인사업자의 공식적인 소득금액증명원을 통한 사업 소득 금액 인정 및 상환 능력 평가 기준은?"
+  },
+  {
+    "category": "개인사업자",
+    "name_en": "taxableSalesAmount",
+    "name_ko": "매출 과세표준",
+    "default_value": null,
+    "search_query": "개인사업자의 부가가치세 매출 과세표준 신고액을 바탕으로 한 사업 소득 추정 및 인정 기준은?"
+  },
+  {
+    "category": "공통",
+    "name_en": "seniorRights",
+    "name_ko": "채권최고액",
+    "default_value": null,
+    "search_query": "근저당권 채권최고액 설정에 따른 대출 한도 차감 및 주택담보대출 담보인정비율(LTV) 계산 지표는?"
+  },
+  {
+    "category": "특수",
+    "name_en": "deathConfirmed",
+    "name_ko": "사망자 확인",
+    "default_value": "0명",
+    "search_query": "고객의 사망자 확인에 따른 주택담보대출 취급 기준 및 자격 요건은 어떻게 되는가?"
+  },
+  {
+    "category": "특수",
+    "name_en": "hasOwnershipTransferClaim",
+    "name_ko": "권리침해 여부",
+    "default_value": null,
+    "search_query": "소유권이전청구권가등기 등 권리침해 여부에 따른 담보 대출 제한 기준은 어떻게 되는가?"
+  },
+  {
+    "category": "공통",
+    "name_en": "propertyAddress",
+    "name_ko": "소재지 주소",
+    "default_value": null,
+    "search_query": "담보 부동산의 소재지 주소에 따른 투기지역, 투기과열지구, 조정대상지역 등 금융 규제지역 적용 기준은?"
+  },
+  {
+    "category": "공통",
+    "name_en": "floorStatusList",
+    "name_ko": "층별 현황 목록",
+    "default_value": [
+      {
+        "floor": "1층",
+        "usage": "주택",
+        "area": 100.0
+      }
+    ],
+    "search_query": "건축물 층별 현황 및 용도에 따른 상가 등 복합 건물의 주택담보대출 적격성 기준은?"
+  },
+  {
+    "category": "공통",
+    "name_en": "subscriberType",
+    "name_ko": "가입자 구분",
+    "default_value": null,
+    "search_query": "대출 신청 고객의 건강보험자격득실 확인서 상 가입자 구분에 따른 주택담보대출 심사 시 직장 재직 및 소득 규정은?"
+  },
+  {
+    "category": "개인사업자",
+    "name_en": "incomeYear",
+    "name_ko": "귀속년도",
+    "default_value": null,
+    "search_query": "자영업자 사업소득의 귀속 연도에 따른 최신 세무 증빙 자료 인정 여부 및 유효성 심사 기준은?"
+  },
+  {
+    "category": "공통",
+    "name_en": "LTVRatio",
+    "name_ko": "LTV 비율",
+    "default_value": "LTV 비율",
+    "search_query": "주택담보대출 LTV(담보인정비율) 산출 방식, 규제지역(투기과열지구 등)별 대출한도, 금액 차감 및 평가 대출 가능 금액 계산을 위한 규정은?"
+  },
+  {
+    "category": "공통",
+    "name_en": "DSRRatio",
+    "name_ko": "DSR 비율",
+    "default_value": "DSR 비율",
+    "search_query": "대출 신청자의 연간 소득 대비 총부채상환비율(DTI) 및 총부채원리금상환비율(DSR) 최고 한도 규제 및 심사 인정 기준은?"
+  },
+  {
+    "category": "공통",
+    "name_en": "stressDSR",
+    "name_ko": "스트레스 DSR",
+    "default_value": "3%",
+    "search_query": "대출 심사 시 기존 부채 및 신규 대출의 원리금 상환 부담 산정에 적용되는 스트레스 DSR(총부채원리금상환비율) 가산 금리 기준 및 적용 비율은 어떻게 되는가?"
+  }
+]

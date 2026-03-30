@@ -1,0 +1,83 @@
+{
+  "forCalculate": {
+    "fields": [
+      "collateralMarketPrice",
+      "maximumClaimAmount",
+      "totalRemainingLoanBalance",
+      "LTVRatio",
+      "annualIncomeTotal",
+      "annualPrincipalAndInterestRepayment",
+      "DSRRatio"
+    ]
+  },
+  "forReport": {
+    "fields": [
+      "creditRating",
+      "loanPurpose",
+      "ownedHouseCount",
+      "ownerName",
+      "buyer",
+      "buildingType",
+      "mainUsage",
+      "isViolationBuilding",
+      "hasTrustRegistration",
+      "hasLandRightCause",
+      "hasOwnershipTransferClaim",
+      "floorStatusList",
+      "deathConfirmed",
+      "employmentType",
+      "workPeriod",
+      "subscriberType",
+      "annualIncomeTotal",
+      "incomeAmount",
+      "taxableSalesAmount",
+      "propertyAddress"
+    ],
+    "required_fields": [
+      "creditRating",
+      "loanPurpose",
+      "ownedHouseCount",
+      "ownerName",
+      "buyer",
+      "buildingType",
+      "mainUsage",
+      "isViolationBuilding",
+      "hasTrustRegistration",
+      "hasLandRightCause",
+      "hasOwnershipTransferClaim",
+      "floorStatusList",
+      "employmentType",
+      "propertyAddress"
+    ],
+    "excluded_by_product": {
+      "ssageumjari": ["deathConfirmed"]
+    }
+  },
+  "ltv_rules": {
+    "regulated_keywords": ["서울", "경기", "인천"],
+    "regulated_house_count_to_ratio": {
+      "0": 0.4,
+      "1": 0.3,
+      "2_or_more": 0.2
+    },
+    "non_regulated_house_count_to_ratio": {
+      "0": 0.7,
+      "1": 0.6,
+      "2_or_more": 0.5
+    }
+  },
+  "dsr_rules": {
+    "default_ratio": 0.4,
+    "missing_income_ratio": 0.2
+  },
+  "products": {
+    "ssadimdol": {
+      "product_name": "싸딤돌",
+      "death_confirmed_required": true
+    },
+    "ssageumjari": {
+      "product_name": "싸금자리",
+      "death_confirmed_required": false
+    }
+  }
+}

@@ -1,0 +1,477 @@
+{
+    "consultationId": "1234",
+    "result": {
+        "ssadimdol": {
+            "productName": "싸딤돌",
+            "creditRating": {
+                "name_ko": "신용등급",
+                "value": "A",
+                "search_query": "고객의 신용등급에 따른 주택담보대출 취급 기준 및 자격 요건은 어떻게 되는가?",
+                "matched_articles": [
+                    "제2조"
+                ]
+            },
+            "loanPurpose": {
+                "name_ko": "대출 목적",
+                "value": null,
+                "search_query": "고객의 대출 목적에 따른 대출 심사 조건 및 담보 취급 기준은 어떻게 되는가?",
+                "matched_articles": []
+            },
+            "ownedHouseCount": {
+                "name_ko": "보유주택수",
+                "value": null,
+                "search_query": "고객의 다주택 여부 및 보유주택 수에 따른 주택담보대출 한도 및 제약 사항은 무엇인가?",
+                "matched_articles": []
+            },
+            "ownerName": {
+                "name_ko": "소유자 성명",
+                "value": "김철수",
+                "search_query": "담보 부동산 소유자 확인 및 본인 외 소유자에 대한 담보 제공 규정은 어떻게 되는가?",
+                "matched_articles": [
+                    "제5조"
+                ]
+            },
+            "buyer": {
+                "name_ko": "매수인 성명",
+                "value": {
+                    "name": "홍길동"
+                },
+                "search_query": "차주와 매수인 및 담보 부동산 소유자 간의 관계 확인 및 매매계약상 매수인 일치 여부 심사 규정은?",
+                "matched_articles": [
+                    "제5조"
+                ]
+            },
+            "buildingType": {
+                "name_ko": "건물 종류",
+                "value": "아파트",
+                "search_query": "요청된 주택담보대출의 대상 건물 종류에 따른 대출 가능 유형 및 제한 규정은?",
+                "matched_articles": [
+                    "제7조"
+                ]
+            },
+            "mainUsage": {
+                "name_ko": "주용도",
+                "value": "공동주택(아파트)",
+                "search_query": "건축물대장상 부동산의 주용도 구분에 따른 담보 취급 제한 및 제약 조건은?",
+                "matched_articles": [
+                    "제7조"
+                ]
+            },
+            "isViolationBuilding": {
+                "name_ko": "위반건축물 확인",
+                "value": false,
+                "search_query": "해당 건축물의 불법 위반건축물 지정 여부에 따른 담보 대출 승인 및 거절 내규는?",
+                "matched_articles": [
+                    "제7조"
+                ]
+            },
+            "hasTrustRegistration": {
+                "name_ko": "신탁등기 여부",
+                "value": false,
+                "search_query": "해당 부동산의 신탁등기 존재 여부에 따른 권리침해 제약 조건 및 담보 인정 기준은?",
+                "matched_articles": [
+                    "제7조"
+                ]
+            },
+            "hasLandRightCause": {
+                "name_ko": "토지 별도등기 여부",
+                "value": false,
+                "search_query": "담보 부동산 적격성 심사 시 토지 별도등기 존재 여부 및 대지권 등기원인에 따른 권리관계 분리 확인 및 대출 제한 규정은?",
+                "matched_articles": [
+                    "제7조"
+                ]
+            },
+            "collateralMarketPrice": {
+                "name_ko": "담보 시세",
+                "value": 900000000,
+                "search_query": "아파트의 담보 시세 및 감정가에 따른 LTV(대출인정비율) 적용과 대출 가능 금액 산정 기준은?",
+                "matched_articles": [
+                    "제10조",
+                    "제13조",
+                    "제7조",
+                    "제1조"
+                ]
+            },
+            "salePrice": {
+                "name_ko": "최근 실거래가",
+                "value": 850000000,
+                "search_query": "최근 실거래가 기록을 바탕으로 한 부동산 담보 가치 산정 방법 및 대출 평가 기준은?",
+                "matched_articles": [
+                    "제1조",
+                    "제7조",
+                    "제13조",
+                    "제10조"
+                ]
+            },
+            "totalRemainingLoanBalance": {
+                "name_ko": "총 대출 잔액",
+                "value": 150000000,
+                "search_query": "고객의 기존 부채 및 총 대출 잔액 수준에 따른 DSR 산출 지표와 대출 가능 금액 산정 방식은?",
+                "matched_articles": [
+                    "제12조",
+                    "제13조",
+                    "제1조",
+                    "제2조"
+                ]
+            },
+            "annualPrincipalAndInterestRepayment": {
+                "name_ko": "연간 원리금 상환액",
+                "value": 14400000,
+                "search_query": "차주가 보유한 기존 대출의 연간 원리금 상환액 합산에 따른 총부채원리금상환비율(DSR) 한도 적용 기준은?",
+                "matched_articles": [
+                    "제12조",
+                    "제13조",
+                    "제2조",
+                    "제11조"
+                ]
+            },
+            "employmentType": {
+                "name_ko": "근무 유형",
+                "value": "개인사업자",
+                "search_query": "대출 신청 고객의 직장 재직, 근로, 또는 사업 영위 등 근무 유형에 따른 상환 능력 산정 및 증빙 기준은?",
+                "matched_articles": [
+                    "제11조"
+                ]
+            },
+            "incomeAmount": {
+                "name_ko": "소득금액",
+                "value": 68500000,
+                "search_query": "개인사업자의 공식적인 소득금액증명원을 통한 사업 소득 금액 인정 및 상환 능력 평가 기준은?",
+                "matched_articles": [
+                    "제11조"
+                ]
+            },
+            "taxableSalesAmount": {
+                "name_ko": "매출 과세표준",
+                "value": 120500000,
+                "search_query": "개인사업자의 부가가치세 매출 과세표준 신고액을 바탕으로 한 사업 소득 추정 및 인정 기준은?",
+                "matched_articles": [
+                    "제11조"
+                ]
+            },
+            "seniorRights": {
+                "name_ko": "채권최고액",
+                "value": [
+                    {
+                        "maximumClaimAmount": 150000000
+                    }
+                ],
+                "search_query": "근저당권 채권최고액 설정에 따른 대출 한도 차감 및 주택담보대출 담보인정비율(LTV) 계산 지표는?",
+                "matched_articles": [
+                    "제10조",
+                    "제13조",
+                    "제8조"
+                ]
+            },
+            "deathConfirmed": {
+                "name_ko": "사망자 확인",
+                "value": "0명",
+                "search_query": "고객의 사망자 확인에 따른 주택담보대출 취급 기준 및 자격 요건은 어떻게 되는가?",
+                "matched_articles": [
+                    "제9조"
+                ]
+            },
+            "hasOwnershipTransferClaim": {
+                "name_ko": "권리침해 여부",
+                "value": false,
+                "search_query": "소유권이전청구권가등기 등 권리침해 여부에 따른 담보 대출 제한 기준은 어떻게 되는가?",
+                "matched_articles": [
+                    "제7조"
+                ]
+            },
+            "propertyAddress": {
+                "name_ko": "소재지 주소",
+                "value": "서울특별시 구로구 디지털로 123, 101동 1001호",
+                "search_query": "담보 부동산의 소재지 주소에 따른 투기지역, 투기과열지구, 조정대상지역 등 금융 규제지역 적용 기준은?",
+                "matched_articles": [
+                    "제8조",
+                    "제10조",
+                    "제7조"
+                ]
+            },
+            "floorStatusList": {
+                "name_ko": "층별 현황 목록",
+                "value": [
+                    {
+                        "floor": "10층",
+                        "usage": "주택",
+                        "area": 84.97
+                    }
+                ],
+                "search_query": "건축물 층별 현황 및 용도에 따른 상가 등 복합 건물의 주택담보대출 적격성 기준은?",
+                "matched_articles": [
+                    "제7조"
+                ]
+            },
+            "subscriberType": {
+                "name_ko": "가입자 구분",
+                "value": null,
+                "search_query": "대출 신청 고객의 건강보험자격득실 확인서 상 가입자 구분에 따른 주택담보대출 심사 시 직장 재직 및 소득 규정은?",
+                "matched_articles": []
+            },
+            "incomeYear": {
+                "name_ko": "귀속년도",
+                "value": "2025",
+                "search_query": "자영업자 사업소득의 귀속 연도에 따른 최신 세무 증빙 자료 인정 여부 및 유효성 심사 기준은?",
+                "matched_articles": []
+            },
+            "LTVRatio": {
+                "name_ko": "LTV 비율",
+                "value": "LTV 비율",
+                "search_query": "주택담보대출 LTV(담보인정비율) 산출 방식, 규제지역(투기과열지구 등)별 대출한도, 금액 차감 및 평가 대출 가능 금액 계산을 위한 규정은?",
+                "matched_articles": [
+                    "제10조",
+                    "제13조"
+                ]
+            },
+            "DSRRatio": {
+                "name_ko": "DSR 비율",
+                "value": "DSR 비율",
+                "search_query": "대출 신청자의 연간 소득 대비 총부채상환비율(DTI) 및 총부채원리금상환비율(DSR) 최고 한도 규제 및 심사 인정 기준은?",
+                "matched_articles": [
+                    "제12조",
+                    "제13조"
+                ]
+            }
+        },
+        "ssageumjari": {
+            "productName": "싸금자리",
+            "creditRating": {
+                "name_ko": "신용등급",
+                "value": "A",
+                "search_query": "고객의 신용등급에 따른 주택담보대출 취급 기준 및 자격 요건은 어떻게 되는가?",
+                "matched_articles": [
+                    "제2조"
+                ]
+            },
+            "loanPurpose": {
+                "name_ko": "대출 목적",
+                "value": null,
+                "search_query": "고객의 대출 목적에 따른 대출 심사 조건 및 담보 취급 기준은 어떻게 되는가?",
+                "matched_articles": []
+            },
+            "ownedHouseCount": {
+                "name_ko": "보유주택수",
+                "value": null,
+                "search_query": "고객의 다주택 여부 및 보유주택 수에 따른 주택담보대출 한도 및 제약 사항은 무엇인가?",
+                "matched_articles": []
+            },
+            "ownerName": {
+                "name_ko": "소유자 성명",
+                "value": "김철수",
+                "search_query": "담보 부동산 소유자 확인 및 본인 외 소유자에 대한 담보 제공 규정은 어떻게 되는가?",
+                "matched_articles": [
+                    "제5조"
+                ]
+            },
+            "buyer": {
+                "name_ko": "매수인 성명",
+                "value": {
+                    "name": "홍길동"
+                },
+                "search_query": "차주와 매수인 및 담보 부동산 소유자 간의 관계 확인 및 매매계약상 매수인 일치 여부 심사 규정은?",
+                "matched_articles": [
+                    "제5조"
+                ]
+            },
+            "buildingType": {
+                "name_ko": "건물 종류",
+                "value": "아파트",
+                "search_query": "요청된 주택담보대출의 대상 건물 종류에 따른 대출 가능 유형 및 제한 규정은?",
+                "matched_articles": [
+                    "제7조"
+                ]
+            },
+            "mainUsage": {
+                "name_ko": "주용도",
+                "value": "공동주택(아파트)",
+                "search_query": "건축물대장상 부동산의 주용도 구분에 따른 담보 취급 제한 및 제약 조건은?",
+                "matched_articles": [
+                    "제7조"
+                ]
+            },
+            "isViolationBuilding": {
+                "name_ko": "위반건축물 확인",
+                "value": false,
+                "search_query": "해당 건축물의 불법 위반건축물 지정 여부에 따른 담보 대출 승인 및 거절 내규는?",
+                "matched_articles": [
+                    "제7조"
+                ]
+            },
+            "hasTrustRegistration": {
+                "name_ko": "신탁등기 여부",
+                "value": false,
+                "search_query": "해당 부동산의 신탁등기 존재 여부에 따른 권리침해 제약 조건 및 담보 인정 기준은?",
+                "matched_articles": [
+                    "제7조"
+                ]
+            },
+            "hasLandRightCause": {
+                "name_ko": "토지 별도등기 여부",
+                "value": false,
+                "search_query": "담보 부동산 적격성 심사 시 토지 별도등기 존재 여부 및 대지권 등기원인에 따른 권리관계 분리 확인 및 대출 제한 규정은?",
+                "matched_articles": [
+                    "제7조"
+                ]
+            },
+            "collateralMarketPrice": {
+                "name_ko": "담보 시세",
+                "value": 900000000,
+                "search_query": "아파트의 담보 시세 및 감정가에 따른 LTV(대출인정비율) 적용과 대출 가능 금액 산정 기준은?",
+                "matched_articles": [
+                    "제9조",
+                    "제12조",
+                    "제7조",
+                    "제1조"
+                ]
+            },
+            "salePrice": {
+                "name_ko": "최근 실거래가",
+                "value": 850000000,
+                "search_query": "최근 실거래가 기록을 바탕으로 한 부동산 담보 가치 산정 방법 및 대출 평가 기준은?",
+                "matched_articles": [
+                    "제1조",
+                    "제7조",
+                    "제12조",
+                    "제9조"
+                ]
+            },
+            "totalRemainingLoanBalance": {
+                "name_ko": "총 대출 잔액",
+                "value": 150000000,
+                "search_query": "고객의 기존 부채 및 총 대출 잔액 수준에 따른 DSR 산출 지표와 대출 가능 금액 산정 방식은?",
+                "matched_articles": [
+                    "제11조",
+                    "제12조",
+                    "제1조",
+                    "제2조"
+                ]
+            },
+            "annualPrincipalAndInterestRepayment": {
+                "name_ko": "연간 원리금 상환액",
+                "value": 14400000,
+                "search_query": "차주가 보유한 기존 대출의 연간 원리금 상환액 합산에 따른 총부채원리금상환비율(DSR) 한도 적용 기준은?",
+                "matched_articles": [
+                    "제11조",
+                    "제12조",
+                    "제2조",
+                    "제10조"
+                ]
+            },
+            "employmentType": {
+                "name_ko": "근무 유형",
+                "value": "개인사업자",
+                "search_query": "대출 신청 고객의 직장 재직, 근로, 또는 사업 영위 등 근무 유형에 따른 상환 능력 산정 및 증빙 기준은?",
+                "matched_articles": [
+                    "제10조"
+                ]
+            },
+            "incomeAmount": {
+                "name_ko": "소득금액",
+                "value": 68500000,
+                "search_query": "개인사업자의 공식적인 소득금액증명원을 통한 사업 소득 금액 인정 및 상환 능력 평가 기준은?",
+                "matched_articles": [
+                    "제10조"
+                ]
+            },
+            "determinedTaxAmount": {
+                "name_ko": "결정세액",
+                "value": 2150000,
+                "search_query": "개인사업자의 총 납부 결정세액 자료를 활용한 세무 소득 증빙 및 과세 환산 수익 인정 규정은?",
+                "matched_articles": [
+                    "제10조"
+                ]
+            },
+            "taxableSalesAmount": {
+                "name_ko": "매출 과세표준",
+                "value": 120500000,
+                "search_query": "개인사업자의 부가가치세 매출 과세표준 신고액을 바탕으로 한 사업 소득 추정 및 인정 기준은?",
+                "matched_articles": [
+                    "제10조"
+                ]
+            },
+            "seniorRights": {
+                "name_ko": "채권최고액",
+                "value": [
+                    {
+                        "maximumClaimAmount": 150000000
+                    }
+                ],
+                "search_query": "근저당권 채권최고액 설정에 따른 대출 한도 차감 및 주택담보대출 담보인정비율(LTV) 계산 지표는?",
+                "matched_articles": [
+                    "제9조",
+                    "제12조",
+                    "제8조"
+                ]
+            },
+            "deathConfirmed": {
+                "name_ko": "사망자 확인",
+                "value": "0명",
+                "search_query": "고객의 사망자 확인에 따른 주택담보대출 취급 기준 및 자격 요건은 어떻게 되는가?",
+                "matched_articles": []
+            },
+            "hasOwnershipTransferClaim": {
+                "name_ko": "권리침해 여부",
+                "value": false,
+                "search_query": "소유권이전청구권가등기 등 권리침해 여부에 따른 담보 대출 제한 기준은 어떻게 되는가?",
+                "matched_articles": [
+                    "제7조"
+                ]
+            },
+            "propertyAddress": {
+                "name_ko": "소재지 주소",
+                "value": "서울특별시 구로구 디지털로 123, 101동 1001호",
+                "search_query": "담보 부동산의 소재지 주소에 따른 투기지역, 투기과열지구, 조정대상지역 등 금융 규제지역 적용 기준은?",
+                "matched_articles": [
+                    "제8조",
+                    "제9조",
+                    "제7조"
+                ]
+            },
+            "floorStatusList": {
+                "name_ko": "층별 현황 목록",
+                "value": [
+                    {
+                        "floor": "10층",
+                        "usage": "주택",
+                        "area": 84.97
+                    }
+                ],
+                "search_query": "건축물 층별 현황 및 용도에 따른 상가 등 복합 건물의 주택담보대출 적격성 기준은?",
+                "matched_articles": [
+                    "제7조"
+                ]
+            },
+            "subscriberType": {
+                "name_ko": "가입자 구분",
+                "value": null,
+                "search_query": "대출 신청 고객의 건강보험자격득실 확인서 상 가입자 구분에 따른 주택담보대출 심사 시 직장 재직 및 소득 규정은?",
+                "matched_articles": []
+            },
+            "incomeYear": {
+                "name_ko": "귀속년도",
+                "value": "2025",
+                "search_query": "자영업자 사업소득의 귀속 연도에 따른 최신 세무 증빙 자료 인정 여부 및 유효성 심사 기준은?",
+                "matched_articles": []
+            },
+            "LTVRatio": {
+                "name_ko": "LTV 비율",
+                "value": "LTV 비율",
+                "search_query": "주택담보대출 LTV(담보인정비율) 산출 방식, 규제지역(투기과열지구 등)별 대출한도, 금액 차감 및 평가 대출 가능 금액 계산을 위한 규정은?",
+                "matched_articles": [
+                    "제9조",
+                    "제12조"
+                ]
+            },
+            "DSRRatio": {
+                "name_ko": "DSR 비율",
+                "value": "DSR 비율",
+                "search_query": "대출 신청자의 연간 소득 대비 총부채상환비율(DTI) 및 총부채원리금상환비율(DSR) 최고 한도 규제 및 심사 인정 기준은?",
+                "matched_articles": [
+                    "제11조",
+                    "제12조"
+                ]
+            }
+        }
+    }
+}
