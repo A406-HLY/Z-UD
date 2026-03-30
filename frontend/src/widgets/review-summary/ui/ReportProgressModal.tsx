@@ -7,26 +7,15 @@ interface ReportProgressModalProps {
 
 type StepStatus = 'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR';
 
-/**
- * @widget ReportProgressModal
- * 리포트 생성 단계의 진행 상황을 (Backend SSE 부재로 인해) 프론트엔드 시뮬레이션 타이머 기반으로 시각화합니다.
- */
 export const ReportProgressModal = ({ isOpen }: ReportProgressModalProps) => {
   const { currentMessage } = useAppSelector((state) => state.audit);
   const reviewData = useAppSelector((state) => state.review.data);
 
-  // (Why) 3단계 진행 상황을 위한 로컬 상태 관리 (심사 진행, 내규 검색, 리포트 생성)
   const [steps, setSteps] = useState<StepStatus[]>(['IDLE', 'IDLE', 'IDLE']);
 
   useEffect(() => {
     if (!isOpen) return;
 
-    // (Why) 사용자 요구사항에 따른 3단계 시뮬레이션 타이머 설정
-    // 0 ~ 1.0s: 심사 진행 중
-    // 1.0s ~ 2.5s: 내규 검색 중
-    // 2.5s ~ (SSE 대기): 리포트 생성 중
-    
-    // 1단계 시작
     setSteps(['LOADING', 'IDLE', 'IDLE']);
 
     const timer1 = setTimeout(() => {
@@ -43,7 +32,6 @@ export const ReportProgressModal = ({ isOpen }: ReportProgressModalProps) => {
     };
   }, [isOpen]);
 
-  // (Why) 실제 SSE REPORT_COMPLETED 이벤트 수신 후 Redux 데이터가 채워지면 즉시 강제로 모든 단계를 완료 처리합니다.
   useEffect(() => {
     if (reviewData) {
       setSteps(['SUCCESS', 'SUCCESS', 'SUCCESS']);
@@ -54,10 +42,8 @@ export const ReportProgressModal = ({ isOpen }: ReportProgressModalProps) => {
 
   return (
     <div className="fixed inset-0 z-110 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
-      {/* Windows XP Window Frame */}
       <div className="w-[420px] bg-[#ece9d8] border border-[#003366] shadow-[2px_2px_15px_rgba(0,0,0,0.6)] flex flex-col font-sans select-none animate-in zoom-in-95 duration-200">
-        
-        {/* Title Bar */}
+
         <div className="h-6 bg-linear-to-r from-[#0055e5] via-[#0a6cff] to-[#0055e5] flex items-center justify-between px-1.5 py-0.5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.3)]">
           <div className="flex items-center gap-1.5 pl-1">
             <span className="text-white text-[11px] font-bold drop-shadow-[1px_1px_1px_rgba(0,0,0,0.5)]">
@@ -71,13 +57,11 @@ export const ReportProgressModal = ({ isOpen }: ReportProgressModalProps) => {
           </div>
         </div>
 
-        {/* Content Area */}
         <div className="p-4 space-y-4">
-          
-          {/* Top Visual Area (XP Animation) */}
+
           <div className="relative h-24 bg-white border border-[#7f9db9] flex items-center justify-center overflow-hidden">
             <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '10px 10px' }}></div>
-            
+
             <div className="w-full h-full flex flex-col items-center justify-center px-6">
               <div className="relative w-full flex items-center justify-between px-4 mt-1">
                 <div className="z-10 flex flex-col items-center">
@@ -105,7 +89,7 @@ export const ReportProgressModal = ({ isOpen }: ReportProgressModalProps) => {
 
           <div className="space-y-2">
             <div className="text-[11px] font-bold text-[#333] mb-1">리포트 상세 생성 시뮬레이션</div>
-            
+
             <div className="space-y-1.5 bg-white border border-[#7f9db9] p-2">
               <ProgressRow label="심사 진행 중" status={steps[0]} />
               <ProgressRow label="내규 검색 중" status={steps[1]} />
@@ -155,7 +139,6 @@ export const ReportProgressModal = ({ isOpen }: ReportProgressModalProps) => {
   );
 };
 
-// --- Helper Component: ProgressRow ---
 const ProgressRow = ({ label, status }: { label: string; status: StepStatus }) => {
   return (
     <div className="flex items-center gap-2 text-[10px]">

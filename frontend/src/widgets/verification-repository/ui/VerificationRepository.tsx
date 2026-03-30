@@ -6,7 +6,7 @@ import { useRepositoryKeyboard } from '../model/use-repository-keyboard';
 
 interface Props {
   categories: DocCategory[];
-  documents: Record<string, DocItem>; 
+  documents: Record<string, DocItem>;
   selectedId: string | null;
   onSelect: (id: string) => void;
   onRequestNextDocument: () => void;
@@ -20,12 +20,6 @@ const LAYOUT = {
   ITEM_HEIGHT: '26px'
 };
 
-
-/**
- * @widget verification-repository
- * 서류 카테고리를 트리 구조로 표시하며 아코디언 기능을 제공합니다.
- * (Why: 대규모 서류 묶음을 카테고리별로 효율적으로 관리하기 위함)
- */
 export const VerificationRepository = ({ categories, documents, selectedId, onSelect, onRequestNextDocument, onRequestPrevDocument }: Props) => {
   const [expanded, setExpanded] = useState<string[]>(categories.map(c => c.id));
 
@@ -33,7 +27,6 @@ export const VerificationRepository = ({ categories, documents, selectedId, onSe
     setExpanded(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]);
   };
 
-  // (Why: 탭 이동 등으로 선택된 서류가 닫혀있는 폴더 안에 있을 경우, 해당 폴더를 자동으로 엽니다.)
   useEffect(() => {
     if (selectedId) {
       const parentCat = categories.find(c => c.itemIds.includes(selectedId));
@@ -43,7 +36,6 @@ export const VerificationRepository = ({ categories, documents, selectedId, onSe
     }
   }, [selectedId, categories, expanded]);
 
-  /** 상태별 스타일 및 아이콘 구분 (Point 5: JSX 마크업을 분리하여 데이터만 반환하도록 개선) */
   const getStatusMeta = (status: DocumentStatus) => {
     switch (status) {
       case 'MISSING':
@@ -69,11 +61,11 @@ export const VerificationRepository = ({ categories, documents, selectedId, onSe
   });
 
   return (
-    <div 
+    <div
       className="h-full min-h-0 border-r border-gray-300 flex flex-col bg-[#F8F9FA] shrink-0"
       style={{ width: LAYOUT.SIDEBAR_WIDTH }}
     >
-      <div 
+      <div
         className="bg-gray-200 border-b border-gray-300 flex items-center px-3 shrink-0"
         style={{ height: LAYOUT.HEADER_HEIGHT }}
       >
@@ -86,7 +78,7 @@ export const VerificationRepository = ({ categories, documents, selectedId, onSe
 
           return (
             <div key={cat.id} className="mb-0.5">
-              <button 
+              <button
                 type="button"
                 onClick={() => toggle(cat.id)}
                 className="w-full text-left flex items-center px-2 hover:bg-white cursor-pointer select-none transition-colors group border-y border-transparent hover:border-gray-200"
@@ -98,13 +90,13 @@ export const VerificationRepository = ({ categories, documents, selectedId, onSe
                 {hasError && <AlertTriangle className="w-3 h-3 text-red-600 mr-1 animate-pulse" />}
                 {!hasError && hasRisk && <Info className="w-3 h-3 text-yellow-600 mr-1" />}
               </button>
-              
+
               {isExpanded && (
                 <div className="bg-white">
                   {cat.itemIds.map(id => {
                     const item = documents[id];
                     if (!item) {
-                      console.warn(`[VerificationRepository] Document missing for id: ${id}`);
+
                       return null;
                     }
 
@@ -112,7 +104,7 @@ export const VerificationRepository = ({ categories, documents, selectedId, onSe
                     const isSelected = selectedId === item.id;
 
                     return (
-                      <button 
+                      <button
                         type="button"
                         key={item.id}
                         data-doc-id={item.id}

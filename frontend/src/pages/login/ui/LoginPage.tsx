@@ -14,7 +14,7 @@ export const LoginPage: React.FC = () => {
         </div>
         <div className="text-center pt-4 border-t border-slate-100">
           <span className="text-sm text-slate-500">
-            도움이 필요하신가요? 
+            도움이 필요하신가요?
             <a href="mailto:support@example.com" className="ml-1 text-blue-600 hover:underline">고객센터 문의</a>
           </span>
         </div>

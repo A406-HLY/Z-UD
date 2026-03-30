@@ -1,7 +1,4 @@
-/**
- * @entity review/config/constants
- * 리뷰(심사) 도메인 내부에서만 사용되는 상수 및 텍스트 정의
- */
+
 
 export const CALCULATE_LABELS = {
   MARKET_PRICE: '평가 시세',

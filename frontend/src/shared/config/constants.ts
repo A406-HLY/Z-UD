@@ -1,7 +1,4 @@
-/**
- * @shared config
- * 심사 리포트 및 금융 규제 관련 전역 상수
- */
+
 
 export const APPROVAL_STATUS = {
   PASS: '승인',

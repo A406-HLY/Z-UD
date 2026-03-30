@@ -6,11 +6,6 @@ interface DocumentTransferModalProps {
   mode?: 'scan' | 'upload';
 }
 
-/**
- * @feature DocumentSync/UI
- * Windows XP 스타일의 파일 전송 팝업 컴포넌트입니다.
- * (Why) 사용자의 향수를 자극하는 'Modern-Legacy' 컨셉을 극대화하고, 전송 중이라는 상태를 직관적으로 전달합니다.
- */
 export const DocumentTransferModal = ({ isOpen, customerName, mode = 'upload' }: DocumentTransferModalProps) => {
   if (!isOpen) return null;
 
@@ -18,10 +13,8 @@ export const DocumentTransferModal = ({ isOpen, customerName, mode = 'upload' }:
 
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/30 backdrop-blur-[1px]">
-      {/* Windows XP Window Frame */}
       <div className="w-[380px] bg-[#ece9d8] border border-[#003366] shadow-[2px_2px_10px_rgba(0,0,0,0.5)] flex flex-col font-sans select-none animate-in zoom-in-95 duration-200">
-        
-        {/* Title Bar */}
+
         <div className="h-6 bg-linear-to-r from-[#0055e5] via-[#0a6cff] to-[#0055e5] flex items-center justify-between px-1.5 py-0.5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.3)]">
           <div className="flex items-center gap-1.5 pl-1">
             <span className="text-white text-[11px] font-bold drop-shadow-[1px_1px_1px_rgba(0,0,0,0.5)]">
@@ -33,20 +26,15 @@ export const DocumentTransferModal = ({ isOpen, customerName, mode = 'upload' }:
           </div>
         </div>
 
-        {/* Content Area */}
         <div className="p-4 space-y-4">
-          {/* Animation Area: Folder to Web or Scanner to Folder */}
           <div className="relative h-16 bg-white border border-[#7f9db9] flex items-center justify-between px-8 overflow-hidden">
-            {/* Background Lines/Effect */}
             <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '10px 10px' }}></div>
-            
-            {/* Source */}
+
             <div className="z-10 flex flex-col items-center">
               <span className="text-2xl">{isScan ? '📠' : '📁'}</span>
               <span className="text-[9px] font-bold text-slate-400 mt-1 uppercase">{isScan ? 'Scanner' : 'Staging'}</span>
             </div>
 
-            {/* Flying Paper Animation */}
             <div className="absolute left-[80px] right-[80px] top-1/2 -translate-y-1/2 overflow-hidden h-12 flex items-center">
               <div className="animate-flying-paper whitespace-nowrap flex gap-12 text-xl">
                 <span>📄</span>
@@ -56,7 +44,6 @@ export const DocumentTransferModal = ({ isOpen, customerName, mode = 'upload' }:
               </div>
             </div>
 
-            {/* Destination */}
             <div className="z-10 flex flex-col items-center">
               <div className="relative">
                 <span className="text-2xl">{isScan ? '📁' : '🌍'}</span>
@@ -72,21 +59,19 @@ export const DocumentTransferModal = ({ isOpen, customerName, mode = 'upload' }:
             </div>
           </div>
 
-          {/* Details & Progress */}
           <div className="space-y-1.5">
             <div className="flex justify-between text-[11px] text-[#333]">
               <span className="font-bold">
                 {isScan ? '스캐너에서 파일을 가져오는 중...' : '파일을 서버로 복사하는 중...'}
               </span>
             </div>
-            
-            {/* Classic Progress Bar */}
+
             <div className="h-[14px] bg-white border border-[#7f9db9] p-px overflow-hidden shadow-inner relative">
-              <div 
+              <div
                 className="h-full w-full absolute inset-0 animate-xp-progress"
                 style={{
                   backgroundImage: `
-                    linear-gradient(90deg, 
+                    linear-gradient(90deg,
                       #b4e34e 0px, #7bb200 1px, #578000 5px, #b4e34e 6px,
                       transparent 6px, transparent 8px,
                       #b4e34e 8px, #7bb200 9px, #578000 13px, #b4e34e 14px,
@@ -119,13 +104,11 @@ export const DocumentTransferModal = ({ isOpen, customerName, mode = 'upload' }:
             </div>
           </div>
 
-          {/* Footer Button (Disabled usually) */}
           <div className="flex justify-end pt-1">
             <button className="px-6 py-0.5 bg-[#f0f0f0] border border-[#adb2b5] text-[11px] shadow-[inset_0_1px_0_white] hover:bg-[#fafafa] active:bg-[#e0e0e0] font-sans">최소화</button>
           </div>
         </div>
 
-        {/* Global CSS for animations */}
         <style dangerouslySetInnerHTML={{ __html: `
           @keyframes flying-paper {
             0% { transform: translateX(-50px); opacity: 0; }

@@ -2,12 +2,12 @@ import { Header } from '@/widgets/header';
 import { LoanTabs } from '@/widgets/loan-tabs';
 import { CustomerInfoForm } from '@/widgets/customer-info-form';
 
-interface MockPageProps {
+interface NotFoundPageProps {
   title: string;
   step: string;
 }
 
-export const MockPage = ({ title, step }: MockPageProps) => {
+export const NotFoundPage = ({ title, step }: NotFoundPageProps) => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       <Header />

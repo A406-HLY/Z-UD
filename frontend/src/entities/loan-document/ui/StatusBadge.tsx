@@ -6,11 +6,6 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/**
- * @entity LoanDocument
- * 서류의 검증 상태를 시각적으로 표시하는 배지 컴포넌트입니다.
- */
-
 interface StatusBadgeProps {
   status: DocumentStatus | 'VERIFIED' | 'PENDING' | 'PROCESSING' | 'FAILED' | 'UPLOADING';
 }

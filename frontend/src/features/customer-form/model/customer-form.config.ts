@@ -14,11 +14,6 @@ export interface FieldConfig {
   hasStepper?: boolean;
 }
 
-/**
- * @feature customer-form
- * 고객 정보 입력 필드에 대한 선언적 설정 객체입니다.
- * (Why) 필드 추가/수정 시 JSX를 직접 건드리지 않고 설정만 변경하여 유지보수성을 확보합니다.
- */
 export const CUSTOMER_FIELDS_CONFIG: FieldConfig[] = [
   {
     id: 'name',

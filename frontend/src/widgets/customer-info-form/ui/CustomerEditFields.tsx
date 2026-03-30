@@ -14,14 +14,9 @@ interface CustomerEditFieldsProps {
   fields?: FieldConfig[];
 }
 
-/**
- * @widget CustomerInfoForm/Sub
- * 고객 정보 수정을 위한 입력 필드 집합 컴포넌트입니다.
- * (Why) 설정 객체 기반의 선언적 렌더링(P2)을 도입하여 반복되는 코드를 제거하고 가독성을 확보합니다.
- */
-export const CustomerEditFields = ({ 
-  form, 
-  errors, 
+export const CustomerEditFields = ({
+  form,
+  errors,
   successFields,
   onChange,
   onBlur,
@@ -65,7 +60,7 @@ export const CustomerEditFields = ({
                   field.className,
                   "transition-all rounded-none h-8 !min-h-[32px] !py-0",
                   "!px-0",
-                  field.hasStepper && "pr-[34px]" // 상하 화살표 공간 확보
+                  field.hasStepper && "pr-[34px]"
                 )}
                 rightElement={
                   field.hasStepper ? (

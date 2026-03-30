@@ -2,20 +2,14 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { VerificationServerResponse } from '@/entities/verification/model/types';
 import { MyDataResDto } from '@/entities/audit/model/types';
 
-/**
- * SSE 실시간 이벤트 단계 및 상태 관리
- */
 export type SseAuditStatus = 'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR';
 
 export interface AuditState {
-  // 전체 SSE 연결 및 서류검증/심사 진행 상태
   isSseConnected: boolean;
   isAllAuditDone: boolean;
-  
-  // 현재 사용자에게 보여줄 진행 중 메시지 (예: "신용 점수 조회 중...")
+
   currentMessage: string;
 
-  // 개별 심사(Event)별 상태
   steps: {
     ocr: SseAuditStatus;
     credit: SseAuditStatus;
@@ -23,15 +17,13 @@ export interface AuditState {
     houseAudit: SseAuditStatus;
   };
 
-  // 수신된 페이로드 데이터 저장
   data: {
     ocrData: VerificationServerResponse | null;
-    houseAuditData: any | null; // 임시 any (추후 DTO 타입 연동)
+    houseAuditData: any | null;
     creditData: any | null;
     loanData: any | null;
   };
 
-  // 에러 항목
   errorMessages: string[];
 }
 
@@ -95,10 +87,10 @@ const auditSlice = createSlice({
   },
 });
 
-export const { 
-  setSseConnected, 
-  setAllAuditDone, 
-  setCurrentMessage, 
+export const {
+  setSseConnected,
+  setAllAuditDone,
+  setCurrentMessage,
   updateStepStatus,
   setOcrData,
   setHouseAuditData,

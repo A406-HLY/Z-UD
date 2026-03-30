@@ -5,11 +5,6 @@ import { clsx } from 'clsx';
 
 import { APPROVAL_STATUS } from '@/shared/config/constants';
 
-/**
- * @widget review-summary
- * 상태 요약 및 핵심 결과 컴포넌트
- */
-
 const BOARD_TEXT = {
   TITLE_SUFFIX: "검토 결과",
   SUBTITLE: "자동 산출 기반 대출 가능 한도 추정액",
@@ -33,10 +28,9 @@ export const StatusSummaryBoard = () => {
 
   const rejectedItems = currentProduct.items.filter(i => i.result === APPROVAL_STATUS.REJECT);
   const hasRejects = rejectedItems.length > 0;
-  
+
   return (
     <div className="bg-white border border-[#556677] shadow-sm rounded-none animate-fade-in flex flex-col">
-      {/* 1. 상단 종합 결과 */}
       <div className="px-4 py-2.5 bg-[#f8fafc] border-b border-[#556677] flex justify-between items-center shrink-0">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -57,7 +51,7 @@ export const StatusSummaryBoard = () => {
           </div>
           <div className="text-[10px] text-slate-500 mt-0.5 font-medium">{BOARD_TEXT.SUBTITLE}</div>
         </div>
-        
+
         <div className="text-right">
           <div className="text-xl font-black text-[#003366] tracking-tighter">
             {currentProduct.isApproved ? `${currentProduct.calculatedLimit.toLocaleString()} KRW` : '0 KRW'}
@@ -65,14 +59,12 @@ export const StatusSummaryBoard = () => {
           {!currentProduct.isApproved && <div className="text-[9px] text-[#c5221f] mt-0.5 font-bold">{BOARD_TEXT.LIMIT_ERROR}</div>}
         </div>
       </div>
-      
-      {/* 2. 종합 심사 코멘트 (승인/리뷰/반려 사유) 상시 노출 */}
+
       {(hasRejects || currentProduct.summary.keyApprovalReasons.length > 0 || currentProduct.summary.keyReviewReasons.length > 0) && (
         <div className={clsx(
           "transition-all bg-white flex flex-col items-stretch",
           hasRejects ? "border-b-2 border-[#c5221f]" : ""
         )}>
-          {/* 하이라이트 메시지 바 */}
           <div className={clsx(
             "w-full px-4 py-2 flex items-center gap-2 text-[11px] border-b border-[#e2e8f0]",
             hasRejects ? "bg-[#fce8e6] text-[#c5221f]" : "bg-slate-50 text-slate-700"
@@ -86,13 +78,10 @@ export const StatusSummaryBoard = () => {
               <span>{currentProduct.finalReason || (hasRejects ? rejectedItems[0]?.reason : BOARD_TEXT.DEFAULT_SUCCESS)}</span>
             </div>
           </div>
-          
-          {/* 상세 내역 패널 (가로 분할 혹은 밀도 높은 나열) */}
+
           <div className="p-2 flex flex-wrap lg:flex-nowrap gap-2 bg-white">
-            
-            {/* 왼쪽 패널: 승인 및 리뷰 사유 */}
+
             <div className="flex-1 flex flex-col gap-2 min-w-[200px]">
-              {/* 주요 승인 요인 */}
               {currentProduct.summary.keyApprovalReasons.length > 0 && (
                 <div className="border border-[#ceead6] bg-[#f8fdf9] p-2">
                   <div className="text-[9px] font-black text-[#137333] uppercase mb-1.5 flex items-center gap-1">
@@ -108,7 +97,6 @@ export const StatusSummaryBoard = () => {
                 </div>
               )}
 
-              {/* 주요 검토 사항 */}
               {currentProduct.summary.keyReviewReasons.length > 0 && (
                 <div className="border border-[#fef0b3] bg-[#fffcf0] p-2">
                   <div className="text-[9px] font-black text-[#b06000] uppercase mb-1.5 flex items-center gap-1">
@@ -125,7 +113,6 @@ export const StatusSummaryBoard = () => {
               )}
             </div>
 
-            {/* 오른쪽 패널: 거절 사유 (있을 경우만) */}
             {hasRejects && (
               <div className="flex-[1.5] border border-[#fad2cf] bg-[#fdf5f4] p-2 min-w-[250px]">
                 <div className="text-[9px] font-black text-[#c5221f] uppercase mb-1.5 flex items-center gap-1">
@@ -149,7 +136,7 @@ export const StatusSummaryBoard = () => {
                 </div>
               </div>
             )}
-            
+
           </div>
         </div>
       )}

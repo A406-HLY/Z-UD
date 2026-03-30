@@ -1,7 +1,4 @@
-/**
- * @entity LoanDocument
- * 대출 서류 도메인에서 사용되는 공통 상수 정의입니다.
- */
+
 
 export const DOCUMENT_VIEWER_LABELS = {
   SEGMENT_A: '스캔 서류',
@@ -19,7 +16,6 @@ export const DOCUMENT_TABLE_HEADERS = {
   STATUS: 'STATUS',
 } as const;
 
-/** (Why) 전체 대출 프로세스 단계를 정의하며, 네비게이션 및 활성 탭 식별에 활용됩니다. */
 export const LOAN_PROCESS_TABS = [
   { id: 'basic', label: '고객정보/서류', path: '/basic-info' },
   { id: 'ocr', label: '문서OCR검토', path: '/verification-result' },

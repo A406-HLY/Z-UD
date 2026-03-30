@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 interface Props {
   fields?: ExtractedField[];
   focusedFieldKey?: string | null;
-  fileUrl?: string; 
+  fileUrl?: string;
   scale?: number;
   pageNumber?: number;
   onScaleChange?: (scale: number) => void;
@@ -16,15 +16,10 @@ interface Props {
   verificationId?: string;
 }
 
-/**
- * @widget document-image-viewer
- * 심사 레포트 전용 PDF 뷰어 위젯입니다.
- * (Why: 단일 PDF 문서 내에서 다중 페이지를 탐색해야 하는 레포트 특성에 맞춰 페이지 전환 로직을 단순화했습니다.)
- */
-export const ReportPdfViewer = ({ 
-  fields = [], 
-  focusedFieldKey = null, 
-  fileUrl, 
+export const ReportPdfViewer = ({
+  fields = [],
+  focusedFieldKey = null,
+  fileUrl,
   scale: externalScale,
   pageNumber: externalPageNumber,
   onScaleChange,
@@ -53,16 +48,16 @@ export const ReportPdfViewer = ({
     onPageChange,
     outlineMap
   });
-  
-  const [baseWidth, setBaseWidth] = useState(800); 
+
+  const [baseWidth, setBaseWidth] = useState(800);
 
   useEffect(() => {
     if (!containerRef.current) return;
-    
+
     const updateWidth = () => {
       if (containerRef.current) {
         const rect = containerRef.current.getBoundingClientRect();
-        const measuredWidth = Math.max(300, rect.width - 100); 
+        const measuredWidth = Math.max(300, rect.width - 100);
         setBaseWidth(measuredWidth);
       }
     };
@@ -70,7 +65,7 @@ export const ReportPdfViewer = ({
     updateWidth();
     const observer = new ResizeObserver(updateWidth);
     observer.observe(containerRef.current);
-    
+
     return () => observer.disconnect();
   }, [containerRef]);
 
@@ -81,21 +76,19 @@ export const ReportPdfViewer = ({
     const top = (window.screen.availHeight - height) / 2;
 
     window.open(
-      `/viewer/${verificationId || 'v-report'}?page=${pageNumber}&scale=${scale}`, 
-      'PdfFullViewer', 
+      `/viewer/${verificationId || 'v-report'}?page=${pageNumber}&scale=${scale}`,
+      'PdfFullViewer',
       `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=no`
     );
   };
 
   return (
     <div className="flex-1 h-full flex flex-col bg-[#808080] overflow-hidden relative border-l border-gray-600">
-      {/* 1. 뷰어 컨트롤 헤더 (중복 테두리 제거 및 높이 통일) */}
       <div className="h-[40px] bg-gray-200 border-b border-gray-300 flex items-center px-4 justify-between shrink-0 z-20">
         <span className="text-[11px] font-bold text-[#444] uppercase tracking-wider font-mono">
           Page {pageNumber}/{totalPages}
         </span>
         <div className="flex items-center gap-2">
-          {/* Prev button */}
           <button
             type="button"
             onClick={() => setPageNumber(p => Math.max(1, p - 1))}
@@ -104,12 +97,11 @@ export const ReportPdfViewer = ({
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           </button>
-          
+
           <span className="text-[11px] font-mono font-bold w-12 text-center text-[#333]">
             {pageNumber} / {totalPages}
           </span>
 
-          {/* Next button */}
           <button
             type="button"
             onClick={() => setPageNumber(p => Math.min(totalPages, p + 1))}
@@ -118,12 +110,12 @@ export const ReportPdfViewer = ({
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
           </button>
-          
+
           <div className="w-px h-5 bg-gray-400 mx-1" />
 
-          <button 
+          <button
             type="button"
-            onClick={() => setScale(s => Math.max(0.4, Number((s - 0.2).toFixed(1))))} 
+            onClick={() => setScale(s => Math.max(0.4, Number((s - 0.2).toFixed(1))))}
             className="p-1.5 bg-white border border-gray-400 hover:bg-gray-50 transition-colors"
           >
             <ZoomOut className="w-4 h-4 text-gray-700" />
@@ -131,16 +123,16 @@ export const ReportPdfViewer = ({
           <span className="text-[10px] font-mono font-bold w-10 text-center text-gray-700">
             {Math.round(scale * 100)}%
           </span>
-          <button 
+          <button
             type="button"
-            onClick={() => setScale(s => Math.min(3, Number((s + 0.2).toFixed(1))))} 
+            onClick={() => setScale(s => Math.min(3, Number((s + 0.2).toFixed(1))))}
             className="p-1.5 bg-white border border-gray-400 hover:bg-gray-50 transition-colors"
           >
             <ZoomIn className="w-4 h-4 text-gray-700" />
           </button>
           <div className="w-px h-5 bg-gray-400 mx-2" />
-          <button 
-            type="button" 
+          <button
+            type="button"
             onClick={handleOpenFull}
             className="h-7 px-3 bg-white border border-gray-400 text-[10px] font-bold hover:bg-gray-50 flex items-center gap-2 text-gray-700 transition-colors"
           >
@@ -148,8 +140,7 @@ export const ReportPdfViewer = ({
           </button>
         </div>
       </div>
-      
-      {/* 2. 스크롤 가능한 캔버스 영역 */}
+
       <div className="flex-1 relative">
          {isLoading && (
             <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/5 pointer-events-none">
@@ -162,39 +153,38 @@ export const ReportPdfViewer = ({
             </div>
          )}
 
-         <div 
+         <div
            ref={containerRef}
            className="absolute inset-0 overflow-auto p-12 flex justify-center shadow-[inset_0_0_50px_rgba(0,0,0,0.5)]"
          >
-           <div 
+           <div
              className="relative shrink-0 transition-transform origin-top"
-             style={{ 
+             style={{
                width: renderedSize.width > 0 ? `${renderedSize.width}px` : 'auto',
                height: renderedSize.height > 0 ? `${renderedSize.height}px` : 'auto',
-               transform: `scale(${scale})` 
+               transform: `scale(${scale})`
              }}
            >
-              {/* (Point): Report 전용이므로 pageNumber를 그대로 전달합니다. */}
-              <PdfRenderer 
+              {}
+              <PdfRenderer
                 key={currentFileUrl}
-                fileUrl={currentFileUrl} 
-                pageNumber={pageNumber} 
+                fileUrl={currentFileUrl}
+                pageNumber={pageNumber}
                 scale={1}
                 baseWidth={baseWidth}
-                onLoadSuccess={setRenderedSize} 
+                onLoadSuccess={setRenderedSize}
                 onDocumentLoad={({ numPages }) => setTotalPages(numPages)}
                 onOutlineLoaded={setOutlineMap}
                 setIsLoading={setIsLoading}
               />
-              <BboxOverlay 
-                bboxes={bboxes} 
-                focusedFieldKey={focusedFieldKey} 
+              <BboxOverlay
+                bboxes={bboxes}
+                focusedFieldKey={focusedFieldKey}
               />
            </div>
          </div>
       </div>
-      
-      {/* 3. 하단 메타데이터 바 */}
+
       <div className="h-[24px] bg-[#333] flex items-center px-4 gap-6 text-[9px] font-mono text-gray-400 uppercase shrink-0 z-20">
          <span>Report Viewer: PDF Engine</span>
          <span className="opacity-30">|</span>

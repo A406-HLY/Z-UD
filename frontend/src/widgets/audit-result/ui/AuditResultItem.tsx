@@ -12,11 +12,6 @@ interface AuditResultItemProps {
   item: AuditSummaryItem;
 }
 
-/**
- * @widget AuditResultItem
- * (Why) 스크린샷의 '시원한 레이아웃'과 우리 프로젝트의 'B2B 감성'을 결합했습니다.
- * (P1) 피드백 반영: 줄어들었던 간격을 다시 키우고, 장식용 아이콘은 제거했습니다.
- */
 export const AuditResultItem: React.FC<AuditResultItemProps> = ({ item }) => {
   const isSuccess = item.status === 'SUCCESS';
   const isError = item.status === 'ERROR';
@@ -26,7 +21,6 @@ export const AuditResultItem: React.FC<AuditResultItemProps> = ({ item }) => {
       "flex items-center justify-between p-8 border-b border-slate-100 last:border-b-0 hover:bg-slate-50 transition-colors",
       isSuccess ? "border-l-4 border-l-[#004b93]" : "border-l-4 border-l-slate-200"
     )}>
-      {/* 텍스트 정보 (스크린샷처럼 여유로운 간격 확보) */}
       <div className="space-y-2">
         <h4 className="text-[16px] font-bold text-slate-900 tracking-tight">
           {item.title}
@@ -44,7 +38,6 @@ export const AuditResultItem: React.FC<AuditResultItemProps> = ({ item }) => {
         </div>
       </div>
 
-      {/* 우측 상태 및 액션 (스크린샷 배치 준수) */}
       <div className="shrink-0 ml-10">
         {item.actionLabel ? (
           <button className="h-10 px-6 text-[13px] font-extrabold text-[#004b93] border-2 border-[#004b93] bg-white hover:bg-[#004b93] hover:text-white transition-all rounded-none shadow-sm active:scale-95 uppercase tracking-tighter">

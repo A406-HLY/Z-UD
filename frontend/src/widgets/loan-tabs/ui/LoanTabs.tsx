@@ -9,7 +9,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 interface LoanTabsProps {
-  // (Why) 특정 페이지(심사 대시보드 등)에서 네비게이션바의 액션 버튼을 커스터마이징하기 위해 추가되었습니다.
+
   actionButton?: {
     label: string;
     onClick: () => void;
@@ -22,22 +22,16 @@ interface LoanTabsProps {
   isScanComplete?: boolean;
 }
 
-/**
- * @widget LoanTabs
- * 대출 프로세스 탭 네비게이션 위젯입니다.
- * (P1) 피드백 반영: 우측 고정 위치에 심사 상태에 따른 동적 액션 버튼을 렌더링할 수 있도록 확장되었습니다.
- */
 export const LoanTabs = ({ actionButton, extraActionButton, onNextStep, isNextStepPending, isScanComplete }: LoanTabsProps) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  /** 현재 경로 기반 활성 탭 식별 로직 */
   const activeTab = LOAN_PROCESS_TABS.find((tab) => location.pathname.startsWith(tab.path))?.id || '';
 
   return (
     <div className="flex justify-between items-center bg-white border-b border-gray-200 min-h-[32px] sticky top-0 z-10">
       <div className="flex h-8">
-        {LOAN_PROCESS_TABS.map((tab) => {          
+        {LOAN_PROCESS_TABS.map((tab) => {
           return (
             <button
               key={tab.id}
@@ -57,10 +51,10 @@ export const LoanTabs = ({ actionButton, extraActionButton, onNextStep, isNextSt
 
       <div className="px-2 flex items-center gap-2">
         {extraActionButton}
-        {/* (Why) 사용자가 지정한 고정 위치(네비게이션바 맨 우측)의 메인 액션 버튼 */}
+        {}
         {actionButton ? (
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             className={cn(
               "h-6 text-[10px] px-4 font-black transition-all rounded-none border shadow-sm uppercase italic tracking-tighter",
               actionButton.className
@@ -71,8 +65,8 @@ export const LoanTabs = ({ actionButton, extraActionButton, onNextStep, isNextSt
             {actionButton.label}
           </Button>
         ) : onNextStep && (
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             variant="primary"
             className={cn(
               "h-6 text-[10px] px-4 font-bold transition-all duration-500",

@@ -8,11 +8,6 @@ interface CustomerSummaryViewProps {
   onEdit: () => void;
 }
 
-/**
- * @widget CustomerInfoForm/Sub
- * 저장 완료 후 정보를 한 줄로 요약해서 보여주는 컴포넌트입니다.
- * (Why) 저장된 정보를 좁은 공간에서 효율적으로 보여주기 위해 필터링된 필드만 요약 렌더링합니다.
- */
 export const CustomerSummaryView = ({ form, onEdit }: CustomerSummaryViewProps) => {
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 animate-in fade-in slide-in-from-top-1">

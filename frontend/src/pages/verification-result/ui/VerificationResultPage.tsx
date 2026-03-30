@@ -14,18 +14,14 @@ import { OcrWaitModal } from '@/features/verification/ui/OcrWaitModal';
 import { useVerificationStatus } from '@/features/verification/model/use-verification-status';
 import { useVerificationActions } from '@/features/verification/model/use-verification-actions';
 
-/**
- * @page verification-result
- * 서류 검증 결과 및 OCR 교정을 수행하는 업무 페이지입니다.
- */
 export const VerificationResultPage = () => {
-  const { 
-    localResult, 
-    selectedId, 
-    isLoading: isControllerLoading, 
+  const {
+    localResult,
+    selectedId,
+    isLoading: isControllerLoading,
     focusedFieldKey,
     consultationId,
-    setSelectedId, 
+    setSelectedId,
     setFocusedFieldKey,
     handleFieldChange,
     handleNextDocument,
@@ -36,23 +32,19 @@ export const VerificationResultPage = () => {
   const { handleNextStep } = useVerificationActions();
   const isLoading = isControllerLoading || isStatusLoading;
 
-  // (Why: 전역 포커스 감시 로직을 훅으로 격리하여 페이지(UI) 코드를 조립 역할에 집중시킵니다.)
   useGlobalFocusRecovery({
     handleNextDocument,
     handlePrevDocument
   });
 
-  // (Why: 크로스 윈도우 동기화를 위한 로컬 상태 관리 - 기본 배율은 가독성을 위해 80%로 설정합니다.)
   const [scale, setScale] = useState(1);
   const [pageNumber, setPageNumber] = useState(1);
 
-  // (Why: 문서가 변경되면 페이지 번호(1)와 배율(80%)을 초기화합니다.)
   useEffect(() => {
     setPageNumber(1);
     setScale(1);
   }, [selectedId]);
 
-  // (Why: 메인 창에서 발생하는 모든 뷰어 상태 변경을 BroadcastChannel로 송신합니다.)
   useCrossWindowSync({
     role: 'sender',
     state: {
@@ -70,8 +62,6 @@ export const VerificationResultPage = () => {
     className: isBlocked ? 'bg-gray-100 text-gray-400 border-gray-200' : 'bg-[#004b93] text-white'
   };
 
-
-
   if (isLoading || !localResult) {
     return (
       <div className="h-screen flex flex-col bg-gray-50 font-sans overflow-hidden">
@@ -87,7 +77,6 @@ export const VerificationResultPage = () => {
             <div className="text-[10px] font-normal tracking-tight lowercase">Please wait for AI verification</div>
           </div>
         </main>
-        {/* [WHY: 데이터가 아직 로드되지 않았을 때 실시간 SSE 진행 상황을 보여주는 분석 모달] */}
         <OcrWaitModal />
       </div>
     );
@@ -98,34 +87,32 @@ export const VerificationResultPage = () => {
   return (
     <div className="h-screen flex flex-col bg-gray-50 font-sans overflow-hidden">
       <Header />
-      
+
       <main className="flex-1 min-h-0 p-4 space-y-4 flex flex-col overflow-hidden">
         <section className="shrink-0">
           <LoanStepper />
         </section>
-        
+
         <section className="shrink-0">
           <CustomerInfoForm />
         </section>
-        
+
         <section className="shrink-0">
           <LoanTabs actionButton={nextStepButton} />
         </section>
-        
+
         <section className="flex-1 min-h-0 flex overflow-hidden border border-gray-300 bg-white rounded-sm">
-          {/* 좌측: 서류 트리 (실시간 상태 반영) */}
-          <VerificationRepository 
-            categories={localResult.categories} 
+          <VerificationRepository
+            categories={localResult.categories}
             documents={localResult.documents}
-            selectedId={selectedId} 
+            selectedId={selectedId}
             onSelect={setSelectedId}
             onRequestNextDocument={handleNextDocument}
             onRequestPrevDocument={handlePrevDocument}
           />
-          
-          {/* 중앙: 실시간 교차 검증 에디터 */}
-          <OcrFieldEditor 
-            fields={selectedId ? (localResult.documentFields[selectedId] || []) : []} 
+
+          <OcrFieldEditor
+            fields={selectedId ? (localResult.documentFields[selectedId] || []) : []}
             status={selectedDoc?.status || 'APPROVED'}
             isRisk={selectedDoc?.isRisk}
             selectedId={selectedId}
@@ -135,9 +122,8 @@ export const VerificationResultPage = () => {
             onFocus={setFocusedFieldKey}
             onRequestNextDocument={handleNextDocument}
           />
-          
-          {/* 우측: 원본 서류 이미지 뷰어 */}
-          <DocumentImageViewer 
+
+          <DocumentImageViewer
             key={selectedId}
             fields={selectedId ? (localResult.documentFields[selectedId] || []) : []}
             focusedFieldKey={focusedFieldKey}
@@ -152,9 +138,7 @@ export const VerificationResultPage = () => {
         </section>
       </main>
 
-      {/* [WHY: 필수 서류 누락 시 전역적으로 차단하는 전산 팝업] */}
       <DeadEndPopup />
-      {/* [WHY: 실시간 SSE 진행 상황을 보여주는 분석 모달 (상태에 따라 자동 노출)] */}
       <OcrWaitModal />
     </div>
   );

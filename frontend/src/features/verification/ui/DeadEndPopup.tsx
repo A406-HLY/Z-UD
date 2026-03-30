@@ -1,11 +1,6 @@
 import { useVerificationStatus } from '../model/use-verification-status';
 import { useVerificationActions } from '../model/use-verification-actions';
 
-/**
- * @feature verification/ui/DeadEndPopup
- * 필수 서류가 누락되어 더 이상 서비스 진행이 불가능할 때 노출되는 전용 데드엔드 팝업입니다.
- * (Why: 레거시 디자인 컨셉인 Windows XP 스타일을 유지하여 일관된 사용자 경험 제공)
- */
 export const DeadEndPopup = () => {
   const { isBlocked, essentialMissings, terminationReason } = useVerificationStatus();
   const { handleEndService } = useVerificationActions();
@@ -14,10 +9,8 @@ export const DeadEndPopup = () => {
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
-      {/* Windows XP Window Frame */}
       <div className="w-[450px] bg-[#ece9d8] border border-[#003366] shadow-[4px_4px_10px_rgba(0,0,0,0.5)] flex flex-col font-sans select-none animate-in fade-in zoom-in-95 duration-200">
-        
-        {/* Title Bar */}
+
         <div className="h-7 bg-gradient-to-r from-[#0055e5] via-[#0a6cff] to-[#0055e5] flex items-center justify-between px-1.5 py-0.5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]">
           <div className="flex items-center gap-1.5 pl-1">
             <span className="text-white text-[12px] font-bold drop-shadow-[1px_1px_1px_rgba(0,0,0,0.5)]">
@@ -25,7 +18,7 @@ export const DeadEndPopup = () => {
             </span>
           </div>
           <div className="flex gap-0.5">
-            <button 
+            <button
               onClick={handleEndService}
               className="w-5 h-5 bg-[#e94b1a] border border-white/40 rounded-sm flex items-center justify-center shadow-inner text-white font-bold text-[10px] hover:bg-[#ff5b2b] transition-colors"
             >
@@ -34,7 +27,6 @@ export const DeadEndPopup = () => {
           </div>
         </div>
 
-        {/* Content Area */}
         <div className="p-6 flex gap-4">
           <div className="shrink-0 text-4xl">❌</div>
           <div className="space-y-4 flex-1">
@@ -49,7 +41,6 @@ export const DeadEndPopup = () => {
               </p>
             </div>
 
-            {/* Error Detail List */}
             <div className="bg-white border border-[#7f9db9] p-3 space-y-2">
               <div className="text-[10px] font-bold text-blue-800 border-b border-gray-100 pb-1">
                 {terminationReason === "위반건축물입니다. 심사를 종료합니다." ? "상세 사유" : "누락된 필수 서류 목록"}
@@ -69,7 +60,6 @@ export const DeadEndPopup = () => {
               </ul>
             </div>
 
-            {/* Actions */}
             <div className="flex justify-end pt-2">
               <button
                 onClick={handleEndService}

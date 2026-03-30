@@ -5,11 +5,6 @@ interface EditorAlertBannerProps {
   isRisk?: boolean;
 }
 
-/**
- * @component EditorAlertBanner
- * 문서 전체의 정합성 오류나 위험 요소가 있을 때 상단에 표시되는 알림 배너입니다.
- * (Why: 에디터 본문의 복잡도를 낮추고 알림 상태에 따른 UI 책임을 분리합니다)
- */
 export const EditorAlertBanner = ({
   isReviewNeeded,
   isRisk

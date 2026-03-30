@@ -1,8 +1,4 @@
-/**
- * @feature Auth/LoginForm
- * 행원 세션 로그인을 위한 폼 컴포넌트입니다.
- * 사번과 비밀번호를 입력받아 useLoginMutation을 통해 인증을 수행합니다.
- */
+
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -14,38 +10,33 @@ import { ApiResponse } from '../../../entities/user';
 export const LoginForm: React.FC = () => {
   const navigate = useNavigate();
   const loginMutation = useLoginMutation();
-  
-  // (Note) 폼 데이터는 컴포넌트 내부에서만 사용되므로 Local State로 관리함
+
   const [formData, setFormData] = useState({
     employeeNumber: '',
     password: '',
   });
 
-  /** 입력 필드 변경 핸들러 */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  /** 로그인 제출 핸들러 */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     loginMutation.mutate(formData, {
       onSuccess: (response) => {
-        // (Why) loginMutation.mutate는 AxiosResponse를 반환하므로 .data.success를 확인해야 함
+
         if (response.data.success) {
-          // (Note) SSO 연동 시뮬레이션을 위해 로그인 성공 후 전산 시스템(Bank System)으로 먼저 이동합니다.
           navigate('/bank-system');
         }
       },
     });
   };
 
-  // (Note) AxiosError 여부에 따라 서버에서 내려준 상세 메시지 혹은 기본 에러 메시지를 노출함
-  const errorMessage = loginMutation.isError 
-    ? (loginMutation.error instanceof AxiosError 
-        ? (loginMutation.error.response?.data as ApiResponse<unknown>)?.error?.message 
+  const errorMessage = loginMutation.isError
+    ? (loginMutation.error instanceof AxiosError
+        ? (loginMutation.error.response?.data as ApiResponse<unknown>)?.error?.message
         : (loginMutation.error as Error)?.message) || '로그인 중 오류가 발생했습니다.'
     : null;
 
@@ -75,9 +66,9 @@ export const LoginForm: React.FC = () => {
         </div>
       )}
 
-      <Button 
-        type="submit" 
-        isLoading={loginMutation.isPending} 
+      <Button
+        type="submit"
+        isLoading={loginMutation.isPending}
         className="mt-2"
       >
         로그인

@@ -25,14 +25,12 @@
   }
 }
 
-/* Chrome, Safari, Edge, Opera: 기본 스핀 버튼 제거 */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-/* Firefox: 기본 스핀 버튼 제거 */
 input[type=number] {
   -moz-appearance: textfield;
 }
@@ -40,10 +38,9 @@ input[type=number] {
 html {
   font-family: 'Inter', sans-serif;
   scrollbar-gutter: stable;
-  overflow: hidden; /* Hide window scrollbar */
+  overflow: hidden;
 }
 
-/* (Security): 금융권 보안 정책 - 무단 인쇄 방지 */
 @media print {
   body {
     display: none !important;

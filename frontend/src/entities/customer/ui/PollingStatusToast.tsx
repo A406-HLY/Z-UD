@@ -2,17 +2,10 @@ import { useEffect, useState } from 'react';
 import { useAppSelector } from '@/app/store/hooks';
 import { clsx } from 'clsx';
 
-/**
- * @component PollingStatusToast
- * 서류 스캔 요청 시 잠시 나타나는 안내 팝업입니다.
- * (Why) '스캔본 요청하기' 버튼 클릭 시 사용자에게 다음 행동(서류 스캔)을 가이드합니다.
- * 3초 동안만 노출되었다가 자동으로 사라집니다.
- */
 export const PollingStatusToast = () => {
   const isPollingActive = useAppSelector((state) => state.customer.isPollingActive);
   const [visible, setVisible] = useState(false);
 
-  // (Why) 폴링 상태가 true로 전송될 때마다 3초간 팝업을 띄웁니다.
   useEffect(() => {
     if (isPollingActive) {
       setVisible(true);

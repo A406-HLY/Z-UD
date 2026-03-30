@@ -4,10 +4,6 @@ import { selectProcessedProducts, selectSelectedProductKey } from '@/entities/re
 import { clsx } from 'clsx';
 import { UI_LIMITS } from '@/shared/config/constants';
 
-/**
- * @widget review-summary
- * 상품 탭 네비게이션 컴포넌트 (최대 5개 탭 지원)
- */
 export const ProductTabs = () => {
   const dispatch = useAppDispatch();
   const products = useAppSelector(selectProcessedProducts);
@@ -19,8 +15,7 @@ export const ProductTabs = () => {
     <div className="bg-[#e4ebf1] flex border-b border-gray-400 shrink-0 select-none overflow-x-auto">
       {products.slice(0, UI_LIMITS.MAX_VISIBLE_TABS).map((prod, index) => {
         const isSelected = selectedTab === prod.productKey || (!selectedTab && index === 0);
-        
-        // 미선택 탭 테두리 색상: 승인(초록) / 거절(빨강)
+
         const outlineColor = prod.isApproved ? '#22c55e' : '#ef4444';
 
         return (
@@ -30,8 +25,8 @@ export const ProductTabs = () => {
             className={clsx(
               "px-5 py-2 text-[11px] font-bold uppercase transition-all shrink-0 flex items-center gap-2 relative",
               isSelected
-                ? "bg-[#003366] text-white" // 선택: 파란색 배경
-                : "bg-white text-slate-700 hover:bg-slate-50" // 미선택
+                ? "bg-[#003366] text-white"
+                : "bg-white text-slate-700 hover:bg-slate-50"
             )}
             style={
               !isSelected

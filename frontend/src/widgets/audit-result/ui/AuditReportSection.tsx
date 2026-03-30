@@ -14,20 +14,14 @@ interface AuditReportSectionProps {
   className?: string;
 }
 
-/**
- * @widget AuditReportSection
- * (Why) B2B 실무 환경에서 화면의 흔들림(Layout Shift)을 방지하기 위해 '고정형 프레임(Fixed Height Frame)' 구조를 채택했습니다.
- * (P1) 피드백 반영: 데이터 로딩 전후의 높이를 동일하게 유지하여 전문적인 '콘솔 유저 인터페이스' 무드를 강화했습니다.
- */
 export const AuditReportSection: React.FC<AuditReportSectionProps> = ({ item, className }) => {
   const isLoading = item.status === 'LOADING';
   const isError = item.status === 'ERROR';
 
-  // (Why) 항목 종류별로 정확한 픽셀 단위 고정 높이를 주입하여 틱틱거리는 레이아웃 변화를 100% 차단합니다.
   const fixedHeights: Record<string, number> = {
-    'credit-rating': 36, // 1 row = 36px
-    'house-audit': 72,   // 36px * 2 rows = 72px
-    'loan-history': 160, // 32px header + 32px * 3 rows + 32px footer = 160px
+    'credit-rating': 36,
+    'house-audit': 72,
+    'loan-history': 160,
   };
   const exactHeight = fixedHeights[item.id] || 80;
 
@@ -36,7 +30,6 @@ export const AuditReportSection: React.FC<AuditReportSectionProps> = ({ item, cl
       "rounded-none border border-slate-300 p-0 bg-white shadow-none overflow-hidden flex flex-col",
       className
     )}>
-      {/* 섹션 헤더 - 고정 높이 36px */}
       <div className={cn(
         "px-4 h-9 border-b border-slate-200 flex justify-between items-center bg-slate-50 shrink-0",
         isError && "bg-red-50 border-red-200"
@@ -52,10 +45,10 @@ export const AuditReportSection: React.FC<AuditReportSectionProps> = ({ item, cl
             <div className="flex items-center gap-1">
               <span className={cn(
                 "text-[10px] font-bold",
-                item.status === 'SUCCESS' ? 'text-[#004b93]' : 
+                item.status === 'SUCCESS' ? 'text-[#004b93]' :
                 item.status === 'ERROR' ? 'text-red-600' : 'text-slate-500'
               )}>
-                {item.status === 'SUCCESS' ? '조회 완료' : 
+                {item.status === 'SUCCESS' ? '조회 완료' :
                  item.status === 'ERROR' ? '조회 실패' : '조회 대기'}
               </span>
               {item.status === 'SUCCESS' ? (
@@ -68,8 +61,7 @@ export const AuditReportSection: React.FC<AuditReportSectionProps> = ({ item, cl
         </div>
       </div>
 
-      {/* 상세 콘텐츠 영역 - 고정형 픽셀 프레임 적용 */}
-      <div 
+      <div
         className="bg-white overflow-hidden relative"
         style={{ height: exactHeight }}
       >
@@ -98,8 +90,6 @@ function renderCategoryContent(item: AuditSummaryItem, isLoading: boolean) {
   }
 }
 
-// --- B2B 스타일 상세 컴포넌트 (데이터 필드별 개별 로딩 적용) ---
-
 const CreditDetail = ({ details, isLoading }: { details: unknown, isLoading: boolean }) => {
   const d = details as { ratingName?: string };
   return (
@@ -117,7 +107,7 @@ const HouseAuditDetail = ({ details, isLoading }: { details: unknown, isLoading:
     housePrice?: { price?: number; priceType?: string };
     nearestBranch?: { currentBranchIsNearest?: boolean };
   };
-  const d = (details as HouseDetails) || {}; 
+  const d = (details as HouseDetails) || {};
 
   return (
     <div className="flex flex-col text-[12px] h-full tabular-nums">
@@ -151,7 +141,6 @@ const LoanDetail = ({ details, isLoading }: { details: unknown; isLoading: boole
   const d = (details as MyDataResDto) || {};
   const products = d?.loanProducts || [];
 
-  // (Why) 데이터가 부족할 경우 레이아웃 유지를 위해 빈 행을 채워 넣습니다.
   const displayProducts = isLoading ? Array(3).fill(null) : products.slice(0, 3);
 
   return (
@@ -193,7 +182,7 @@ const LoanDetail = ({ details, isLoading }: { details: unknown; isLoading: boole
               </td>
             </tr>
           ))}
-          {/* (Why) 3개 미만일 때 빈 로우를 강제로 렌더링하여 고정 높이 160px를 유지합니다. */}
+          {}
           {!isLoading && displayProducts.length < 3 && Array(3 - displayProducts.length).fill(null).map((_, i) => (
              <tr key={`empty-${i}`} className="h-[32px] border-b border-slate-50"><td colSpan={3} /></tr>
           ))}

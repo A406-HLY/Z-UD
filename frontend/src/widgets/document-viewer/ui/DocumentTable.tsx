@@ -11,18 +11,13 @@ interface DocumentTableProps {
   toggleSelect: (id: string) => void;
 }
 
-/**
- * @ui DocumentTable
- * 서류 뷰어 내 배열 목록을 테이블 형태로 시각화하는 순수 UI 컴포넌트입니다.
- * (Why) FSD 아키텍처 원칙에 따라 복잡한 비즈니스 로직과 UI 컴포넌트를 분리하여 가독성과 재사용성을 높입니다.
- */
-export const DocumentTable = ({ 
-  docs, 
-  isLeftColumn, 
-  selectedIds, 
+export const DocumentTable = ({
+  docs,
+  isLeftColumn,
+  selectedIds,
   totalDocsLength,
-  toggleAll, 
-  toggleSelect 
+  toggleAll,
+  toggleSelect
 }: DocumentTableProps) => {
   return (
     <div className="flex-1 flex flex-col min-w-0 bg-[#fafafa] overflow-y-auto w-1/2">
@@ -31,9 +26,9 @@ export const DocumentTable = ({
           <tr>
             <th className="px-2 py-1.5 w-8 text-center">
               {isLeftColumn && (
-                <input 
-                  type="checkbox" 
-                  className="rounded-none border-gray-300 w-3 h-3 text-[#004b93] cursor-pointer" 
+                <input
+                  type="checkbox"
+                  className="rounded-none border-gray-300 w-3 h-3 text-[#004b93] cursor-pointer"
                   checked={totalDocsLength > 0 && selectedIds.size === totalDocsLength}
                   onChange={(e) => toggleAll(e.target.checked)}
                 />
@@ -49,11 +44,11 @@ export const DocumentTable = ({
           {docs.map((doc) => (
             <tr key={doc.id} className="hover:bg-blue-50/50 transition-colors text-[11px] group">
               <td className="px-2 py-1.5 text-center">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   checked={selectedIds.has(doc.id)}
                   onChange={() => toggleSelect(doc.id)}
-                  className="rounded-none border-gray-300 text-[#004b93] w-3 h-3 cursor-pointer" 
+                  className="rounded-none border-gray-300 text-[#004b93] w-3 h-3 cursor-pointer"
                 />
               </td>
               <td className="px-2 py-1.5 text-gray-400 font-mono text-center">{doc.no}</td>
@@ -65,7 +60,6 @@ export const DocumentTable = ({
               </td>
             </tr>
           ))}
-          {/* 하단 패딩을 위한 빈 공간 */}
           {docs.length > 0 && (
             <tr className="h-full">
               <td colSpan={4}></td>
