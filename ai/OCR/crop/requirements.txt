@@ -1,0 +1,17 @@
+# Jupyter
+jupyter
+ipykernel
+
+# Image processing
+pillow
+opencv-python
+
+# Visualization
+matplotlib
+
+# Data handling
+numpy
+pandas
+
+# Utils
+tqdm

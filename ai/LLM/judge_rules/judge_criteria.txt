@@ -1,0 +1,53 @@
+LTV 기반 대출 한도: (주택담보시세 × LTV비율) − 선순위채권 − 기취급여신
+collateralMarketPrice * LTVRatio - maximumClaimAmount - totalRemainingLoanBalance
+
+Q < ( DSR 비율 * 고객의 소득 - 기존 고객의 대출들의 연 상환액) x N' / (1 + R' x N')
+(DSRRatio * annualIncomeTotal - annualPrincipalAndInterestRepayment) * 30 / (1 + (interestRate + 0.6% + stressDSR) * 30)
+
+
+LTV 정보 산출
+- collateralMarketPrice -> 없으면 salePrice를 collateralMarketPrice 로 설정
+- totalRemainingLoanBalance -> 판단 X
+- seniorRights- maximumClaimAmount
+- propertyAddress -> 주소지 기준 규제|비규제 판단
+- ownedHouseCount -> 주택 보유 개수 확인
+
+- LTVRatio = 규제|비규제 + 보유주택 수 기반으로 LTV비율만 도출
+
+
+DSR 정보 산출
+- annualIncomeTotal(근로자) / incomeAmount(사업자) -> 판단 X
+- annualPrincipalAndInterestRepayment -> 판단 X
+
+- DSRRatio -> 깎을 이유 없으면 40%
+
+
+P/Np 판정
+- creditRating
+- loanPurpose
+
+- ownerName -> 값 있으면 통과
+- buyer -> 값 있으면 통과
+
+- buildingType
+- mainUsage
+- isViolationBuilding
+- hasTrustRegistration
+- hasLandRightCause
+- hasOwnershipTransferClaim
+
+- floorStatusList -> '주택' 포함 시 주거용
+
+- deathConfirmed
+
+근로자)
+- employmentType
+- workPeriod
+- subscriberType
+-> 종합해서 근로 소득 안정성 확인
+
+사업자)
+- employmentType
+- incomeAmount
+- taxableSalesAmount
+-> 종합해서 사업 소득 안정성 확인
