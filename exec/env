@@ -1,0 +1,91 @@
+# ========================================
+# BACKEND
+# ========================================
+
+# ========================================
+# PostgreSQL Database Configuration
+# ========================================
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=zud
+DB_USERNAME=root
+DB_PASSWORD=c30f653f401bf
+
+# ========================================
+# Redis Configuration
+# ========================================
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=c30f653f401b
+
+# ========================================
+# Logging Level
+# ========================================
+LOGGING_LEVEL_ROOT=INFO
+LOGGING_LEVEL_APP=DEBUG
+
+# ========================================
+# Server Configuration
+# ========================================
+SERVER_PORT=8080
+RRN_ENCRYPTION_KEY=d00e3ca63e547714efd829ab83628bbd
+# ========================================
+# Kakao
+# ========================================
+KAKAO_REST_API_KEY=c9259a6d453d3419eb7acd3403f1e0a5
+
+# ========================================
+# CloudFlare
+# ========================================
+CLOUDFLARE_ENDPOINT=https://1545aa8dbd17c953859ba18c2d45a346.r2.cloudflarestorage.com
+CLOUDFLARE_BUCKET=zud
+CLOUDFLARE_ACCESS_KEY=65658bacb38142144df03254df248161
+CLOUDFLARE_SECRET_KEY=6d6a42941bf46c82eb7ee7516cceca1a9af812c52c276333cfd682aba684f3e9
+
+# ========================================
+# SSAFY_API_KEY
+# ========================================
+SSAFY_API_KEY=e19cb5ea83ef426082fa5f6c8196c092
+
+# ========================================
+# KAFKA
+# ========================================
+KAFKA_BOOTSTRAP_SERVERS=j14a406.p.ssafy.io:80
+# ========================================
+KAFKA_BROKER_URL=j14a406.p.ssafy.io:80
+KAFKA_INPUT_TOPIC=report-request
+KAFKA_OUTPUT_TOPIC=review-request
+KAFKA_GROUP_ID=rag_consumer_group
+
+
+# ========================================
+# Infra
+# ========================================
+
+# ========================================
+# KAFKA
+# ========================================
+KAFKA_BROKER_URL=j14a406.p.ssafy.io:80
+KAFKA_INPUT_TOPIC=report-request
+KAFKA_OUTPUT_TOPIC=review-request
+KAFKA_GROUP_ID=rag_consumer_group
+KAFKA_UPDATE_TOPIC=document-update
+
+
+# ========================================
+# vector_db
+# ========================================
+
+VECTOR_DB_USER=postgres
+VECTOR_DB_PASSWORD=vX7#mK9p
+VECTOR_DB_NAME=vectordb
+VECTOR_DB_HOST=vector_db_rag
+VECTOR_DB_PORT=5432
+
+# ========================================
+# AUTH
+# ========================================
+AUTH_SERVER_URL=http://sso:9000
+AUTH_OAUTH_CLIENT_ID=zud-client
+AUTH_OAUTH_CLIENT_SECRET=zud-secret
+AUTH_JWKS_URI=http://sso:9000/oauth2/jwks
