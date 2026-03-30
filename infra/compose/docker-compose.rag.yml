@@ -1,0 +1,46 @@
+name: rag
+
+services:
+  vector_db:
+    container_name: vector_db_rag
+    image: pgvector/pgvector:pg16
+    environment:
+      - POSTGRES_USER=${VECTOR_DB_USER}
+      - POSTGRES_PASSWORD=${VECTOR_DB_PASSWORD}
+      - POSTGRES_DB=${VECTOR_DB_NAME}
+    volumes:
+      - ../data/vector_db:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${VECTOR_DB_USER} -d ${VECTOR_DB_NAME}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+    networks:
+      - rag-network
+
+  ai_rag:
+    container_name: ai_rag_worker
+    build:
+      context: ../../ai/RAG
+      dockerfile: Dockerfile
+    env_file:
+      - ./.env
+    environment:
+      - VECTOR_DB_HOST=${VECTOR_DB_HOST}
+      - VECTOR_DB_PORT=${VECTOR_DB_PORT}
+    volumes:
+      - ../../ai/RAG/data/document:/app/data/document
+    depends_on:
+      vector_db:
+        condition: service_healthy
+    restart: always
+    networks:
+      - rag-network
+      - kafka-network
+
+networks:
+  rag-network:
+    external: true
+  kafka-network:
+    external: true

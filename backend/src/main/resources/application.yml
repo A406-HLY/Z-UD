@@ -1,0 +1,121 @@
+spring:
+  web:
+    resources:
+      add-mappings: false
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 10
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      auto-commit: false
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+        spring.json.add.type.headers: false
+    consumer:
+      group-id: loan-report-response-consumer-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  jpa:
+    open-in-view: false
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        show_sql: false
+        format_sql: false
+        use_sql_comments: false
+        criteria:
+          literal_handling_mode: bind
+        query:
+          in_clause_parameter_padding: true
+        connection:
+          provider_disables_autocommit: true
+  threads:
+    virtual:
+      enabled: on
+  jmx:
+    enabled: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 100MB
+
+kakao:
+  api:
+    key: ${KAKAO_REST_API_KEY}
+    base-url: https://dapi.kakao.com
+
+ssafy:
+  api:
+    base-url: https://finopenapi.ssafy.io/ssafy/api/v1
+    api-key: ${SSAFY_API_KEY:}
+    date-pattern: "yyyyMMdd"
+    time-pattern: "HHmmss"
+    institution-code: "00100"
+    fintech-app-no: "001"
+    member-path: "/member/search"
+    inquire-credit-rating-path: "/edu/loan/inquireMyCreditRating"
+    inquire-loan-account-list-path: "/edu/loan/inquireLoanAccountList"
+    inquire-repayment-records-path: "/edu/loan/inquireRepaymentRecords"
+
+springdoc:
+  swagger-ui:
+    display-request-duration: true
+    operations-sorter: alpha
+    try-it-out-enabled: true
+    tags-sorter: alpha
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
+
+logging:
+  level:
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: ERROR
+
+
+cloudflare:
+  r2:
+    endpoint: ${CLOUDFLARE_ENDPOINT}
+    bucket: ${CLOUDFLARE_BUCKET}
+    access-key: ${CLOUDFLARE_ACCESS_KEY}
+    secret-key: ${CLOUDFLARE_SECRET_KEY}
+
+auth:
+  server-url: ${AUTH_SERVER_URL:http://localhost:9000}
+  client-id: ${AUTH_OAUTH_CLIENT_ID:zud-client}
+  client-secret: ${AUTH_OAUTH_CLIENT_SECRET:zud-secret}
+  jwks-uri: ${AUTH_JWKS_URI:http://localhost:9000/oauth2/jwks}
+  issue-path: "/api/v1/token/issue"
+  reissue-path: "/api/v1/token/reissue"
+  revoke-path: "/api/v1/token/revoke"
+  blacklist-path: "/api/v1/token/blacklist/{jti}"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "prometheus, health"
+  endpoint:
+    health:
+      enabled: true
+    prometheus:
+      enabled: true

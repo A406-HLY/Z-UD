@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply m-0 p-0 text-slate-800 bg-slate-50 font-sans;
+  }
+}
+
+@layer utilities {
+  @keyframes progress {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+  }
+  .animate-progress {
+    animation: progress linear forwards;
+  }
+}
+
+@theme {
+  --animate-shake: shake 0.1s ease-in-out 0s 1;
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10% { transform: translateX(-1px); }
+    50% { transform: translateX(1px); }
+  }
+}
+
+/* Chrome, Safari, Edge, Opera: 기본 스핀 버튼 제거 */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox: 기본 스핀 버튼 제거 */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+html {
+  font-family: 'Inter', sans-serif;
+  scrollbar-gutter: stable;
+  overflow: hidden; /* Hide window scrollbar */
+}
+
+/* (Security): 금융권 보안 정책 - 무단 인쇄 방지 */
+@media print {
+  body {
+    display: none !important;
+  }
+}
